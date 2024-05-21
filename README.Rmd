@@ -29,7 +29,23 @@ are publicly available 3d scans of the Hamby-Brundage bullet set #44 provided by
 Download: 
 
   - [Known Bullets 1 and 2 from Barrel 1](examples/Hamby-44/barrel 1.zip)
-  - Questioned bullets:  Bullet [E](examples/Hamby-44/Questioned/Bullet E.zip), [F](examples/Hamby-44/Questioned/Bullet F.zip), 
- [G](examples/Hamby-44/Questioned/Bullet G.zip), 
+  - Questioned bullets:  [E](examples/Hamby-44/Questioned//Bullet E.zip), 
+  [F](examples/Hamby-44/Questioned//Bullet F.zip), 
+[G](examples/Hamby-44/Questioned//Bullet G.zip), 
+[H](examples/Hamby-44/Questioned//Bullet H.zip), 
+[I](examples/Hamby-44/Questioned//Bullet I.zip), 
+[J](examples/Hamby-44/Questioned//Bullet J.zip), 
+[K](examples/Hamby-44/Questioned//Bullet K.zip), 
+[L](examples/Hamby-44/Questioned//Bullet L.zip), 
+[O](examples/Hamby-44/Questioned//Bullet O.zip), 
+[P](examples/Hamby-44/Questioned//Bullet P.zip), 
+[S](examples/Hamby-44/Questioned//Bullet S.zip), 
+[T](examples/Hamby-44/Questioned//Bullet T.zip), 
+[U](examples/Hamby-44/Questioned//Bullet U.zip), 
+[X](examples/Hamby-44/Questioned//Bullet X.zip), 
+[Y](examples/Hamby-44/Questioned//Bullet Y.zip) 
 
 
+## Start the Analyzr
+
+Click on the link to start the app: [BulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)

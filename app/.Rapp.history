@@ -1,0 +1,2 @@
+setwd("~/Desktop/csafe/bullet/bulletanalyzer")
+shiny::runApp()
