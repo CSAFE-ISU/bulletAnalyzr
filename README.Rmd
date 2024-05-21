@@ -1,0 +1,35 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bulletAnalyzr
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+[pdf of Flier](bulletAnalyzr-flier.pdf)
+
+## Example Files
+
+
+[Hamby 44](https://tsapps.nist.gov/NRBTD/Studies/Studies/Details/fc1f7807-f6e2-41c2-abd1-6173d5a99157)
+are publicly available 3d scans of the Hamby-Brundage bullet set #44 provided by CSAFE. 
+
+Download: 
+
+  - [Known Bullets 1 and 2 from Barrel 1](examples/Hamby-44/barrel 1.zip)
+  - Questioned bullets:  Bullet [E](examples/Hamby-44/Questioned/Bullet E.zip), [F](examples/Hamby-44/Questioned/Bullet F.zip), 
+ [G](examples/Hamby-44/Questioned/Bullet G.zip), 
+
+
