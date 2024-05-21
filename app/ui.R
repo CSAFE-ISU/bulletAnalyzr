@@ -7,8 +7,6 @@ library(bslib)
 library(bsicons)
 library(shinycssloaders)
 library(shinyscreenshot)
-library(randomForest)
-library(DT)
 
 ## Load Bullet Libraries
 options(rgl.useNULL = TRUE)

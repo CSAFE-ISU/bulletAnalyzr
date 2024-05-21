@@ -14,7 +14,7 @@ library(DT)
 options(rgl.useNULL = TRUE)
 library(rgl)
 library(x3ptools)
-library(bulletxtrctr)
+library(bulletxtrctr) # remotes::install_github("heike/bulletxtrctr")
 
 ## Config
 options(shiny.maxRequestSize = 30*1024^2)
@@ -117,8 +117,8 @@ server <- function(input, output, session) {
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
 									bull$x3p <- lapply(bull$x3p,x3p_m_to_mum)
-									bull$x3pv <- bull$x3p
-									# bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
+									bull$x3pv <- bull$x3p 
+								  #bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
 									bull$md5sum <- tools::md5sum(bull$source)
 									bull$filename <- basename(bull$source)
 									bulldata$cbull <- bull
@@ -262,7 +262,7 @@ server <- function(input, output, session) {
 
 								## Scaling Features
 								progress$set(message = "Scaling Features", value = .4)
-								features <- tidyr::unnest(comparisons[,c("land1", "land2", "ccf0", "bulletA", "bulletB", "landA", "landB", "features")])
+								features <- tidyr::unnest(comparisons[,c("land1", "land2", "ccf0", "bulletA", "bulletB", "landA", "landB", "features")], cols=features)
 								features <- features %>% mutate(cms = cms_per_mm,matches = matches_per_mm,mismatches = mismatches_per_mm,non_cms = non_cms_per_mm)
 
 								## Predicting RandomForest Scores
