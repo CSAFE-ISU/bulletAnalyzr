@@ -20,6 +20,40 @@ knitr::opts_chunk$set(
 
 [pdf of Flier](bulletAnalyzr-flier.pdf)
 
+## Start the Analyzr
+
+Click on the link to start the app: [BulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
+
+## Walkthrough
+
+
+1. Download the zip-file for the two [Known Bullets 1 and 2 from Barrel 1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip), and unzip the the file. This should result in a structure like this:
+
+```
+-- data
+|   |-- Bullet 1
+|   |   |-- Barrel_1-Bullet_1-Land_1.x3p
+... 
+|   |   |-- Barrel_1-Bullet_1-Land_6.x3p
+|   |-- Bullet 2
+|   |   |-- Barrel_1-Bullet_2-Land_1.x3p
+... 
+|   |   |-- Barrel_1-Bullet_2-Land_6.x3p
+```
+
+2. Start bulletAnalyzr by clicking on the link.
+
+3. Upload all 6 scans for Bullets 1 and 2, and compare. 
+
+4. Which Land-To-Land comparison is the best? - Click on the report line and read through. 
+
+
+## Interesting Questions
+
+1. Do the scans from bullets B1  from barrel 1  and [Questioned bullet E](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet E.zip) support an identification?
+
+2. Do the scans from bullets B1 and any of the questioned bullets support an identification? 
+
 ## Example Files
 
 
@@ -46,6 +80,3 @@ Download:
 [Y](examples/Hamby-44/Questioned//Bullet Y.zip) 
 
 
-## Start the Analyzr
-
-Click on the link to start the app: [BulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
