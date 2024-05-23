@@ -450,7 +450,7 @@ server <- function(input, output, session) {
 																									geom_vline(xintercept = 0, colour = "blue") + 
 																									geom_vline(xintercept = GroovesL[2]-GroovesL[1], colour = "blue") +
 																									scale_x_continuous(breaks=c(0,round(as.numeric(GroovesL[2]-GroovesL[1]),0),round(seq(min(CCDataL$x),max(CCDataL$x),by=500),-2))) +
-	  																								xlab("Position along width of Land in Microns\n(1 Millimeter = 1000 Microns)") +
+	  																								xlab("Position along width of Land in Microns") +
 											  														ylab("Surface Height in Microns") + 
 	  																								ggtitle(paste0("Location of the grooves in Land : ",bsldata$land1[odridx[cidx]]))+
 	  																								theme(
@@ -468,7 +468,7 @@ server <- function(input, output, session) {
 																									geom_vline(xintercept = 0, colour = "blue") + 
 																									geom_vline(xintercept = GroovesR[2]-GroovesR[1], colour = "blue") +
 																									scale_x_continuous(breaks=c(0,round(as.numeric(GroovesR[2]-GroovesR[1]),0),round(seq(min(CCDataR$x),max(CCDataR$x),by=500),-2))) +
-	  																								xlab("Position along width of Land in Microns\n(1 Millimeter = 1000 Microns)") +
+	  																								xlab("Position along width of Land in Microns") +
 	  																								ylab("Surface Height in Microns") + 
 	  																								ggtitle(paste0("Location of the grooves in Land : ",bsldata$land2[odridx[cidx]]))+
 	  																								theme(
@@ -508,7 +508,7 @@ server <- function(input, output, session) {
 																							    geom_line(na.rm=TRUE) +
 																							  	theme_bw() +
 																							  	scale_color_brewer(palette = "Dark2") +
-																							  	xlab("Position along width of Land in Microns (1 Millimeter = 1000 Microns)") +
+																							  	xlab("Position along width of Land in Microns") +
 																							  	ylab("Signal in Microns") +
 																							  	ggtitle("Alignment of two Bullet Lands")+
 																							  	theme(
@@ -618,7 +618,7 @@ server <- function(input, output, session) {
 											  geom_line() +
 											  facet_grid(bullet~land, labeller="label_both") +
 											  theme_bw()+
-											  xlab("Position along width of Land in Millimeters (1 Millimeter = 1000 Microns)") +
+											  xlab("Position along width of Land in Millimeters") +
 											  ylab("Surface Height in Microns") + 
 											  ggtitle("Cross-section of the bullet land at the ideal cross-section location")+
 											  theme(
@@ -641,7 +641,7 @@ server <- function(input, output, session) {
   									bullets <- bulldata$comparison$bullets
   									bullets <- bullets[bullets$bullet %in% c(input$comp_bul1,input$comp_bul2),]
   									signatures <- bullets %>% select(source,bullet,land, sigs) %>% tidyr::unnest(sigs)
-  									signatures$x <- signatures$x/100
+  									signatures$x <- signatures$x/1000
   									Sigplot <- signatures %>% 
 												  filter(!is.na(sig),!is.na(raw_sig)) %>%
 												  ggplot(aes(x = x)) + 
@@ -650,7 +650,7 @@ server <- function(input, output, session) {
 												  facet_grid(bullet~land, labeller="label_both") +
 												  ylim(c(-5,5)) +
 												  theme_bw() +
-												  xlab("Position along width of Land in Millimeters (1 Millimeter = 1000 Microns)") +
+												  xlab("Position along width of Land in Millimeters") +
 												  ylab("Signal in Microns") +
 												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")+
 												  theme(
