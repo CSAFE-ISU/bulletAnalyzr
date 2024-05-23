@@ -24,23 +24,24 @@ addResourcePath("images", "images")
 ## Helper Functions
 #################################################################################
 ## Render RGL Widget UI
-parse_rglui <- function(x)
+parse_rglui <- function(x, name = "x3prgl")
 {
 	card(
 		card_header(class = "bg-dark",paste0("Land ",x)),
-		max_height = 300,
+		max_height = 600,
 		full_screen = FALSE,
-		rglwidgetOutput(paste0("x3prgl",x),height=300,width=400),
+		rglwidgetOutput(paste0("x3prgl",x),height=600,width=200),
 	)
 }
 parse_rgluiprev <- function(x)
 {
-	card(
-		card_header(class = "bg-dark",paste0("Land ",x)),
-		max_height = 300,
-		full_screen = FALSE,
-		rglwidgetOutput(paste0("x3prglprev",x),height=300,width=400),
-	)
+  parse_rglui(x, name = "x3prglprev")
+	# card(
+	# 	card_header(class = "bg-dark",paste0("Land ",x)),
+	# 	max_height = 300,
+	# 	full_screen = FALSE,
+	# 	rglwidgetOutput(paste0("x3prglprev",x),height=300,width=400),
+	# )
 }
 
 ## Render Land into image with CrossCut line
@@ -140,7 +141,8 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-																									image_x3p(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),zoom=1)
+																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),
+																									          size=500,zoom=.4)
 																									rglwidget()
 																					})
 											})
@@ -151,7 +153,7 @@ server <- function(input, output, session) {
 
 									## UI
 									layout_column_wrap(
-										width = 1/3,
+										width = 1/6,
 										!!!lapply(1:nrow(bull),parse_rglui)
 									)
 						})
@@ -185,7 +187,8 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prglprev",idx)]] <- renderRglwidget({
-																									image_x3p(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),zoom=1)
+																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),
+																									          size=500, zoom=.4)
 																									rglwidget()
 																					})
 											})
@@ -193,7 +196,7 @@ server <- function(input, output, session) {
 
 									## UI
 									layout_column_wrap(
-										width = 1/3,
+										width = 1/6,  # HH: should be adjusted for the number of lands the bullets have.
 										!!!lapply(1:nrow(bull),parse_rgluiprev)
 									)
 						})
