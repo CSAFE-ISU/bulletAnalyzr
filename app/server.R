@@ -47,7 +47,7 @@ parse_rgluiprev <- function(x)
 render_land <- function(src,x3p,ccut)
 {
 	imgsrc <- gsub(".x3p$",".png",src)
-	image_x3p(x3p_sample(x3p_add_hline(x3p,yintercept = ccut, size = 20, color = "#ea2b1f"),m=5),zoom=1)
+	image_x3p(x3p_sample(x3p_add_hline(x3p,yintercept = ccut, size = 20, color = "#ea2b1f"),m=5) %>% x3p_rotate(),zoom=1)
 	snapshot3d(imgsrc,webshot=TRUE)
 	return(imgsrc)
 }
@@ -123,7 +123,7 @@ server <- function(input, output, session) {
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
 									bull$x3p <- lapply(bull$x3p,x3p_m_to_mum)
-									bull$x3pv <- bull$x3p 
+									#bull$x3pv <- bull$x3p 
 								  #bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
 									bull$md5sum <- tools::md5sum(bull$source)
 									bull$filename <- basename(bull$source)
@@ -136,7 +136,7 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-																									image_x3p(x3p_sample(bull$x3pv[[cidx]],m=5),zoom=1)
+																									image_x3p(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),zoom=1)
 																									rglwidget()
 																					})
 											})
@@ -181,7 +181,7 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prglprev",idx)]] <- renderRglwidget({
-																									image_x3p(x3p_sample(bull$x3pv[[cidx]],m=5),zoom=1)
+																									image_x3p(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),zoom=1)
 																									rglwidget()
 																					})
 											})
@@ -287,7 +287,7 @@ server <- function(input, output, session) {
 								for(idx in 1:nrow(bullets))
 								{
 									progress$set(message = "Rendering Report Objects", value = round(seq(from=.55,to=.85,length.out=nrow(bullets)),2)[idx])
-									bullets$x3pimg[idx] <- render_land(bullets$source[idx],bullets$x3pv[[idx]],bullets$crosscut[idx])	
+									bullets$x3pimg[idx] <- render_land(bullets$source[idx],bullets$x3p[[idx]],bullets$crosscut[idx])	
 								}
 
 								## Saving Report Data
