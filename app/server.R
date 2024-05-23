@@ -133,7 +133,7 @@ server <- function(input, output, session) {
 									bull$md5sum <- tools::md5sum(bull$source)
 									bull$filename <- basename(bull$source)
 									bulldata$cbull <- bull
-
+#browser()
 									## Render Bullet
 									progress$set(message = "Rendering Previews", value = .75)
 									for(idx in 1:nrow(bull)) 
@@ -369,7 +369,11 @@ server <- function(input, output, session) {
   										bsldata <- bullet_scores$data[[1]]
   										odridx <- order(bsldata$rfscore,decreasing=TRUE)
 
-  										## Generate Collapsible UI Panel List in a loop
+  										# getting scales and instrument info ... not correct yet, but just for the first scan
+  										scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
+  										instrument <- bulldata$cbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
+
+  										  										## Generate Collapsible UI Panel List in a loop
   										bsCollapsePanelList <- list()
   										for(idx in 1:length(odridx))
   										{
@@ -378,12 +382,14 @@ server <- function(input, output, session) {
   											#########################################################################################################
   											BullCompBulls <- bulldata$comparison$bullets
   											temptable <- data.frame(
-  																		Feature = c("Left Land File","Left Land MD5","Right Land File","Right Land MD5","Cross Correlation Function","Mean Distance bw Matching Striae","Signature Length in Millimeters","Matches Per Millimeter","Mismatches Per Millimeter","CMS Per Millimeter","Non-CMS Per Millimeter","Peak Sum Per Millimeter"),
+  																		Feature = c("Left Land File","Left Land MD5", "Left Land Instrument (resolution [µm/px])", "Right Land File","Right Land MD5","Left Land Instrument (resolution [µm/px])", "Cross Correlation Function","Mean Distance bw Matching Striae","Signature Length [mm]","# Matching Striae Per Millimeter","# Mis-Matching Striae Per Millimeter","CMS Per Millimeter","Non-CMS Per Millimeter","Peak Sum"),
   																		Value = c(
   																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
   																					BullCompBulls$md5sum[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
-  																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
+  																					sprintf("%s (%s)", instrument, scale),
+  																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]]],
   																					BullCompBulls$md5sum[BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]]],
+  																					sprintf("%s (%s)", instrument, scale),
   																					round(bsldata$ccf[odridx[idx]],3),
   																					round(bsldata$D[odridx[idx]],3),
   																					round(bsldata$length_mm[odridx[idx]],3),
@@ -502,7 +508,7 @@ server <- function(input, output, session) {
   											local({
   												cidx <- idx
 	  											BullCompComps <- bulldata$comparison$comparisons
-
+	  											scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
 	  											SigPlotData <- BullCompComps$aligned[
 	  																					(BullCompComps$bulletA == input$comp_bul1)&
 	  																					(BullCompComps$bulletB == input$comp_bul2)&
@@ -510,16 +516,17 @@ server <- function(input, output, session) {
 	  																					(BullCompComps$landB == bsldata$landB[odridx[idx]])
 	  																				][[1]]$lands
 	  											SigPlotData <- tidyr::gather(SigPlotData,Signal, value, sig1, sig2)
+	  											
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig1"] <- "Left Land"
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig2"] <- "Right Land"
 												output[[paste0("SigPlot",idx)]] = renderPlot({
-																								ggplot(SigPlotData,aes(x = x, y = value, colour = Signal)) + 
+																								ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal)) + 
 																							    geom_line(na.rm=TRUE) +
 																							  	theme_bw() +
 																							  	scale_color_brewer(palette = "Dark2") +
 																							  	xlab("Position along width of Land [µm]") +
 																							  	ylab("Signal [µm]") +
-																							  	ggtitle("Alignment of two Bullet Lands")+
+																							  	ggtitle("Alignment of two Lands")+
 																							  	theme(
 																								  		axis.text=element_text(size=16),
 																								  		axis.title=element_text(size=18),
@@ -569,7 +576,7 @@ server <- function(input, output, session) {
 									  ggplot(aes(x = bulletA, y = bulletB, fill = bullet_score, colour=selsource)) +
 									  geom_tile() +
 									  labs(fill="Bullet Score") +
-									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5) +
+									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(size = 1, data = bullet_scores %>% filter(selsource)) +
 									  geom_text(aes(label = round(bullet_score, 2)),size=6) +
@@ -597,7 +604,7 @@ server <- function(input, output, session) {
 									  ggplot(aes(x = landA, y = landB, fill = rfscore, colour=samesource)) +
 									  geom_tile() +
 									  labs(fill="Land Score") +
-									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5) +
+									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(size = 1, data = features %>% filter(samesource)) +
 									  geom_text(aes(label = round(rfscore, 2)),size=6) +
