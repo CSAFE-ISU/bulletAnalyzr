@@ -73,6 +73,12 @@ server <- function(input, output, session) {
 
 	## Bullet Land Files Input
 	output$bul_x3pui <- renderUI({fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p",multiple=TRUE)})
+	
+	observeEvent(input$bul_x3p, {
+	    bullet_name <- sub("^(.*)\\s+[^\\s]+$", "\\1", input$bul_x3p[1]$name)[1]
+	    
+	    updateTextInput(session, "bul_x3p_name", value = bullet_name)
+	})
 
 	## Push current bullet data to all bullet data object
 	observeEvent(input$up_bull,{
