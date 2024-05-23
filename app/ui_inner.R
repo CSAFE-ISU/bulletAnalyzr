@@ -43,7 +43,7 @@ sidebarLayout(tags$div(id="my-sidebar",
           ),
           div(id = "orientation-note",
               br(),
-              helpText("Note that for valid comparisons results, scans have to be oriented with the tip of the bullet pointing upwards."),
+              helpText("Note that for valid comparisons results, scans have to be oriented with the tip of the bullet pointing left."),
               br()
           )
       ),
