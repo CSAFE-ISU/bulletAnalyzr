@@ -220,9 +220,9 @@ server <- function(input, output, session) {
 								resolution <- x3p_get_scale(bullets$x3p[[1]])
 
 								## Get the ideal Cross Sections
-								progress$set(message = "Get the ideal Cross Sections", value = 0)
-								bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize)
-								bullets$ccdata <- mapply(x3p_crosscut,bullets$x3p,bullets$crosscut,SIMPLIFY=FALSE)
+								progress$set(message = "Get suitable Cross Sections", value = 0)
+								#bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize)
+								bullets$ccdata <- mapply(x3p_crosscut,bullets$x3p,bullets$crosscut,SIMPLIFY=FALSE, ylimits = c(250, NA))
 
 								## Get the Groove Locations
 								progress$set(message = "Get the Groove Locations", value = .05)
@@ -235,7 +235,7 @@ server <- function(input, output, session) {
 								lands <- unique(bullets$bulletland)
 
 								## Align Signal
-								progress$set(message = "Align Signal", value = .15)
+								progress$set(message = "Align Signals", value = .15)
 								comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
 								comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
 
