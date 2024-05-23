@@ -229,7 +229,16 @@ server <- function(input, output, session) {
 								## Get the ideal Cross Sections
 								progress$set(message = "Get suitable Cross Sections", value = 0)
 								bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize, ylimits = c(150, NA))
-								bullets$ccdata <- mapply(x3p_crosscut,bullets$x3p,bullets$crosscut, SIMPLIFY=FALSE)
+								try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
+								  res <- x3p_crosscut(x3p=x3p, y = y, range = range)
+								  if (nrow(res) == 0) {
+								    # if there is no result, just use the middle
+								    res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
+								  }
+								  res
+								}
+								bullets$ccdata <- mapply(try_x3p_crosscut,bullets$x3p,bullets$crosscut, SIMPLIFY=FALSE)
+								
 
 								## Get the Groove Locations
 								progress$set(message = "Get the Groove Locations", value = .05)
