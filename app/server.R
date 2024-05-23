@@ -47,7 +47,11 @@ parse_rgluiprev <- function(x)
 render_land <- function(src,x3p,ccut)
 {
 	imgsrc <- gsub(".x3p$",".png",src)
-	x3p_image(x3p_sample(x3p_add_hline(x3p,yintercept = ccut, size = 20, color = "#ea2b1f"),m=5) %>% x3p_rotate(),zoom=1)
+	x3p %>%
+	  x3p_add_hline(yintercept = ccut, size = 20, color = "#ea2b1f") %>%
+	  x3p_sample(m=5) %>%
+	  x3p_rotate() %>%
+	  x3p_image(size = c(750,250), zoom=1)
 	snapshot3d(imgsrc,webshot=TRUE)
 	return(imgsrc)
 }
