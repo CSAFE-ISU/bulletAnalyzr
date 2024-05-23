@@ -17,7 +17,7 @@ Click on the link to start the app:
 
 1.  Download the zip file for the two [Known Bullets 1 and 2 from Barrel
     1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip),
-    and unzip the the file. This should result in a structure like this:
+    and unzip the file. This should result in a structure like this:
 
 <!-- -->
 
@@ -36,7 +36,7 @@ Click on the link to start the app:
     link and `Begin` to start.
 
 3.  Click `Browse` and select all 6 scans (you can select multiple files
-    simultaneously) in `Bullet 1` folder. Click `open` to upload.
+    simultaneously) in the `Bullet 1` folder. Click `open` to upload.
 
 4.  Put `Bullet 1` in the `Bullet Name` text box. Select
     `Add Bullet to Comparison List`.
