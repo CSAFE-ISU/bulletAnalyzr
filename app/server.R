@@ -373,7 +373,7 @@ server <- function(input, output, session) {
   																		Value = c(
   																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
   																					BullCompBulls$md5sum[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
-  																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
+  																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
   																					BullCompBulls$md5sum[BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]]],
   																					round(bsldata$ccf[odridx[idx]],3),
   																					round(bsldata$D[odridx[idx]],3),
