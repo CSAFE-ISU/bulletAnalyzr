@@ -456,8 +456,8 @@ server <- function(input, output, session) {
 	  																								theme(
 																								  		axis.text=element_text(size=16),
 																								  		axis.title=element_text(size=18),
-																								  		plot.title = element_text(size=22,face="bold"),
-																								  		axis.text.x = element_text(angle = 90, hjust = 1)
+																								  		plot.title = element_text(size=22,face="bold")
+																								  	#	axis.text.x = element_text(angle = 0, hjust = 1)
 																						  			) 
 	  																							})
 	  											output[[paste0("GroovePlotR",idx)]] = renderPlot({
@@ -474,8 +474,8 @@ server <- function(input, output, session) {
 	  																								theme(
 																								  		axis.text=element_text(size=16),
 																								  		axis.title=element_text(size=18),
-																								  		plot.title = element_text(size=22,face="bold"),
-																								  		axis.text.x = element_text(angle = 90, hjust = 1)
+																								  		plot.title = element_text(size=22,face="bold")
+																								  		#axis.text.x = element_text(angle = 90, hjust = 1)
 																						  			) 
 	  																							})
   											})
@@ -516,8 +516,8 @@ server <- function(input, output, session) {
 																								  		axis.title=element_text(size=18),
 																								  		legend.title=element_text(size=18),
 																								  		legend.text=element_text(size=16),
-																								  		plot.title = element_text(size=22,face="bold"),
-																								  		axis.text.x = element_text(angle = 90, hjust = 1)
+																								  		plot.title = element_text(size=22,face="bold")
+																								  		#axis.text.x = element_text(angle = 90, hjust = 1)
 																						  			) 
 																					})
   											})
@@ -627,8 +627,8 @@ server <- function(input, output, session) {
 											  		legend.title=element_text(size=18),
 											  		legend.text=element_text(size=16),
 											  		plot.title = element_text(size=22,face="bold"),
-											  		strip.text = element_text(size=18),
-											  		axis.text.x = element_text(angle = 90, hjust = 1)
+											  		strip.text = element_text(size=18)
+											  		#axis.text.x = element_text(angle = 90, hjust = 1)
 									  			)
 									return(CCplot)
   						})
@@ -659,8 +659,8 @@ server <- function(input, output, session) {
 											  		legend.title=element_text(size=18),
 											  		legend.text=element_text(size=16),
 											  		plot.title = element_text(size=22,face="bold"),
-											  		strip.text = element_text(size=18),
-											  		axis.text.x = element_text(angle = 90, hjust = 1)
+											  		strip.text = element_text(size=18)
+											  		#axis.text.x = element_text(angle = 90, hjust = 1)
 									  			)
 									return(Sigplot)
   						})
