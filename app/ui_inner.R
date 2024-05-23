@@ -39,10 +39,15 @@ sidebarLayout(tags$div(id="my-sidebar",
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(
             column(12,uiOutput("bull_sel")),
-            column(12,actionButton("doprocess", label = "Compare Bullets"),align="center")
+            column(12,actionButton("doprocess", label = "Compare Bullets"),align="center"),
           ),
+          div(id = "orientation-note",
+              br(),
+              helpText("Note that for valid comparisons results, scans have to be oriented with the tip of the bullet pointing upwards."),
+              br()
+          )
       ),
-
+    
       ## Download Report Button
       conditionalPanel(condition="input.prevreport == 'Comparison Report'",
           uiOutput("reportDownUI"),
@@ -68,3 +73,4 @@ sidebarLayout(tags$div(id="my-sidebar",
     )
   )
 )
+
