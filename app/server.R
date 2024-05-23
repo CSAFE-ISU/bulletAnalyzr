@@ -228,7 +228,7 @@ server <- function(input, output, session) {
 
 								## Get the ideal Cross Sections
 								progress$set(message = "Get suitable Cross Sections", value = 0)
-								bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize, ylimits = c(250, NA))
+								bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize, ylimits = c(150, NA))
 								bullets$ccdata <- mapply(x3p_crosscut,bullets$x3p,bullets$crosscut, SIMPLIFY=FALSE)
 
 								## Get the Groove Locations
