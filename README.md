@@ -11,17 +11,17 @@
 ## Start the Analyzr
 
 Click on the link to start the app:
-[BulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
+[bulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
 
 ## Walkthrough
 
-1.  Download the zip-file for the two [Known Bullets 1 and 2 from Barrel
+1.  Download the zip file for the two [Known Bullets 1 and 2 from Barrel
     1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip),
-    and unzip the the file. This should result in a structure like this:
+    and unzip the file. This should result in a structure like this:
 
 <!-- -->
 
-    -- data
+    -- barrel 1
     |   |-- Bullet 1
     |   |   |-- Barrel_1-Bullet_1-Land_1.x3p
     ... 
@@ -31,12 +31,22 @@ Click on the link to start the app:
     ... 
     |   |   |-- Barrel_1-Bullet_2-Land_6.x3p
 
-2.  Start bulletAnalyzr by clicking on the link.
+2.  Click the
+    [bulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
+    link and `Begin` to start.
 
-3.  Upload all 6 scans for Bullets 1 and 2, and compare.
+3.  Click `Browse` and select all 6 scans (you can select multiple files
+    simultaneously) in the `Bullet 1` folder. Click `open` to upload.
 
-4.  Which Land-To-Land comparison is the best? - Click on the report
-    line and read through.
+4.  Put `Bullet 1` in the `Bullet Name` text box. Select
+    `Add Bullet to Comparison List`.
+
+5.  Repeat steps 3 and 4 for `Bullet 2`.
+
+6.  Click `Compare Bullets` and wait for the result.
+
+7.  Which Land-To-Land comparison is the best? - Scroll down, click on
+    report lines, and read through.
 
 ## Interesting Questions
 
