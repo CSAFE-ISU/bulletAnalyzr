@@ -22,6 +22,7 @@ addResourcePath("images", "images")
 
 #################################################################################
 ## Helper Functions
+source("helper.R")
 #################################################################################
 ## Render RGL Widget UI
 parse_rglui <- function(x, name = "x3prgl")
@@ -80,8 +81,8 @@ server <- function(input, output, session) {
 	output$bul_x3pui <- renderUI({fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p",multiple=TRUE)})
 	
 	observeEvent(input$bul_x3p, {
-	    bullet_name <- sub("^(.*)\\s+[^\\s]+$", "\\1", input$bul_x3p[1]$name)[1]
-	    
+	   # bullet_name <- sub("^(.*)\\s+[^\\s]+$", "\\1", input$bul_x3p[1]$name)[1]
+	    bullet_name <- identify_bullet(input$bul_x3p$name)
 	    updateTextInput(session, "bul_x3p_name", value = bullet_name)
 	})
 
@@ -92,7 +93,9 @@ server <- function(input, output, session) {
 								allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
 								bull <- bulldata$cbull
 								bull$bullet <- input$bul_x3p_name
-								bull$land <- 1:nrow(bull)
+							#	browser()
+								#bull$land <- 1:nrow(bull)
+								bull$land <- factor(bull$land_names, levels = bull$land_names)
 								bulldata$allbull <- rbind(allbull,bull)
 								disable("up_bull")
 				})
@@ -123,7 +126,6 @@ server <- function(input, output, session) {
 									temp_dir <- tempfile()
 									dir.create(temp_dir)
 									file.copy(input$bul_x3p$datapath, paste0(temp_dir, "/", input$bul_x3p$name))
-									
 									## Read Bullet
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
@@ -132,8 +134,10 @@ server <- function(input, output, session) {
 								  #bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
 									bull$md5sum <- tools::md5sum(bull$source)
 									bull$filename <- basename(bull$source)
+									bull$land_names <- identify_lands(bull$filename)
+									bull$bullet_name <- identify_bullet(bull$filename)
 									bulldata$cbull <- bull
-#browser()
+									
 									## Render Bullet
 									progress$set(message = "Rendering Previews", value = .75)
 									for(idx in 1:nrow(bull)) 
@@ -212,7 +216,7 @@ server <- function(input, output, session) {
   									allbull <- bulldata$allbull
   									checkboxGroupInput(
   										"bullcompgroup",
-  										label = "Selects Bullets to Compare", 
+  										label = "Select Bullets to Compare", 
     									choices = unique(bulldata$allbull$bullet),
     									selected = unique(bulldata$allbull$bullet)
     								)
@@ -295,7 +299,8 @@ server <- function(input, output, session) {
 								progress$set(message = "Preparing Report Data", value = .5)
 								bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
 								bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore)))
-								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore,difference=0.1)))
+								# just get the 'best phase' not just ones that are 'matches'
+								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.025)))
 								
 								
 								# Rendering Bullet Images for Report
