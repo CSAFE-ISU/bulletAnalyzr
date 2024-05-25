@@ -13,12 +13,14 @@ library(DT)
 ## Load Bullet Libraries
 options(rgl.useNULL = TRUE)
 library(rgl)
-library(x3ptools)
+library(x3ptools) # remotes::install_github("heike/x3ptools")
 library(bulletxtrctr) # remotes::install_github("heike/bulletxtrctr")
 
 ## Config
 options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
+theme_set(theme_bw())
+theme_update(text = element_text(size = 18))
 
 #################################################################################
 ## Helper Functions
@@ -529,18 +531,21 @@ server <- function(input, output, session) {
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig1"] <- "Left Land"
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig2"] <- "Right Land"
 												output[[paste0("SigPlot",idx)]] = renderPlot({
-																								ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal)) + 
-																							    geom_line(na.rm=TRUE) +
-																							  	theme_bw() +
-																							  	scale_color_brewer(palette = "Dark2") +
+														ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal, linetype=Signal)) + 
+																							    geom_line(na.rm=TRUE, alpha = 0.9, linewidth = 1) +
+																		#					  	theme_bw() +
+												    scale_color_manual(values = c("darkorange", "purple4")) + 
+												    scale_linetype_manual(values =c("dashed", "longdash")) + # double-encode signal
+																							#  	scale_color_brewer(palette = "Dark2") + ## orange and green is not color-blind friendly
 																							  	xlab("Position along width of Land [µm]") +
 																							  	ylab("Signal [µm]") +
 																							  	ggtitle("Alignment of two Lands")+
 																							  	theme(
-																								  		axis.text=element_text(size=16),
-																								  		axis.title=element_text(size=18),
-																								  		legend.title=element_text(size=18),
-																								  		legend.text=element_text(size=16),
+																							  	  legend.position = "bottom"
+																								  	#	axis.text=element_text(size=16),
+																								  	#	axis.title=element_text(size=18),
+																								  	#	legend.title=element_text(size=18),
+																								  	#	legend.text=element_text(size=16),
 																								  		plot.title = element_text(size=22,face="bold")
 																								  		#axis.text.x = element_text(angle = 90, hjust = 1)
 																						  			) 
