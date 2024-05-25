@@ -308,7 +308,7 @@ server <- function(input, output, session) {
 								bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose=FALSE)))
 								# just get the 'best phase' not just ones that are 'matches'
 #								debugonce(bullet_to_land_predict)
-								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.025)))
+								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.01)))
 								
 								
 								# Rendering Bullet Images for Report
@@ -371,7 +371,7 @@ server <- function(input, output, session) {
 											        	br()
 								       			)
 
-  									## Land Comparison Collapsable Report
+  									## Land Comparison Collapsible Report
   									LandComp <- list()
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores <- bullet_scores[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2,]
@@ -388,7 +388,8 @@ server <- function(input, output, session) {
 
   										  										## Generate Collapsible UI Panel List in a loop
   										bsCollapsePanelList <- list()
-  										for(idx in 1:length(odridx))
+  										# just show top ten
+  										for(idx in 1:min(10,length(odridx)))
   										{
   											#########################################################################################################
   											## Data Table Comparison
