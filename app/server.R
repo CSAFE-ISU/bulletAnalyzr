@@ -20,7 +20,9 @@ library(bulletxtrctr) # remotes::install_github("heike/bulletxtrctr")
 options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
 theme_set(theme_bw())
-theme_update(text = element_text(size = 18))
+theme_update(
+  text = element_text(size = 18), 
+  plot.title = element_text(size=22,face="bold"))
 
 #################################################################################
 ## Helper Functions
