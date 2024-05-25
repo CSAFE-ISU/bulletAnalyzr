@@ -25,18 +25,19 @@ addResourcePath("images", "images")
 source("helper.R")
 #################################################################################
 ## Render RGL Widget UI
-parse_rglui <- function(x, name = "x3prgl")
+parse_rglui <- function(x, name = "x3prgl", land_name = NULL)
 {
+  if (is.null(land_name)) land_name <- x
 	card(
-		card_header(class = "bg-dark",paste0("Land ",x)),
+		card_header(class = "bg-dark",paste0("Land ", land_name)),
 		max_height = 600,
 		full_screen = FALSE,
 		rglwidgetOutput(paste0("x3prgl",x),height=600,width=200),
 	)
 }
-parse_rgluiprev <- function(x)
+parse_rgluiprev <- function(x, land_name = NULL)
 {
-  parse_rglui(x, name = "x3prglprev")
+  parse_rglui(x, name = "x3prglprev", land_name = land_name)
 	# card(
 	# 	card_header(class = "bg-dark",paste0("Land ",x)),
 	# 	max_height = 300,
@@ -154,11 +155,11 @@ server <- function(input, output, session) {
 
 									## Enable Upload Button
 									enable("up_bull")
-
+#browser()
 									## UI
 									layout_column_wrap(
 										width = 1/6,
-										!!!lapply(1:nrow(bull),parse_rglui)
+										!!!lapply(1:nrow(bull), FUN= function(x) parse_rglui(x, land_name = bull$land_names[x]))
 									)
 						})
 	#################################################################################
@@ -201,7 +202,7 @@ server <- function(input, output, session) {
 									## UI
 									layout_column_wrap(
 										width = 1/6,  # HH: should be adjusted for the number of lands the bullets have.
-										!!!lapply(1:nrow(bull),parse_rgluiprev)
+										!!!lapply(1:nrow(bull), FUN = function(x) parse_rgluiprev(x, land_name = bull$land_name[x]))
 									)
 						})
 	#################################################################################
@@ -298,8 +299,11 @@ server <- function(input, output, session) {
 								## Preparing Data for Report
 								progress$set(message = "Preparing Report Data", value = .5)
 								bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
-								bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore)))
+#								browser()
+#								debugonce(compute_average_scores)
+								bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose=FALSE)))
 								# just get the 'best phase' not just ones that are 'matches'
+#								debugonce(bullet_to_land_predict)
 								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.025)))
 								
 								
@@ -367,7 +371,7 @@ server <- function(input, output, session) {
   									LandComp <- list()
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores <- bullet_scores[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2,]
-  									bullet_scores$data[[1]] <- bullet_scores$data[[1]][bullet_scores$data[[1]]$samesource,]
+  							#		bullet_scores$data[[1]] <- bullet_scores$data[[1]][bullet_scores$data[[1]]$samesource,] # HH: only showing 'matches' is extremely biased
   									if(nrow(bullet_scores$data[[1]])>0)
   									{
   										## Collect Land wise Data
