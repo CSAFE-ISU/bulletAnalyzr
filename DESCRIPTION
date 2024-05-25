@@ -1,0 +1,32 @@
+Package: bulletAnalyzr
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Imports:
+    shiny   (>= 1.8.1.1),
+    shinyjs (>= 2.1.0),
+    shinyBS (>= 0.61.1),
+    ggplot2 (>= 3.5.1),
+    bslib (>= 0.7.0),
+    bsicons (>= 0.1.2),
+    shinycssloaders (>= 1.0.0),
+    randomForest (>= 4.7-1.1),
+    dplyr (>= 1.1.4),
+    DT (>= 0.33),
+    x3ptools,
+    bulletxtrctr
+Remotes: 
+    heike/x3ptools,
+    heike/bulletxtrctr
+URL: https://CSAFE-ISU.github.io/bulletAnalyzr/
+BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
+Depends:
+    R (>= 3.9)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
