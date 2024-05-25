@@ -55,10 +55,10 @@ render_land <- function(src,x3p,ccut)
 {
 	imgsrc <- gsub(".x3p$",".png",src)
 	x3p %>%
-	  x3p_add_hline(yintercept = ccut, size = 20, color = "#ea2b1f") %>%
+	  x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
 	  x3p_sample(m=5) %>%
-	  x3p_rotate() %>%
-	  x3p_image(size = c(750,250), zoom=1)
+#	  x3p_rotate() %>%
+	  x3p_image(size = 600, zoom=.25)
 	snapshot3d(imgsrc,webshot=TRUE)
 	return(imgsrc)
 }
@@ -430,12 +430,12 @@ server <- function(input, output, session) {
 	  											output[[paste0("rglWinL",idx)]] = renderImage({list(src = rglL, contentType = 'image/png')}, deleteFile = FALSE)
 	  											output[[paste0("rglWinR",idx)]] = renderImage({list(src = rglR, contentType = 'image/png')}, deleteFile = FALSE)
   											})
-  											temp_rgl <- fluidRow(
-  																		column(1,),
-  																		column(5,imageOutput(paste0("rglWinL",idx)),align="left"),
-  																		column(5,imageOutput(paste0("rglWinR",idx)),align="left"),
-  																		column(1,)
-  															)
+  											temp_rgl <- layout_column_wrap(
+  											  width = 1/2,
+  											  imageOutput(paste0("rglWinL",idx)),
+  											  imageOutput(paste0("rglWinR",idx)),
+  											  height = "250px"
+  											)
   											#########################################################################################################
   											#########################################################################################################
 
@@ -472,17 +472,18 @@ server <- function(input, output, session) {
 	  											CCDataR <- BullCompBulls$ccdata[[GroovePlotRidx]] - GroovesR[1]
 	  											output[[paste0("GroovePlotL",idx)]] = renderPlot({
 	  																								groove_plot(CCDataL, GroovesL) +
-	  											    ggtitle(sprintf("Land %s groove location",bsldata$land1[odridx[cidx]]))
+	  											    ggtitle(sprintf("Land %s profile",bsldata$land1[odridx[cidx]]))
 	  																							})
 	  											output[[paste0("GroovePlotR",idx)]] = renderPlot({
 	  											  groove_plot(CCDataR, GroovesR) +
-	  											    ggtitle(sprintf("Land %s groove location",bsldata$land2[odridx[cidx]]))
+	  											    ggtitle(sprintf("Land %s profile",bsldata$land2[odridx[cidx]]))
 	  											    
 	  																							})
   											})
   											temp_groove <- fluidRow(
   																		column(6,plotOutput(paste0("GroovePlotL",idx)),align="center"),
-  																		column(6,plotOutput(paste0("GroovePlotR",idx)),align="center")
+  																		column(6,plotOutput(paste0("GroovePlotR",idx)),align="center"),
+  																		p("Shaded areas are excluded from the analysis")
   															)
   											#########################################################################################################
   											#########################################################################################################
@@ -503,8 +504,8 @@ server <- function(input, output, session) {
 	  																				][[1]]$lands
 	  											SigPlotData <- tidyr::gather(SigPlotData,Signal, value, sig1, sig2)
 	  											
-	  											SigPlotData$Signal[SigPlotData$Signal=="sig1"] <- "Left Land"
-	  											SigPlotData$Signal[SigPlotData$Signal=="sig2"] <- "Right Land"
+	  											SigPlotData$Signal[SigPlotData$Signal=="sig1"] <- "Left LEA"
+	  											SigPlotData$Signal[SigPlotData$Signal=="sig2"] <- "Right LEA"
 												output[[paste0("SigPlot",idx)]] = renderPlot({
 														ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal, linetype=Signal)) + 
 																							    geom_line(na.rm=TRUE, alpha = 0.9, linewidth = 1) +
@@ -514,7 +515,7 @@ server <- function(input, output, session) {
 																							#  	scale_color_brewer(palette = "Dark2") + ## orange and green is not color-blind friendly
 																							  	xlab("Position along width of Land [µm]") +
 																							  	ylab("Signal [µm]") +
-																							  	ggtitle("Alignment of two Lands")+
+																							  	ggtitle("Aligned signals of LEAs")+
 																							  	theme(
 																							  	  legend.position = "bottom",
 																								  	#	axis.text=element_text(size=16),
