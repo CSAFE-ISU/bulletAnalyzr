@@ -2,7 +2,8 @@
 
 identify_lands <- function(words) {
   # create a list of distinguishing elements between names
-  if (length(words == 1)) return(1)
+  
+  if (length(words) == 1) return(1)
 
   # split each word by character and transpose  
   list <- strsplit(words, split="")
@@ -18,7 +19,7 @@ identify_lands <- function(words) {
 
 identify_bullet <- function(words) {
   # create a list of the same elements between names
-  if (length(words == 1)) return(words)
+  if (length(words) == 1) return(words)
   
   # split each word by character and transpose  
   list <- strsplit(words, split="")
