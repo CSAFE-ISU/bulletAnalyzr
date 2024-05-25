@@ -535,13 +535,13 @@ server <- function(input, output, session) {
 																							    geom_line(na.rm=TRUE, alpha = 0.9, linewidth = 1) +
 																		#					  	theme_bw() +
 												    scale_color_manual(values = c("darkorange", "purple4")) + 
-												    scale_linetype_manual(values =c("dashed", "longdash")) + # double-encode signal
+												#    scale_linetype_manual(values =c("dashed", "longdash")) + # double-encode signal
 																							#  	scale_color_brewer(palette = "Dark2") + ## orange and green is not color-blind friendly
 																							  	xlab("Position along width of Land [µm]") +
 																							  	ylab("Signal [µm]") +
 																							  	ggtitle("Alignment of two Lands")+
 																							  	theme(
-																							  	  legend.position = "bottom"
+																							  	  legend.position = "bottom",
 																								  	#	axis.text=element_text(size=16),
 																								  	#	axis.title=element_text(size=18),
 																								  	#	legend.title=element_text(size=18),
