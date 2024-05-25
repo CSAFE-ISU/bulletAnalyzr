@@ -33,3 +33,23 @@ identify_bullet <- function(words) {
   samelist <- samelist %>% purrr::list_transpose() 
   make.names(paste(samelist[[1]], collapse="")) # delete all forbidden characters
 }
+
+
+groove_plot <- function(ccdata, grooves) {
+  ccdata %>% 
+    ggplot(aes(x = x, y = value)) + 
+    theme_bw()+
+    geom_vline(xintercept = 0, colour = "blue") + 
+    geom_vline(xintercept = grooves[2]-grooves[1], colour = "blue") +
+    geom_line(linewidth = 1) + # put signal in front
+    scale_x_continuous(
+      breaks=c(0,round(as.numeric(grooves[2]-grooves[1]),0),round(seq(min(ccdata$x),max(ccdata$x),by=500),-2))) +
+    xlab("Position along width of Land [µm]") +
+    ylab("Surface Height [µm]") + 
+    theme(
+      axis.text=element_text(size=16),
+      axis.title=element_text(size=18),
+      plot.title = element_text(size=22,face="bold")
+      #axis.text.x = element_text(angle = 90, hjust = 1)
+    ) 
+}

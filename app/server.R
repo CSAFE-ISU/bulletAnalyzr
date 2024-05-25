@@ -469,40 +469,13 @@ server <- function(input, output, session) {
 	  											CCDataL <- BullCompBulls$ccdata[[GroovePlotLidx]] - GroovesL[1]
 	  											CCDataR <- BullCompBulls$ccdata[[GroovePlotRidx]] - GroovesR[1]
 	  											output[[paste0("GroovePlotL",idx)]] = renderPlot({
-	  																								CCDataL %>% 
-											  														ggplot(aes(x = x, y = value)) + 
-																									geom_line() +
-																									theme_bw()+
-																									geom_vline(xintercept = 0, colour = "blue") + 
-																									geom_vline(xintercept = GroovesL[2]-GroovesL[1], colour = "blue") +
-																									scale_x_continuous(breaks=c(0,round(as.numeric(GroovesL[2]-GroovesL[1]),0),round(seq(min(CCDataL$x),max(CCDataL$x),by=500),-2))) +
-	  																								xlab("Position along width of Land [µm]") +
-											  														ylab("Surface Height [µm]") + 
-	  																								ggtitle(paste0("Location of the grooves in Land : ",bsldata$land1[odridx[cidx]]))+
-	  																								theme(
-																								  		axis.text=element_text(size=16),
-																								  		axis.title=element_text(size=18),
-																								  		plot.title = element_text(size=22,face="bold")
-																								  	#	axis.text.x = element_text(angle = 0, hjust = 1)
-																						  			) 
+	  																								groove_plot(CCDataL, GroovesL) +
+	  											    ggtitle(sprintf("Land %s groove location",bsldata$land1[odridx[cidx]]))
 	  																							})
 	  											output[[paste0("GroovePlotR",idx)]] = renderPlot({
-	  																								CCDataR %>% 
-											  														ggplot(aes(x = x, y = value)) + 
-																									geom_line() +
-																									theme_bw()+
-																									geom_vline(xintercept = 0, colour = "blue") + 
-																									geom_vline(xintercept = GroovesR[2]-GroovesR[1], colour = "blue") +
-																									scale_x_continuous(breaks=c(0,round(as.numeric(GroovesR[2]-GroovesR[1]),0),round(seq(min(CCDataR$x),max(CCDataR$x),by=500),-2))) +
-	  																								xlab("Position along width of Land [µm]") +
-	  																								ylab("Surface Height [µm]") + 
-	  																								ggtitle(paste0("Location of the grooves in Land : ",bsldata$land2[odridx[cidx]]))+
-	  																								theme(
-																								  		axis.text=element_text(size=16),
-																								  		axis.title=element_text(size=18),
-																								  		plot.title = element_text(size=22,face="bold")
-																								  		#axis.text.x = element_text(angle = 90, hjust = 1)
-																						  			) 
+	  											  groove_plot(CCDataR, GroovesR) +
+	  											    ggtitle(sprintf("Land %s groove location",bsldata$land2[odridx[cidx]]))
+	  											    
 	  																							})
   											})
   											temp_groove <- fluidRow(
