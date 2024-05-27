@@ -18,6 +18,7 @@ Imports:
     randomForest (>= 4.7-1.1),
     dplyr (>= 1.1.4),
     DT (>= 0.33),
+    webshot2,
     x3ptools,
     bulletxtrctr
 Remotes: 
