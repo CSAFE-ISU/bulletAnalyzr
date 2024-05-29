@@ -400,7 +400,12 @@ server <- function(input, output, session) {
   											#########################################################################################################
   											BullCompBulls <- bulldata$comparison$bullets
   											temptable <- data.frame(
-  																		Feature = c("Left Land File","Left Land MD5", "Left Land Instrument (resolution [µm/px])", "Right Land File","Right Land MD5","Left Land Instrument (resolution [µm/px])", "Cross Correlation Function","Mean Distance bw Matching Striae","Signature Length [mm]","# Matching Striae Per Millimeter","# Mis-Matching Striae Per Millimeter","CMS Per Millimeter","Non-CMS Per Millimeter","Peak Sum"),
+  																		Feature = c("Left Land File","Left Land MD5", "Left Land Instrument (resolution [µm/px])", 
+  																		            "Right Land File","Right Land MD5","Left Land Instrument (resolution [µm/px])", 
+  																		            "Cross Correlation Function","Mean Distance bw Matching Striae",
+  																		            "Signal Length [mm]","# Matching Striae Per Millimeter",
+  																		            "# Mis-Matching Striae Per Millimeter","CMS Per Millimeter",
+  																		            "Non-CMS Per Millimeter","Peak Sum"),
   																		Value = c(
   																					BullCompBulls$filename[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
   																					BullCompBulls$md5sum[BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
