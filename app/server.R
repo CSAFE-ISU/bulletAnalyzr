@@ -604,8 +604,10 @@ server <- function(input, output, session) {
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(size = 1, data = features %>% filter(samesource)) +
 									  geom_text(aes(label = round(rfscore, 2)),size=6) +
-									  xlab(paste0("Land Name","(Bullet ",features$bulletA[1],")")) +
-									  ylab(paste0("Land Name","(Bullet ",features$bulletB[1],")")) +
+									  xlab(sprintf("Lands on %s", features$bulletA[1])) +
+  									ylab(sprintf("Lands on %s", features$bulletB[1])) + 
+  									ggtitle("Land-to-Land Score Matrix",
+  									subtitle=sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
 									  guides(colour="none") +
 									  coord_equal()+
 									  theme(
