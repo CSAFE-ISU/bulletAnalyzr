@@ -16,6 +16,10 @@ library(rgl)
 library(x3ptools) # remotes::install_github("heike/x3ptools")
 library(bulletxtrctr) # remotes::install_github("heike/bulletxtrctr")
 
+## Force use of chromote
+library(pagedown)
+library(curl) # for webshot
+
 ## Config
 options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
@@ -627,7 +631,7 @@ server <- function(input, output, session) {
 											  theme_bw()+
 											  xlab("Position along width of Land [mm]") +
 											  ylab("Surface Height [µm]") + 
-											  ggtitle("Cross-section of the bullet land at the ideal cross-section location")+
+											  ggtitle("Cross-section of the bullet land at a suitable cross-section location")+
 											  theme(
 											  		axis.text=element_text(size=16),
 											  		axis.title=element_text(size=18),
