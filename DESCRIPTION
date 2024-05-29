@@ -19,11 +19,13 @@ Imports:
     dplyr (>= 1.1.4),
     DT (>= 0.33),
     webshot2,
+    pandoc,
     x3ptools,
     bulletxtrctr
 Remotes: 
     heike/x3ptools,
-    heike/bulletxtrctr
+    heike/bulletxtrctr,
+    rstudio/webshot2
 URL: https://CSAFE-ISU.github.io/bulletAnalyzr/
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
