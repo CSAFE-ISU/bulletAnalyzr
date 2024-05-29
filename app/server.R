@@ -575,8 +575,9 @@ server <- function(input, output, session) {
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(size = 1, data = bullet_scores %>% filter(selsource)) +
 									  geom_text(aes(label = round(bullet_score, 2)),size=6) +
-									  xlab("Bullet Name") +
-									  ylab("Bullet Name") +
+  									ggtitle("Bullet-to-Bullet Score Matrix") +
+									  xlab("") +
+									  ylab("") +
 									  guides(colour="none") +
 									  coord_equal() +
 									  theme(
