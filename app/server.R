@@ -366,7 +366,8 @@ server <- function(input, output, session) {
   									BullComp <- list(
 				  										fluidRow(
 											          				column(6,plotOutput("bull_comp")),
-											          				column(6,plotOutput("land_comp"))
+											          				column(6,plotOutput("land_comp")),
+											          				column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class="body"))
 											        	),
 											        	br(),br(),
 											        	fluidRow(column(12,plotOutput("land_visCC"),align="center")),
@@ -579,13 +580,7 @@ server <- function(input, output, session) {
 									  xlab("") +
 									  ylab("") +
 									  guides(colour="none") +
-									  coord_equal() #+
-									  # theme(
-									  # 		axis.text=element_text(size=16),
-									  # 		axis.title=element_text(size=18),
-									  # 		legend.title=element_text(size=18),
-									  # 		legend.text=element_text(size=16)
-									  # 	)
+									  coord_equal() 
   						})
 
   	## Land Comparison Heatmap
@@ -610,13 +605,7 @@ server <- function(input, output, session) {
   									ggtitle("Land-to-Land Score Matrix",
   									subtitle=sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
 									  guides(colour="none") +
-									  coord_equal() #+
-									  # theme(
-									  # 		axis.text=element_text(size=16),
-									  # 		axis.title=element_text(size=18),
-									  # 		legend.title=element_text(size=18),
-									  # 		legend.text=element_text(size=16)
-									  # 	)
+									  coord_equal() 
   						})
 
   	## Visualize Cross Cuts 
@@ -635,16 +624,8 @@ server <- function(input, output, session) {
 											 # theme_bw()+
 											  xlab("Position along width of Land [mm]") +
 											  ylab("Surface Height [µm]") + 
-											  ggtitle("Cross-section of the bullet land at a suitable cross-section location") #+
-									#		  theme(
-									#		  		axis.text=element_text(size=16),
-									#		  		axis.title=element_text(size=18),
-									#		  		legend.title=element_text(size=18),
-									#		  		legend.text=element_text(size=16),
-									#		  		plot.title = element_text(size=22,face="bold"),
-									#		  		strip.text = element_text(size=18)
-									#		  		#axis.text.x = element_text(angle = 90, hjust = 1)
-									#  			)
+											  ggtitle("Cross-section of the bullet land at a suitable cross-section location") 
+  									
 									return(CCplot)
   						})
 
@@ -667,16 +648,7 @@ server <- function(input, output, session) {
 									#			  theme_bw() +
 												  xlab("Position along width of Land [mm]") +
 												  ylab("Signal [µm]") +
-												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")#+
-									# 			  theme(
-									# 		  		axis.text=element_text(size=16),
-									# 		  		axis.title=element_text(size=18),
-									# 		  		legend.title=element_text(size=18),
-									# 		  		legend.text=element_text(size=16),
-									# 		  		plot.title = element_text(size=22,face="bold"),
-									# 		  		strip.text = element_text(size=18)
-									# 		  		#axis.text.x = element_text(angle = 90, hjust = 1)
-									#   			)
+												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
 									return(Sigplot)
   						})
   	#################################################################################
