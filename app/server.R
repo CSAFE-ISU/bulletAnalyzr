@@ -25,7 +25,7 @@ options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
 theme_set(theme_bw())
 theme_update(
-  text = element_text(size = 18), 
+  text = element_text(size = 22), 
   plot.title = element_text(size=22,face="bold"))
 
 #################################################################################
@@ -567,7 +567,6 @@ server <- function(input, output, session) {
   	## Bullet Comparison Heatmap
   	output$bull_comp <- renderPlot({
   									if(is.null(bulldata$comparison)) return(NULL)
-
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores$selsource <- FALSE
   									bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
@@ -579,25 +578,27 @@ server <- function(input, output, session) {
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(linewidth = 1, data = bullet_scores %>% filter(selsource)) +
+#  									  scale_discrete_manual("linewidth", values = c(1,0)) +
+#  									  scale_linewidth_manual("Selected comparison", "Selected comparison", values=c(1,0)) +
 									  geom_text(aes(label = round(bullet_score, 2)),size=6) +
   									ggtitle("Bullet-to-Bullet Score Matrix") +
 									  xlab("") +
 									  ylab("") +
 									  guides(colour="none") +
-									  coord_equal() +
-									  theme(
-									  		axis.text=element_text(size=16),
-									  		axis.title=element_text(size=18),
-									  		legend.title=element_text(size=18),
-									  		legend.text=element_text(size=16)
-									  	)
+									  coord_equal() #+
+									  # theme(
+									  # 		axis.text=element_text(size=16),
+									  # 		axis.title=element_text(size=18),
+									  # 		legend.title=element_text(size=18),
+									  # 		legend.text=element_text(size=16)
+									  # 	)
   						})
 
   	## Land Comparison Heatmap
   	output$land_comp <- renderPlot({
   									if(is.null(bulldata$comparison)) return(NULL)
   									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
-
+#browser()
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores <- bullet_scores[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2,]
   									features <- bullet_scores %>% tidyr::unnest(data)
@@ -607,20 +608,21 @@ server <- function(input, output, session) {
 									  labs(fill="Land Score") +
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
-									  geom_tile(linewidth = 1, data = features %>% filter(samesource)) +
-									  geom_text(aes(label = round(rfscore, 2)),size=6) +
+  									  geom_tile(linewidth = 1, data = features %>% filter(samesource)) +
+#  									  scale_linewidth_manual("Best phase",values=c(1,1)) +
+  									  geom_text(aes(label = round(rfscore, 2)),size=6) +
 									  xlab(sprintf("Lands on %s", features$bulletA[1])) +
   									ylab(sprintf("Lands on %s", features$bulletB[1])) + 
   									ggtitle("Land-to-Land Score Matrix",
   									subtitle=sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
 									  guides(colour="none") +
-									  coord_equal()+
-									  theme(
-									  		axis.text=element_text(size=16),
-									  		axis.title=element_text(size=18),
-									  		legend.title=element_text(size=18),
-									  		legend.text=element_text(size=16)
-									  	)
+									  coord_equal() #+
+									  # theme(
+									  # 		axis.text=element_text(size=16),
+									  # 		axis.title=element_text(size=18),
+									  # 		legend.title=element_text(size=18),
+									  # 		legend.text=element_text(size=16)
+									  # 	)
   						})
 
   	## Visualize Cross Cuts 
