@@ -527,14 +527,8 @@ server <- function(input, output, session) {
 																							  	ylab("Signal [µm]") +
 																							  	ggtitle("Aligned signals of LEAs")+
 																							  	theme(
-																							  	  legend.position = "bottom",
-																								  	#	axis.text=element_text(size=16),
-																								  	#	axis.title=element_text(size=18),
-																								  	#	legend.title=element_text(size=18),
-																								  	#	legend.text=element_text(size=16),
-																								  		plot.title = element_text(size=22,face="bold")
-																								  		#axis.text.x = element_text(angle = 90, hjust = 1)
-																						  			) 
+																							  	  legend.position = "bottom"
+																						  		) 
 																					})
   											})
   											temp_signal <- fluidRow(column(12,plotOutput(paste0("SigPlot",idx)),align="center"))
