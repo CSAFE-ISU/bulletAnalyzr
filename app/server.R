@@ -578,7 +578,7 @@ server <- function(input, output, session) {
 									  labs(fill="Bullet Score") +
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
-									  geom_tile(size = 1, data = bullet_scores %>% filter(selsource)) +
+									  geom_tile(linewidth = 1, data = bullet_scores %>% filter(selsource)) +
 									  geom_text(aes(label = round(bullet_score, 2)),size=6) +
   									ggtitle("Bullet-to-Bullet Score Matrix") +
 									  xlab("") +
@@ -607,7 +607,7 @@ server <- function(input, output, session) {
 									  labs(fill="Land Score") +
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
-									  geom_tile(size = 1, data = features %>% filter(samesource)) +
+									  geom_tile(linewidth = 1, data = features %>% filter(samesource)) +
 									  geom_text(aes(label = round(rfscore, 2)),size=6) +
 									  xlab(sprintf("Lands on %s", features$bulletA[1])) +
   									ylab(sprintf("Lands on %s", features$bulletB[1])) + 
@@ -636,19 +636,19 @@ server <- function(input, output, session) {
 											  ggplot(aes(x = x, y = value)) + 
 											  geom_line() +
 											  facet_grid(bullet~land, labeller="label_both") +
-											  theme_bw()+
+											 # theme_bw()+
 											  xlab("Position along width of Land [mm]") +
 											  ylab("Surface Height [µm]") + 
-											  ggtitle("Cross-section of the bullet land at a suitable cross-section location")+
-											  theme(
-											  		axis.text=element_text(size=16),
-											  		axis.title=element_text(size=18),
-											  		legend.title=element_text(size=18),
-											  		legend.text=element_text(size=16),
-											  		plot.title = element_text(size=22,face="bold"),
-											  		strip.text = element_text(size=18)
-											  		#axis.text.x = element_text(angle = 90, hjust = 1)
-									  			)
+											  ggtitle("Cross-section of the bullet land at a suitable cross-section location") #+
+									#		  theme(
+									#		  		axis.text=element_text(size=16),
+									#		  		axis.title=element_text(size=18),
+									#		  		legend.title=element_text(size=18),
+									#		  		legend.text=element_text(size=16),
+									#		  		plot.title = element_text(size=22,face="bold"),
+									#		  		strip.text = element_text(size=18)
+									#		  		#axis.text.x = element_text(angle = 90, hjust = 1)
+									#  			)
 									return(CCplot)
   						})
 
@@ -668,19 +668,19 @@ server <- function(input, output, session) {
 												  geom_line(aes(y = sig), colour = "grey30",show.legend = T) +
 												  facet_grid(bullet~land, labeller="label_both") +
 												  ylim(c(-5,5)) +
-												  theme_bw() +
+									#			  theme_bw() +
 												  xlab("Position along width of Land [mm]") +
 												  ylab("Signal [µm]") +
-												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")+
-												  theme(
-											  		axis.text=element_text(size=16),
-											  		axis.title=element_text(size=18),
-											  		legend.title=element_text(size=18),
-											  		legend.text=element_text(size=16),
-											  		plot.title = element_text(size=22,face="bold"),
-											  		strip.text = element_text(size=18)
-											  		#axis.text.x = element_text(angle = 90, hjust = 1)
-									  			)
+												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")#+
+									# 			  theme(
+									# 		  		axis.text=element_text(size=16),
+									# 		  		axis.title=element_text(size=18),
+									# 		  		legend.title=element_text(size=18),
+									# 		  		legend.text=element_text(size=16),
+									# 		  		plot.title = element_text(size=22,face="bold"),
+									# 		  		strip.text = element_text(size=18)
+									# 		  		#axis.text.x = element_text(angle = 90, hjust = 1)
+									#   			)
 									return(Sigplot)
   						})
   	#################################################################################
