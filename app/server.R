@@ -317,7 +317,9 @@ server <- function(input, output, session) {
 								bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose=FALSE)))
 								# just get the 'best phase' not just ones that are 'matches'
 #								debugonce(bullet_to_land_predict)
-								bullet_scores$data <- lapply(bullet_scores$data,function(d) cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.01)))
+								bullet_scores$data <- lapply(bullet_scores$data,
+								                             function(d) 
+								                               cbind(d,samesource=factor(bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.01)), levels=c(TRUE, FALSE)))
 								
 								
 								# Rendering Bullet Images for Report
@@ -390,7 +392,10 @@ server <- function(input, output, session) {
   									{
   										## Collect Land wise Data
   										bsldata <- bullet_scores$data[[1]]
-  										odridx <- order(bsldata$rfscore,decreasing=TRUE)
+  										# just re-order the data - that will be safer and quicker
+  										bsldata <- bsldata %>% group_by(samesource) %>% arrange(desc(rfscore), .by_group = TRUE)
+  								
+  										odridx <- order(bsldata$rfscore,decreasing=TRUE) # this should be in order now
 
   										# getting scales and instrument info ... not correct yet, but just for the first scan
   										scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
@@ -398,8 +403,10 @@ server <- function(input, output, session) {
 
   										  										## Generate Collapsible UI Panel List in a loop
   										bsCollapsePanelList <- list()
-  										# just show top ten
-  										for(idx in 1:min(10,length(odridx)))
+  										
+  										show_n <- sum(bsldata$samesource==TRUE) + 3
+  										# show all the best-phase comparisons and the three top comparisons
+  										for(idx in 1:show_n)
   										{
   											#########################################################################################################
   											## Data Table Comparison
@@ -602,7 +609,7 @@ server <- function(input, output, session) {
 									  labs(fill="Land Score") +
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
-  									  geom_tile(linewidth = 1, data = features %>% filter(samesource)) +
+  									  geom_tile(linewidth = 1, data = features %>% filter(samesource==TRUE)) +
 #  									  scale_linewidth_manual("Best phase",values=c(1,1)) +
   									  geom_text(aes(label = round(rfscore, 2)),size=6) +
 									  xlab(sprintf("Lands on %s", features$bulletA[1])) +
