@@ -319,7 +319,7 @@ server <- function(input, output, session) {
 #								debugonce(bullet_to_land_predict)
 								bullet_scores$data <- lapply(bullet_scores$data,
 								                             function(d) 
-								                               cbind(d,samesource=factor(bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.01)), levels=c(TRUE, FALSE)))
+								                               cbind(d,samesource=bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference=0.01)))
 								
 								
 								# Rendering Bullet Images for Report
@@ -369,7 +369,14 @@ server <- function(input, output, session) {
   									if(is.null(bulldata$comparison)) return(NULL)
   									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
 
-  									## Bullet Comparison Report
+  	                ## Overall Summary
+  	                BullCompSummary <- list(
+  	                  fluidRow(
+  	                    column(12, textOutput("bull_comp_text"))
+  	                  )
+  	                )
+  	  
+  	 								## Bullet Comparison Report
   									BullComp <- list(
 				  										fluidRow(
 											          				column(6,plotOutput("bull_comp")),
@@ -393,7 +400,9 @@ server <- function(input, output, session) {
   										## Collect Land wise Data
   										bsldata <- bullet_scores$data[[1]]
   										# just re-order the data - that will be safer and quicker
-  										bsldata <- bsldata %>% group_by(samesource) %>% arrange(desc(rfscore), .by_group = TRUE)
+  										bsldata <- bsldata %>% 
+  										  mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
+  										  group_by(samesource) %>% arrange(desc(rfscore), .by_group = TRUE)
   								
   										odridx <- order(bsldata$rfscore,decreasing=TRUE) # this should be in order now
 
@@ -466,24 +475,7 @@ server <- function(input, output, session) {
   											#########################################################################################################
   											## Groove Plot
   											#########################################################################################################
-  											# local({
-  											# 	cidx <- idx
-	  										# 	BullCompBulls <- bulldata$comparison$bullets
-	  										# 	GroovePlotLidx <- which(BullCompBulls$bullet==input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]])
-	  										# 	GroovePlotRidx <- which(BullCompBulls$bullet==input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]])
-	  										# 	output[[paste0("GroovePlotL",idx)]] = renderPlot({
-	  										# 														BullCompBulls$grooves[[GroovePlotLidx]]$plot +
-	  										# 														xlab("Position along width of Land in Microns (1 Millimeter = 1000 Microns)") +
-											#   														ylab("Surface Height in Microns") + 
-	  										# 														ggtitle(paste0("Location of the grooves in Land : ",bsldata$land1[odridx[cidx]])) 
-	  										# 													})
-	  										# 	output[[paste0("GroovePlotR",idx)]] = renderPlot({
-	  										# 														BullCompBulls$grooves[[GroovePlotRidx]]$plot +
-	  										# 														xlab("Position along width of Land in Microns (1 Millimeter = 1000 Microns)") +
-	  										# 														ylab("Surface Height in Microns") + 
-	  										# 														ggtitle(paste0("Location of the grooves in Land : ",bsldata$land2[odridx[cidx]]))
-	  										# 													})
-  											# })
+
   											local({
   												cidx <- idx
 	  											BullCompBulls <- bulldata$comparison$bullets
@@ -559,7 +551,7 @@ server <- function(input, output, session) {
   									}
 
   									## If no Land Match
-  									if(nrow(bullet_scores$data[[1]])==0) LandComp$children <- list(fluidRow(column(12,h3("No Land Matches in this Bullet Pair."),align="center")),br())
+  								#	if(nrow(bullet_scores$data[[1]])==0) LandComp$children <- list(fluidRow(column(12,h3("No Land Matches in this Bullet Pair."),align="center")),br())
 
   									## Return Full Collapsible Report
   									return(c(BullComp,LandComp$children))
@@ -571,6 +563,17 @@ server <- function(input, output, session) {
   	#################################################################################
 	## Generate Bullet Comparison Report Server Outputs
   	#################################################################################
+  	
+  	output$bull_comp_text <- renderText({
+  	  if(is.null(bulldata$comparison)) return(NULL)
+  	  bullet_scores <- bulldata$comparison$bullet_scores
+  	  bullet_scores$selsource <- FALSE
+  	  bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
+  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
+  	  browser()
+  	   "Hello World" 
+  	})
+  	
   	## Bullet Comparison Heatmap
   	output$bull_comp <- renderPlot({
   									if(is.null(bulldata$comparison)) return(NULL)
