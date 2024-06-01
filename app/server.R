@@ -138,7 +138,12 @@ server <- function(input, output, session) {
 									## Read Bullet
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
-									bull$x3p <- lapply(bull$x3p,x3p_m_to_mum)
+									cond_x3p_m_to_mum <- function(x3p) {
+									  scale <- x3p %>% x3p_get_scale()
+									  if (scale < .1) x3p <-  x3p %>% x3p_m_to_mum() # only scale conditionally
+									  x3p
+									}
+									bull$x3p <- lapply(bull$x3p,cond_x3p_m_to_mum)
 									#bull$x3pv <- bull$x3p 
 								  #bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
 									bull$md5sum <- tools::md5sum(bull$source)
