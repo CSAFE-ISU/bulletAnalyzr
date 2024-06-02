@@ -69,7 +69,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       tabPanel("Preview Bullet",uiOutput("lpreview")),
 
       ## Comparison Report
-      tabPanel("Comparison Report",withSpinner(uiOutput("reportUI")))  
+      tabPanel("Comparison Report", h3("SUMMARY OF RESULTS"), withSpinner(uiOutput("reportUI")))  
     )
   )
 )

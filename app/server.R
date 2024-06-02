@@ -369,25 +369,26 @@ server <- function(input, output, session) {
   									if(is.null(bulldata$comparison)) return(NULL)
   									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
 
-  	                ## Overall Summary
-  	                BullCompSummary <- list(
-  	                  fluidRow(
-  	                    column(12, textOutput("bull_comp_text"))
-  	                  )
-  	                )
-  	  
   	 								## Bullet Comparison Report
   									BullComp <- list(
-				  										fluidRow(
+  									  fluidRow(
+  									    div(
+  									      column(12, "Phase Test", align="left", class="h3"), 
+  									      column(12, textOutput("bull_comp_score"), align="left", class="h4"), 
+  									      column(12, textOutput("bull_comp_test"), align="left", class="h4")),
+  									    hr()
+  									  ),
+  									  br(),
+  									  fluidRow(
 											          				column(6,plotOutput("bull_comp")),
 											          				column(6,plotOutput("land_comp")),
 											          				column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class="body"))
 											        	),
-											        	br(),br(),
+				  										br(),br(),
 											        	fluidRow(column(12,plotOutput("land_visCC"),align="center")),
 											        	br(),br(),
 											        	fluidRow(column(12,plotOutput("land_visSig"),align="center")),
-											        	br()
+  									  br()
 								       			)
 
   									## Land Comparison Collapsible Report
@@ -413,7 +414,7 @@ server <- function(input, output, session) {
   										  										## Generate Collapsible UI Panel List in a loop
   										bsCollapsePanelList <- list()
   										
-  										show_n <- sum(bsldata$samesource==TRUE) + 3
+  										show_n <- min(c(sum(bsldata$samesource==TRUE) + 3, length(odridx)))
   										# show all the best-phase comparisons and the three top comparisons
   										for(idx in 1:show_n)
   										{
@@ -554,7 +555,7 @@ server <- function(input, output, session) {
   								#	if(nrow(bullet_scores$data[[1]])==0) LandComp$children <- list(fluidRow(column(12,h3("No Land Matches in this Bullet Pair."),align="center")),br())
 
   									## Return Full Collapsible Report
-  									return(c(BullComp,LandComp$children))
+  									return(c(BullComp, LandComp$children))
   						})
   	#################################################################################
   	#################################################################################
@@ -564,15 +565,51 @@ server <- function(input, output, session) {
 	## Generate Bullet Comparison Report Server Outputs
   	#################################################################################
   	
-  	output$bull_comp_text <- renderText({
-  	  if(is.null(bulldata$comparison)) return(NULL)
-  	  bullet_scores <- bulldata$comparison$bullet_scores
+   	output$bull_comp_score <- renderText({
+   	  if(is.null(bulldata$comparison)) return(NULL)
+   	  
+   	  bullet_scores <- bulldata$comparison$bullet_scores
   	  bullet_scores$selsource <- FALSE
   	  bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
-  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
-  	  browser()
-  	   "Hello World" 
-  	})
+#  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
+
+  	  d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
+  	  res <- try(
+        test <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE
+  	  )
+  	  
+   	  if (any(class(res) %in% "try-error")) {
+   	    # just calculate the estimate
+   	    scores <- d %>% group_by(samesource) %>% 
+   	      summarize(avg = mean(scores, na.rm=TRUE)) %>% purrr::pluck("avg") %>% unlist()
+   	    return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
+   	  }
+  	  
+  	  return(sprintf("Phase Test Score: %.4f", test$estimate))
+  	 
+   	})
+   	output$bull_comp_test <- renderText({
+   	  if(is.null(bulldata$comparison)) return(NULL)
+   	  
+   	  bullet_scores <- bulldata$comparison$bullet_scores
+   	  bullet_scores$selsource <- FALSE
+   	  bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
+   	  #  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
+   	  
+   	  d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
+   	  res <- try(
+   	    test <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE
+   	  )
+   	  
+   	  if (any(class(res) %in% "try-error")) return("Test result unstable")
+   	  pval <- ""
+   	  if (test$p.value < 0.0001) pval <- "≤ 0.0001" 
+   	  else pval <- sprintf("%.4f", test$p.value)
+   	  
+   	  
+   	  
+   	  return(sprintf("False Identification Rate: %s (Type I Error)", pval))
+   	})
   	
   	## Bullet Comparison Heatmap
   	output$bull_comp <- renderPlot({
