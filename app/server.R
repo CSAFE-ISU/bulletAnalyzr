@@ -273,24 +273,25 @@ server <- function(input, output, session) {
 								comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
 								comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
 
-								## Evaluating Features
+								# ## Evaluating Features
 								progress$set(message = "Evaluating Features", value = .2)
 								comparisons$ccf0 <- sapply(comparisons$aligned,function(x) extract_feature_ccf(x$lands))
-								comparisons$lag0 <- sapply(comparisons$aligned,function(x) extract_feature_lag(x$lands))
-								comparisons$D0 <- sapply(comparisons$aligned,function(x) extract_feature_D(x$lands))
-								comparisons$length0 <- as.numeric(sapply(comparisons$aligned,function(x) extract_feature_length(x$lands)))
-								comparisons$overlap0 <- sapply(comparisons$aligned,function(x) extract_feature_overlap(x$lands))
-
-								## Evaluating Striation Marks
+								# comparisons$lag0 <- sapply(comparisons$aligned,function(x) extract_feature_lag(x$lands))
+								# comparisons$D0 <- sapply(comparisons$aligned,function(x) extract_feature_D(x$lands))
+								# comparisons$length0 <- as.numeric(sapply(comparisons$aligned,function(x) extract_feature_length(x$lands)))
+								# comparisons$overlap0 <- sapply(comparisons$aligned,function(x) extract_feature_overlap(x$lands))
+								# 
+							  ## Evaluating Striation Marks
 								progress$set(message = "Evaluating Striation Marks", value = .25)
 								comparisons$striae <- lapply(comparisons$aligned,sig_cms_max,span=75)
-								
-								## Evaluating Features
-								progress$set(message = "Evaluating Features", value = .3)
-								comparisons$cms_per_mm <- mapply(function(x,y,resolution) extract_feature_cms_per_mm(x$lines,y$lands,resolution),comparisons$striae,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
-								comparisons$matches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = TRUE)))
-								comparisons$mismatches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = FALSE)))
-								
+								# 
+								# ## Evaluating Features
+								# progress$set(message = "Evaluating Features", value = .3)
+								# comparisons$cms_per_mm <- mapply(function(x,y,resolution) extract_feature_cms_per_mm(x$lines,y$lands,resolution),comparisons$striae,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
+								# comparisons$matches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = TRUE)))
+								# comparisons$mismatches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = FALSE)))
+								# 
+						#		browser()
 								## Extracting Features
 								progress$set(message = "Extracting Features", value = .35)
 								comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",1)
@@ -298,7 +299,7 @@ server <- function(input, output, session) {
 								comparisons$landA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",2)
 								comparisons$landB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",2)
 								comparisons$features <- mapply(extract_features_all,comparisons$aligned,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
-								comparisons$legacy_features <- mapply(extract_features_all_legacy,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
+						#		comparisons$legacy_features <- mapply(extract_features_all_legacy,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
 
 								## Scaling Features
 								progress$set(message = "Scaling Features", value = .4)
