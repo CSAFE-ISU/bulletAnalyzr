@@ -28,6 +28,11 @@ theme_update(
   text = element_text(size = 22), 
   plot.title = element_text(size=22,face="bold"))
 
+
+#library(future.apply)
+#plan(multisession, workers = 4)
+
+
 #################################################################################
 ## Helper Functions
 source("helper.R")
@@ -215,7 +220,7 @@ server <- function(input, output, session) {
 									## UI
 									layout_column_wrap(
 										width = 1/6,  # HH: should be adjusted for the number of lands the bullets have.
-										!!!lapply(1:nrow(bull), FUN = function(x) parse_rgluiprev(x, land_name = bull$land_name[x]))
+										!!!lapply(1:nrow(bull), FUN = function(x) parse_rgluiprev(x, land_name = bull$land_names[x]))
 									)
 						})
 	#################################################################################
@@ -271,8 +276,11 @@ server <- function(input, output, session) {
 								## Align Signal
 								progress$set(message = "Align Signals", value = .15)
 								comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
-								comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
-
+# 								if (nrow(comparisons > 36))
+# 								  comparisons$aligned <- future_mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
+#                 else 
+                  comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
+								
 								# ## Evaluating Features
 								progress$set(message = "Evaluating Features", value = .2)
 								comparisons$ccf0 <- sapply(comparisons$aligned,function(x) extract_feature_ccf(x$lands))
@@ -283,7 +291,10 @@ server <- function(input, output, session) {
 								# 
 							  ## Evaluating Striation Marks
 								progress$set(message = "Evaluating Striation Marks", value = .25)
-								comparisons$striae <- lapply(comparisons$aligned,sig_cms_max,span=75)
+								# if (nrow(comparisons) > 36)
+								#   comparisons$striae <- future_lapply(comparisons$aligned,sig_cms_max,span=75)
+								# else 
+								  comparisons$striae <- lapply(comparisons$aligned,sig_cms_max,span=75)
 								# 
 								# ## Evaluating Features
 								# progress$set(message = "Evaluating Features", value = .3)
@@ -603,13 +614,15 @@ server <- function(input, output, session) {
    	  )
    	  
    	  if (any(class(res) %in% "try-error")) return("Test result unstable")
-   	  pval <- ""
-   	  if (test$p.value < 0.0001) pval <- "≤ 0.0001" 
-   	  else pval <- sprintf("%.4f", test$p.value)
+   	  pval <- sprintf("%.4f", test$p.value)
+   	  if (test$p.value < 0.01) pval <- "less than 1 in 100" 
+   	  if (test$p.value < 0.001) pval <- "less than 1 in 1,000" 
+   	  if (test$p.value < 0.0001) pval <- "less than 1 in 10,000" 
+   	  if (test$p.value < 0.00001) pval <- "less than 1 in 100,000" 
+   	  if (test$p.value < 0.000001) pval <- "less than 1 in 1 Million" 
+   	  if (test$p.value < 0.0000001) pval <- "less than 1 in 10 Million" 
    	  
-   	  
-   	  
-   	  return(sprintf("False Identification Rate: %s (Type I Error)", pval))
+   	  return(sprintf("Probability of False Identification: %s (Type I Error)", pval))
    	})
   	
   	## Bullet Comparison Heatmap
