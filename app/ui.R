@@ -12,12 +12,12 @@ library(shinyscreenshot)
 options(rgl.useNULL = TRUE)
 library(rgl)
 
+## Config
 options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
 
 ui <- shinyUI({
   fluidPage(title = "BulletAnalyzr",
-  # theme =  bs_theme(),
   useShinyjs(),
   tags$head(
         tags$link(
@@ -54,12 +54,8 @@ ui <- shinyUI({
             ),
             tabPanel("Instructions",),
             tabPanel("Contact",),
-            # tags$li(
-            #   class = "dropdown",
-            #   tags$img(src = "csafe_tools_blue_h.png", style = "height: 50px; padding-top: 10px; padding-right: 10px;"),
-            #   style = "position: absolute; right: 0px; top: 100px;"
-            # )
   ))),
+
   # Footer
   tags$div(id="global-footer",
     fluidRow(

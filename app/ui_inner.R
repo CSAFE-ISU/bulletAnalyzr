@@ -16,13 +16,14 @@ sidebarLayout(tags$div(id="my-sidebar",
       ## Bullet Select and manipulate Input 
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(column(12,uiOutput("bul_x3pui"))),
-          # fluidRow(column(12,actionButton("rot90", label = "Rotate Lands by 90 Degree"),align="center")),
           hr()
       ),
       conditionalPanel(condition="input.prevreport == 'Preview Bullet'",
           uiOutput("prevSelUI"),
       ),
       conditionalPanel(condition="input.prevreport == 'Comparison Report'",
+          uiOutput("CCBull1"),
+          uiOutput("CCBull2"),
           uiOutput("reportSelUI"),
       ),
 
@@ -69,7 +70,10 @@ sidebarLayout(tags$div(id="my-sidebar",
       tabPanel("Preview Bullet",uiOutput("lpreview")),
 
       ## Comparison Report
-      tabPanel("Comparison Report", h3("SUMMARY OF RESULTS"), withSpinner(uiOutput("reportUI")))  
+      tabPanel("Comparison Report", 
+          withSpinner(uiOutput("CCBullLand")),
+          withSpinner(uiOutput("reportUI"))
+      )  
     )
   )
 )
