@@ -26,12 +26,9 @@ addResourcePath("images", "images")
 theme_set(theme_bw())
 theme_update(
   text = element_text(size = 22), 
-  plot.title = element_text(size=22,face="bold"))
-
-
-#library(future.apply)
-#plan(multisession, workers = 4)
-
+  plot.title = element_text(size=22,face="bold")
+)
+interactive_cc = TRUE
 
 #################################################################################
 ## Helper Functions
@@ -45,18 +42,8 @@ parse_rglui <- function(x, name = "x3prgl", land_name = NULL)
 		card_header(class = "bg-dark",paste0("Land ", land_name)),
 		max_height = 600,
 		full_screen = FALSE,
-		rglwidgetOutput(paste0("x3prgl",x),height=600,width=200),
+		rglwidgetOutput(paste0(name,x),height=600,width=200),
 	)
-}
-parse_rgluiprev <- function(x, land_name = NULL)
-{
-  parse_rglui(x, name = "x3prglprev", land_name = land_name)
-	# card(
-	# 	card_header(class = "bg-dark",paste0("Land ",x)),
-	# 	max_height = 300,
-	# 	full_screen = FALSE,
-	# 	rglwidgetOutput(paste0("x3prglprev",x),height=300,width=400),
-	# )
 }
 
 ## Render Land into image with CrossCut line
@@ -66,30 +53,28 @@ render_land <- function(src,x3p,ccut)
 	x3p %>%
 	  x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
 	  x3p_sample(m=5) %>%
-#	  x3p_rotate() %>%
 	  x3p_image(size = 600, zoom=.25)
 	snapshot3d(imgsrc,webshot=TRUE)
 	return(imgsrc)
+}
+
+## Render Slider to adjust CrossCut
+render_ccsl <- function(id, ymin,ymax,yset)
+{
+	sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
 }
 #################################################################################
 #################################################################################
 
 
 server <- function(input, output, session) {
-
 	#################################################################################
 	## Bullet Data Upload and Storage 
 	#################################################################################
 	observeEvent(input$confirm_autonomous,{updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")})
-	#################################################################################
-	#################################################################################
 
-
-	#################################################################################
-	## Bullet Data Upload and Storage 
-	#################################################################################
 	## Reactive object to hold the bullet and comparison data
-	bulldata <- reactiveValues(allbull=data.frame(),cbull=data.frame(),comparison=NULL)
+	bulldata <- reactiveValues(allbull=data.frame(),cbull=data.frame(),preCC = NULL, postCC = NULL, comparison=NULL)
 
 	## Bullet Land Files Input
 	output$bul_x3pui <- renderUI({fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p",multiple=TRUE)})
@@ -102,30 +87,21 @@ server <- function(input, output, session) {
 
 	## Push current bullet data to all bullet data object
 	observeEvent(input$up_bull,{
-								# if(nrow(bulldata$cbull)==0) return(NULL)
+								if(nrow(bulldata$cbull)==0) return(NULL)
 								allbull <- bulldata$allbull
 								allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
 								bull <- bulldata$cbull
 								bull$bullet <- input$bul_x3p_name
-							#	browser()
 								#bull$land <- 1:nrow(bull)
 								bull$land <- factor(bull$land_names, levels = bull$land_names)
 								bulldata$allbull <- rbind(allbull,bull)
 								disable("up_bull")
 				})
-
-	## Manipulate Rotation Current Bullet Loaded
-	# observeEvent(input$rot90,{
-	# 							if(is.null(input$bul_x3p)) return(NULL)
-	# 							bull <- bulldata$cbull
-	# 							bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
-	# 							bulldata$cbull <- bull
-	# 			})
 	#################################################################################
 	#################################################################################
 
 
-  	#################################################################################
+  #################################################################################
 	## Preview Bullets while Uploading Bullet lands
 	#################################################################################
 	output$lpupload <- renderUI({
@@ -143,14 +119,13 @@ server <- function(input, output, session) {
 									## Read Bullet
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
-									cond_x3p_m_to_mum <- function(x3p) {
+									cond_x3p_m_to_mum <- function(x3p)
+									{
 									  scale <- x3p %>% x3p_get_scale()
 									  if (scale < .1) x3p <-  x3p %>% x3p_m_to_mum() # only scale conditionally
 									  x3p
 									}
 									bull$x3p <- lapply(bull$x3p,cond_x3p_m_to_mum)
-									#bull$x3pv <- bull$x3p 
-								  #bull$x3p <- lapply(bull$x3p,function(x) y_flip_x3p(rotate_x3p(x,angle = -90)))
 									bull$md5sum <- tools::md5sum(bull$source)
 									bull$filename <- basename(bull$source)
 									bull$land_names <- identify_lands(bull$filename)
@@ -164,8 +139,7 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),
-																									          size=500,zoom=.4)
+																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),size=500,zoom=.4)
 																									rglwidget()
 																					})
 											})
@@ -173,18 +147,18 @@ server <- function(input, output, session) {
 
 									## Enable Upload Button
 									enable("up_bull")
-#browser()
+
 									## UI
 									layout_column_wrap(
 										width = 1/6,
-										!!!lapply(1:nrow(bull), FUN= function(x) parse_rglui(x, land_name = bull$land_names[x]))
+										!!!lapply(1:nrow(bull), FUN= function(x) parse_rglui(x, name = "x3prgl", land_name = bull$land_names[x]))
 									)
 						})
 	#################################################################################
 	#################################################################################
 	
 
-  	#################################################################################
+  #################################################################################
 	## Preview Bullet Selection
 	#################################################################################
 	output$prevSelUI <- renderUI({
@@ -210,8 +184,7 @@ server <- function(input, output, session) {
 										local({
 												cidx <- idx
 												output[[paste0("x3prglprev",idx)]] <- renderRglwidget({
-																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),
-																									          size=500, zoom=.4)
+																									x3p_image(x3p_sample(bull$x3p[[cidx]],m=5) %>% x3p_rotate(),size=500, zoom=.4)
 																									rglwidget()
 																					})
 											})
@@ -219,8 +192,8 @@ server <- function(input, output, session) {
 
 									## UI
 									layout_column_wrap(
-										width = 1/6,  # HH: should be adjusted for the number of lands the bullets have.
-										!!!lapply(1:nrow(bull), FUN = function(x) parse_rgluiprev(x, land_name = bull$land_names[x]))
+										width = 1/6, 
+										!!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prglprev", land_name = bull$land_names[x]))
 									)
 						})
 	#################################################################################
@@ -229,7 +202,7 @@ server <- function(input, output, session) {
 
 	#################################################################################
 	## Compare Bullet Selection and processing
-  	#################################################################################
+  #################################################################################
    	output$bull_sel <- renderUI({
   									if(nrow(bulldata$allbull)==0) return(NULL)
   									allbull <- bulldata$allbull
@@ -241,27 +214,44 @@ server <- function(input, output, session) {
     								)
   						})
 
+   	## Start Process before Interactivity
   	observeEvent(input$doprocess,{
 								if(length(input$bullcompgroup)==0) return(NULL)
 								progress <- shiny::Progress$new();on.exit(progress$close())
 
 								## Fetch All Bullets
 								bullets <- bulldata$allbull
-								resolution <- x3p_get_scale(bullets$x3p[[1]])
 
 								## Get the ideal Cross Sections
 								progress$set(message = "Get suitable Cross Sections", value = 0)
 								bullets$crosscut <- sapply(bullets$x3p,x3p_crosscut_optimize, ylimits = c(150, NA))
-								try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
+
+								## If Interactive Push the data to preCC Stage
+								if(interactive_cc) bulldata$preCC <- bullets
+								if(!interactive_cc) bulldata$postCC <- bullets
+
+								## Update the selected Panel
+								updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
+		})
+
+  	## Contimue Process after Interactivity
+		observeEvent(bulldata$postCC,{
+								if(is.null(bulldata$postCC)) return(NULL)
+								progress <- shiny::Progress$new();on.exit(progress$close())
+								
+								progress$set(message = "Finalizing Cross Sections", value = 0)
+								bullets <- bulldata$postCC
+								try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) 
+								{
 								  res <- x3p_crosscut(x3p=x3p, y = y, range = range)
-								  if (nrow(res) == 0) {
-								    # if there is no result, just use the middle
-								    res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
-								  }
-								  res
+								  if (nrow(res) == 0) res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
+								  return(res)
 								}
 								bullets$ccdata <- mapply(try_x3p_crosscut,bullets$x3p,bullets$crosscut, SIMPLIFY=FALSE)
-								
+								# browser()
+
+								## Get Resolution
+								resolution <- x3p_get_scale(bullets$x3p[[1]])
 
 								## Get the Groove Locations
 								progress$set(message = "Get the Groove Locations", value = .05)
@@ -276,33 +266,23 @@ server <- function(input, output, session) {
 								## Align Signal
 								progress$set(message = "Align Signals", value = .15)
 								comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
-# 								if (nrow(comparisons > 36))
-# 								  comparisons$aligned <- future_mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
-#                 else 
-                  comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
+								comparisons$aligned <- mapply(function(x,y,bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),comparisons$land1,comparisons$land2,MoreArgs=list(bullets=bullets),SIMPLIFY=FALSE)
 								
-								# ## Evaluating Features
+								## Evaluating Features
 								progress$set(message = "Evaluating Features", value = .2)
 								comparisons$ccf0 <- sapply(comparisons$aligned,function(x) extract_feature_ccf(x$lands))
-								# comparisons$lag0 <- sapply(comparisons$aligned,function(x) extract_feature_lag(x$lands))
-								# comparisons$D0 <- sapply(comparisons$aligned,function(x) extract_feature_D(x$lands))
-								# comparisons$length0 <- as.numeric(sapply(comparisons$aligned,function(x) extract_feature_length(x$lands)))
-								# comparisons$overlap0 <- sapply(comparisons$aligned,function(x) extract_feature_overlap(x$lands))
-								# 
+
 							  ## Evaluating Striation Marks
 								progress$set(message = "Evaluating Striation Marks", value = .25)
-								# if (nrow(comparisons) > 36)
-								#   comparisons$striae <- future_lapply(comparisons$aligned,sig_cms_max,span=75)
-								# else 
-								  comparisons$striae <- lapply(comparisons$aligned,sig_cms_max,span=75)
-								# 
+								comparisons$striae <- lapply(comparisons$aligned,sig_cms_max,span=75)
+
 								# ## Evaluating Features
 								# progress$set(message = "Evaluating Features", value = .3)
 								# comparisons$cms_per_mm <- mapply(function(x,y,resolution) extract_feature_cms_per_mm(x$lines,y$lands,resolution),comparisons$striae,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
 								# comparisons$matches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = TRUE)))
 								# comparisons$mismatches0 <- as.numeric(sapply(comparisons$striae,function(s) bulletxtrctr:::extract_helper_feature_n_striae(s$lines, type = "peak", match = FALSE)))
-								# 
-						#		browser()
+
+
 								## Extracting Features
 								progress$set(message = "Extracting Features", value = .35)
 								comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",1)
@@ -310,7 +290,7 @@ server <- function(input, output, session) {
 								comparisons$landA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",2)
 								comparisons$landB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",2)
 								comparisons$features <- mapply(extract_features_all,comparisons$aligned,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
-						#		comparisons$legacy_features <- mapply(extract_features_all_legacy,comparisons$striae,MoreArgs=list(resolution=resolution),SIMPLIFY=FALSE)
+
 
 								## Scaling Features
 								progress$set(message = "Scaling Features", value = .4)
@@ -345,22 +325,90 @@ server <- function(input, output, session) {
 								## Saving Report Data
 								progress$set(message = "Preparing Report", value = .9)
 								bulldata$comparison <- list(bullets=bullets,comparisons=comparisons,features_scaled=features,bullet_scores=bullet_scores)
-
-								## Update the selected Panel
-								updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
-
-								# Debug
-								# saveRDS(list(comparison = bulldata$comparison),"~/Downloads/aa.RDS")
 				})
   	#################################################################################
   	#################################################################################
 
 
+		#################################################################################
+		## Cross Cut Interactivity
   	#################################################################################
-	## Generate Bullet Comparison Report UI
+		output$CCBull1 <- renderUI({
+													if(is.null(bulldata$preCC)) return(NULL)
+
+													## Pre Cross Cut Data
+													bullets <- bulldata$preCC
+													selectInput("cc_bulsel","Select Bullet",choices=unique(bullets$bullet),selected=NULL,multiple = FALSE)
+												})
+		output$CCBull2 <- renderUI({
+													if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
+
+													## Pre Cross Cut Data
+													bullets <- bulldata$preCC
+													bullets <- bullets[bullets$bullet == input$cc_bulsel,]
+													list(
+																mapply(render_ccsl,1:nrow(bullets),0,500,bullets$crosscut,SIMPLIFY=FALSE),
+																fluidRow(column(12,actionButton("saveCC", label = "Finalise CrossCut"),align="center")),
+																	hr(),
+																fluidRow(column(12,actionButton("doprocessCC", label = "Compare Bullets"),align="center"))
+													)
+												})
+
+		observeEvent(input$saveCC,{
+																		if(is.null(bulldata$preCC)) return(NULL)
+																		bullets <- bulldata$preCC
+																		bullets[bullets$bullet == input$cc_bulsel,]$crosscut <- sapply(1:sum(bullets$bullet == input$cc_bulsel),function(x) input[[paste("CCsl",x)]])
+																		bulldata$preCC = bullets
+			})
+
+		observeEvent(input$doprocessCC,{
+																		if(is.null(bulldata$preCC)) return(NULL)
+																		bullets <- bulldata$preCC
+																		bulldata$preCC <- NULL
+																		bulldata$postCC <- bullets
+			})
+
+		output$CCBullLand <- 	renderUI({
+									if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
+									
+									## Render Bullet
+									bullets <- bulldata$preCC
+									bullets <- bullets[bullets$bullet == input$cc_bulsel,]
+
+									## Refresh on Tab Change
+									temp_refresh <- input$prevreport
+
+									for(idx in 1:nrow(bullets))
+									{
+										local({
+														cidx <- idx
+														output[[paste0("CC_Sel_",idx)]] <- renderRglwidget({
+																																	bullets$x3p[[cidx]] %>%
+																																	x3p_add_hline(yintercept = input[[paste("CCsl",cidx)]], size = 20, color = "#eeeeee") %>%
+																																	x3p_rotate %>%
+																																	x3p_sample(m=5) %>%
+																																	x3p_image(size = 500, zoom=.4)
+																																	rglwidget()
+																																})
+											})
+									}
+
+									layout_column_wrap(
+										width = 1/6, 
+										!!!lapply(1:nrow(bullets), FUN = function(x) parse_rglui(x, name = "CC_Sel_", land_name = NULL))
+									)
+						})
+		#################################################################################
+		#################################################################################
+
+
+
+  	#################################################################################
+		## Generate Bullet Comparison Report UI
   	#################################################################################
   	## Side Panel UI
   	output$reportSelUI <- renderUI({
+  										if(!is.null(bulldata$preCC)) return(NULL)
   										if(is.null(bulldata$comparison)) return(NULL)
   										all_bullets <- unique(bulldata$comparison$bullet_scores$bulletA)
   										list(
@@ -372,42 +420,44 @@ server <- function(input, output, session) {
 
   	## Side Panel UI Download Report
   	output$reportDownUI <- renderUI({
+  										if(!is.null(bulldata$preCC)) return(NULL)
   										if(is.null(bulldata$comparison)) return(NULL)
   										fluidRow(column(12,screenshotButton(label = "Download Report", id = "reportUI",filename="Bullet Comparison Report",scale=2),align="center"))
   							})
 
   	## Main Panel UI Bullet Comparison Report
   	output$reportUI <- renderUI({
+  									if(!is.null(bulldata$preCC)) return(NULL)
   									if(is.null(bulldata$comparison)) return(NULL)
   									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
 
   	 								## Bullet Comparison Report
   									BullComp <- list(
   									  fluidRow(
-  									    div(
+  									      column(12, "SUMMARY OF RESULTS", align="left", class="h3"), 
   									      column(12, "Phase Test", align="left", class="h3"), 
   									      column(12, textOutput("bull_comp_score"), align="left", class="h4"), 
-  									      column(12, textOutput("bull_comp_test"), align="left", class="h4")),
-  									    hr()
+  									      column(12, textOutput("bull_comp_test"), align="left", class="h4"),
+  									    hr(),
   									  ),
   									  br(),
   									  fluidRow(
 											          				column(6,plotOutput("bull_comp")),
 											          				column(6,plotOutput("land_comp")),
 											          				column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class="body"))
-											        	),
+											        ),
 				  										br(),br(),
-											        	fluidRow(column(12,plotOutput("land_visCC"),align="center")),
-											        	br(),br(),
-											        	fluidRow(column(12,plotOutput("land_visSig"),align="center")),
-  									  br()
-								       			)
+											        fluidRow(column(12,plotOutput("land_visCC"),align="center")),
+											        br(),br(),
+											        fluidRow(column(12,plotOutput("land_visSig"),align="center")),
+  									  				br()
+								      )
 
   									## Land Comparison Collapsible Report
   									LandComp <- list()
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores <- bullet_scores[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2,]
-  							#		bullet_scores$data[[1]] <- bullet_scores$data[[1]][bullet_scores$data[[1]]$samesource,] # HH: only showing 'matches' is extremely biased
+  									# bullet_scores$data[[1]] <- bullet_scores$data[[1]][bullet_scores$data[[1]]$samesource,] # HH: only showing 'matches' is extremely biased
   									if(nrow(bullet_scores$data[[1]])>0)
   									{
   										## Collect Land wise Data
@@ -423,7 +473,7 @@ server <- function(input, output, session) {
   										scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
   										instrument <- bulldata$cbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
 
-  										  										## Generate Collapsible UI Panel List in a loop
+  										## Generate Collapsible UI Panel List in a loop
   										bsCollapsePanelList <- list()
   										
   										show_n <- min(c(sum(bsldata$samesource==TRUE) + 3, length(odridx)))
@@ -499,25 +549,26 @@ server <- function(input, output, session) {
 	  											CCDataL <- BullCompBulls$ccdata[[GroovePlotLidx]] - GroovesL[1]
 	  											CCDataR <- BullCompBulls$ccdata[[GroovePlotRidx]] - GroovesR[1]
 	  											output[[paste0("GroovePlotL",idx)]] = renderPlot({
-	  																								groove_plot(CCDataL, GroovesL) +
-	  											    ggtitle(sprintf("Land %s profile",bsldata$land1[odridx[cidx]]))
-	  																							})
+																																		groove_plot(CCDataL, GroovesL) +
+																																		ggtitle(sprintf("Land %s profile",bsldata$land1[odridx[cidx]]))
+	  																														})
 	  											output[[paste0("GroovePlotR",idx)]] = renderPlot({
-	  											  groove_plot(CCDataR, GroovesR) +
-	  											    ggtitle(sprintf("Land %s profile",bsldata$land2[odridx[cidx]]))
-	  											    
-	  																							})
+																																		groove_plot(CCDataR, GroovesR) +
+																																		ggtitle(sprintf("Land %s profile",bsldata$land2[odridx[cidx]]))
+	  																														})
   											})
-  											temp_groove <- fluidRow(
-  																		column(6,plotOutput(paste0("GroovePlotL",idx)),align="center"),
-  																		column(6,plotOutput(paste0("GroovePlotR",idx)),align="center"),
-  																		p("Shaded areas are excluded from the analysis")
-  															)
+  											temp_groove <- list(
+  																			fluidRow(
+			  																		column(6,plotOutput(paste0("GroovePlotL",idx)),align="center"),
+			  																		column(6,plotOutput(paste0("GroovePlotR",idx)),align="center")
+			  																),
+  																			fluidRow(column(12,p("Shaded areas are excluded from the analysis"),align="center"))
+  																		)
   											#########################################################################################################
   											#########################################################################################################
 
 
-											#########################################################################################################
+												#########################################################################################################
   											## Signal Comparison
   											#########################################################################################################
   											local({
@@ -534,20 +585,15 @@ server <- function(input, output, session) {
 	  											
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig1"] <- "Left LEA"
 	  											SigPlotData$Signal[SigPlotData$Signal=="sig2"] <- "Right LEA"
-												output[[paste0("SigPlot",idx)]] = renderPlot({
-														ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal, linetype=Signal)) + 
-																							    geom_line(na.rm=TRUE, alpha = 0.9, linewidth = 1) +
-																		#					  	theme_bw() +
-												    scale_color_manual(values = c("darkorange", "purple4")) + 
-												#    scale_linetype_manual(values =c("dashed", "longdash")) + # double-encode signal
-																							#  	scale_color_brewer(palette = "Dark2") + ## orange and green is not color-blind friendly
-																							  	xlab("Position along width of Land [µm]") +
-																							  	ylab("Signal [µm]") +
-																							  	ggtitle("Aligned signals of LEAs")+
-																							  	theme(
-																							  	  legend.position = "bottom"
-																						  		) 
-																					})
+													output[[paste0("SigPlot",idx)]] = renderPlot({
+																																ggplot(SigPlotData,aes(x = x*scale, y = value, colour = Signal, linetype=Signal)) + 
+																							    							geom_line(na.rm=TRUE, alpha = 0.9, linewidth = 1) +
+												    																		scale_color_manual(values = c("darkorange", "purple4")) + 
+																														  	xlab("Position along width of Land [µm]") +
+																														  	ylab("Signal [µm]") +
+																														  	ggtitle("Aligned signals of LEAs")+
+																														  	theme(legend.position = "bottom") 
+																														})
   											})
   											temp_signal <- fluidRow(column(12,plotOutput(paste0("SigPlot",idx)),align="center"))
   											#########################################################################################################
@@ -555,7 +601,6 @@ server <- function(input, output, session) {
 
   											## Combine Results
   											panel_name <- paste0(bsldata$land1[odridx[idx]]," vs ",bsldata$land2[odridx[idx]]," (RF Score = ",round(bsldata$rfscore[odridx[idx]],4),")")
-  											# bsCollapsePanelList[[idx]] <- bsCollapsePanel(panel_name, temptable_dt, br(), temp_groove, br(), temp_signal, style = "primary")
   											bsCollapsePanelList[[idx]] <- bsCollapsePanel(panel_name, temptable_dt, br(),temp_rgl, temp_groove, br(), temp_signal, style = "primary")
   										}
 
@@ -564,7 +609,7 @@ server <- function(input, output, session) {
   									}
 
   									## If no Land Match
-  								#	if(nrow(bullet_scores$data[[1]])==0) LandComp$children <- list(fluidRow(column(12,h3("No Land Matches in this Bullet Pair."),align="center")),br())
+  									# if(nrow(bullet_scores$data[[1]])==0) LandComp$children <- list(fluidRow(column(12,h3("No Land Matches in this Bullet Pair."),align="center")),br())
 
   									## Return Full Collapsible Report
   									return(c(BullComp, LandComp$children))
@@ -574,57 +619,49 @@ server <- function(input, output, session) {
 
 
   	#################################################################################
-	## Generate Bullet Comparison Report Server Outputs
+		## Generate Bullet Comparison Report Server Outputs
   	#################################################################################
-  	
+  	## Bullet Comarison Score
    	output$bull_comp_score <- renderText({
-   	  if(is.null(bulldata$comparison)) return(NULL)
-   	  
-   	  bullet_scores <- bulldata$comparison$bullet_scores
-  	  bullet_scores$selsource <- FALSE
-  	  bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
-#  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
+																if(is.null(bulldata$comparison)) return(NULL)
+																bullet_scores <- bulldata$comparison$bullet_scores
+																bullet_scores$selsource <- FALSE
+																bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
+																d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
+																res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
+																if (any(class(res) %in% "try-error")) 
+																{
+																		scores <- d %>%
+																							group_by(samesource) %>% 
+																							summarize(avg = mean(scores, na.rm=TRUE)) %>%
+																							purrr::pluck("avg") %>%
+																							unlist()
+																		return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
+																}
+																return(sprintf("Phase Test Score: %.4f", test$estimate))
+															})
 
-  	  d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-  	  res <- try(
-        test <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE
-  	  )
-  	  
-   	  if (any(class(res) %in% "try-error")) {
-   	    # just calculate the estimate
-   	    scores <- d %>% group_by(samesource) %>% 
-   	      summarize(avg = mean(scores, na.rm=TRUE)) %>% purrr::pluck("avg") %>% unlist()
-   	    return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
-   	  }
-  	  
-  	  return(sprintf("Phase Test Score: %.4f", test$estimate))
-  	 
-   	})
+
+   	## Bullet Comarison Mismatch Prob
    	output$bull_comp_test <- renderText({
-   	  if(is.null(bulldata$comparison)) return(NULL)
-   	  
-   	  bullet_scores <- bulldata$comparison$bullet_scores
-   	  bullet_scores$selsource <- FALSE
-   	  bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
-   	  #  	  bullet_scores$selsource[bullet_scores$bulletB==input$comp_bul1 & bullet_scores$bulletA==input$comp_bul2] <- TRUE
-   	  
-   	  d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-   	  res <- try(
-   	    test <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE
-   	  )
-   	  
-   	  if (any(class(res) %in% "try-error")) return("Test result unstable")
-   	  pval <- sprintf("%.4f", test$p.value)
-   	  if (test$p.value < 0.01) pval <- "less than 1 in 100" 
-   	  if (test$p.value < 0.001) pval <- "less than 1 in 1,000" 
-   	  if (test$p.value < 0.0001) pval <- "less than 1 in 10,000" 
-   	  if (test$p.value < 0.00001) pval <- "less than 1 in 100,000" 
-   	  if (test$p.value < 0.000001) pval <- "less than 1 in 1 Million" 
-   	  if (test$p.value < 0.0000001) pval <- "less than 1 in 10 Million" 
-   	  
-   	  return(sprintf("Probability of False Identification: %s (Type I Error)", pval))
-   	})
+																if(is.null(bulldata$comparison)) return(NULL)
+																bullet_scores <- bulldata$comparison$bullet_scores
+																bullet_scores$selsource <- FALSE
+																bullet_scores$selsource[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2] <- TRUE
+																d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
+																res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
+																if(any(class(res) %in% "try-error")) return("Test result unstable")
+																pval <- sprintf("%.4f", test$p.value)
+																if (test$p.value < 0.01) pval <- "Less than 1 in 100" 
+																if (test$p.value < 0.001) pval <- "Less than 1 in 1,000" 
+																if (test$p.value < 0.0001) pval <- "Less than 1 in 10,000" 
+																if (test$p.value < 0.00001) pval <- "Less than 1 in 100,000" 
+																if (test$p.value < 0.000001) pval <- "Less than 1 in 1 Million" 
+																if (test$p.value < 0.0000001) pval <- "Less than 1 in 10 Million" 
+																return(sprintf("Probability of False Identification: %s (Type I Error)", pval))
+															})
   	
+
   	## Bullet Comparison Heatmap
   	output$bull_comp <- renderPlot({
   									if(is.null(bulldata$comparison)) return(NULL)
@@ -639,8 +676,6 @@ server <- function(input, output, session) {
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
 									  geom_tile(linewidth = 1, data = bullet_scores %>% filter(selsource)) +
-#  									  scale_discrete_manual("linewidth", values = c(1,0)) +
-#  									  scale_linewidth_manual("Selected comparison", "Selected comparison", values=c(1,0)) +
 									  geom_text(aes(label = round(bullet_score, 2)),size=6) +
   									ggtitle("Bullet-to-Bullet Score Matrix") +
 									  xlab("") +
@@ -653,7 +688,6 @@ server <- function(input, output, session) {
   	output$land_comp <- renderPlot({
   									if(is.null(bulldata$comparison)) return(NULL)
   									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
-#browser()
   									bullet_scores <- bulldata$comparison$bullet_scores
   									bullet_scores <- bullet_scores[bullet_scores$bulletA==input$comp_bul1 & bullet_scores$bulletB==input$comp_bul2,]
   									features <- bullet_scores %>% tidyr::unnest(data)
@@ -663,9 +697,8 @@ server <- function(input, output, session) {
 									  labs(fill="Land Score") +
 									  scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
 									  scale_colour_manual(values = c("black", "black")) +
-  									  geom_tile(linewidth = 1, data = features %>% filter(samesource==TRUE)) +
-#  									  scale_linewidth_manual("Best phase",values=c(1,1)) +
-  									  geom_text(aes(label = round(rfscore, 2)),size=6) +
+  									geom_tile(linewidth = 1, data = features %>% filter(samesource==TRUE)) +
+  									geom_text(aes(label = round(rfscore, 2)),size=6) +
 									  xlab(sprintf("Lands on %s", features$bulletA[1])) +
   									ylab(sprintf("Lands on %s", features$bulletB[1])) + 
   									ggtitle("Land-to-Land Score Matrix",
@@ -687,11 +720,9 @@ server <- function(input, output, session) {
 											  ggplot(aes(x = x, y = value)) + 
 											  geom_line() +
 											  facet_grid(bullet~land, labeller="label_both") +
-											 # theme_bw()+
 											  xlab("Position along width of Land [mm]") +
 											  ylab("Surface Height [µm]") + 
 											  ggtitle("Cross-section of the bullet land at a suitable cross-section location") 
-  									
 									return(CCplot)
   						})
 
@@ -711,7 +742,6 @@ server <- function(input, output, session) {
 												  geom_line(aes(y = sig), colour = "grey30",show.legend = T) +
 												  facet_grid(bullet~land, labeller="label_both") +
 												  ylim(c(-5,5)) +
-									#			  theme_bw() +
 												  xlab("Position along width of Land [mm]") +
 												  ylab("Signal [µm]") +
 												  ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
