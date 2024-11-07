@@ -131,14 +131,20 @@ server <- function(input, output, session) {
 									# Calculate the closest integer `n` that samples reference resolution to match incrementX
 									if (nrow(bulldata$allbull) > 0) {
 									    reference_resolution <- x3p_get_scale(bulldata$allbull$x3p[[1]]) / 1e6
-									    target_resolution <- x3p_get_scale(bull$x3p[[1]])
+									    current_resolution <- x3p_get_scale(bull$x3p[[1]])
 									    
-									    if (reference_resolution != target_resolution) {
-									        alert("Detected different resolutions, down-sampling to match reference resolution...")
-									        m <- round(reference_resolution / target_resolution)
-									        
-									        bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
-									    }
+									    # Down-sample if necessary
+								        if (reference_resolution < current_resolution) {
+								            alert("Detected higher resolution bullet, down-sampling...")
+								            m <- round(current_resolution / reference_resolution)
+								            
+								            bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
+								        } else if (reference_resolution > current_resolution) {
+								            alert("Detected lower resolution bullet, down-sampling previous bullets...")
+								            
+								            m <- round(reference_resolution / current_resolution)
+								            bulldata$allbull$x3p <- lapply(bulldata$allbull$x3p, x3p_sample, m = m)
+								        }
 									}
 
 									cond_x3p_m_to_mum <- function(x3p)
