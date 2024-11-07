@@ -119,6 +119,14 @@ server <- function(input, output, session) {
 									## Read Bullet
 									progress$set(message = "Reading Bullets", value = .25)
 									bull <- read_bullet(temp_dir)
+									
+									# Check if we need to rotate the bullet
+									hinfo <- b1$x3p[[1]]$header.info
+									if (hinfo$sizeX > hinfo$sizeY) {
+									    alert("Detected rotated bullet, rotating 90 degrees...")
+									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = -90)
+									}
+									
 									cond_x3p_m_to_mum <- function(x3p)
 									{
 									  scale <- x3p %>% x3p_get_scale()
