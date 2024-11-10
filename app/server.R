@@ -66,8 +66,24 @@ render_ccsl <- function(id, ymin,ymax,yset)
 #################################################################################
 #################################################################################
 
+## Render the session info as text
+render_session_info <- function(session) {
+  renderText({{ 
+    sessioninfo::session_info(to_file = TRUE) 
+    sessionInfo <- readLines(con="session-info.txt")
+    paste(sessionInfo, collapse="\n") 
+    }})
+}
+
+
 
 server <- function(input, output, session) {
+  #################################################################################
+  ## Report versions of packages used 
+  #################################################################################
+  output$sessionInfo <- render_session_info(session)
+  
+  
 	#################################################################################
 	## Bullet Data Upload and Storage 
 	#################################################################################
@@ -100,6 +116,7 @@ server <- function(input, output, session) {
 	#################################################################################
 	#################################################################################
 
+	
 
   #################################################################################
 	## Preview Bullets while Uploading Bullet lands
