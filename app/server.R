@@ -139,7 +139,7 @@ server <- function(input, output, session) {
 									
 									# Check if we need to rotate the bullet
 									hinfo <- bull$x3p[[1]]$header.info
-									if (hinfo$sizeX > hinfo$sizeY) {
+									if (hinfo$sizeX < hinfo$sizeY) {
 									    alert("Detected rotated bullet, rotating 90 degrees...")
 									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = -90)
 									}
