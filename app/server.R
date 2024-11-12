@@ -81,7 +81,7 @@ server <- function(input, output, session) {
   #################################################################################
   ## Report versions of packages used 
   #################################################################################
- # output$sessionInfo <- render_session_info(session)
+  output$sessionInfo <- render_session_info(session)
   
   
 	#################################################################################
