@@ -66,12 +66,12 @@ render_ccsl <- function(id, ymin,ymax,yset)
 #################################################################################
 #################################################################################
 
-## Render the session info as text
+# Render the session info as text
 render_session_info <- function(session) {
-  renderText({{ 
-    sessioninfo::session_info(to_file = TRUE) 
+  renderText({{
+    sessioninfo::session_info(to_file = TRUE)
     sessionInfo <- readLines(con="session-info.txt")
-    paste(sessionInfo, collapse="\n") 
+    paste(sessionInfo, collapse="\n")
     }})
 }
 
@@ -81,7 +81,7 @@ server <- function(input, output, session) {
   #################################################################################
   ## Report versions of packages used 
   #################################################################################
-  output$sessionInfo <- render_session_info(session)
+ # output$sessionInfo <- render_session_info(session)
   
   
 	#################################################################################
@@ -138,8 +138,9 @@ server <- function(input, output, session) {
 									bull <- read_bullet(temp_dir)
 									
 									# Check if we need to rotate the bullet
-									hinfo <- b1$x3p[[1]]$header.info
-									if (hinfo$sizeX > hinfo$sizeY) {
+		
+									hinfo <- bull$x3p[[1]]$header.info
+									if (hinfo$sizeY > hinfo$sizeX) {
 									    alert("Detected rotated bullet, rotating 90 degrees...")
 									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = -90)
 									}
