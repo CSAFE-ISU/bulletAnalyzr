@@ -78,6 +78,7 @@ render_session_info <- function(session) {
 
 
 server <- function(input, output, session) {
+    values <- reactiveValues(show_alert = TRUE)
   #################################################################################
   ## Report versions of packages used 
   #################################################################################
@@ -121,27 +122,39 @@ server <- function(input, output, session) {
   #################################################################################
 	## Preview Bullets while Uploading Bullet lands
 	#################################################################################
+	
+	observeEvent(input$bul_x3p, {
+	    values$show_alert <- TRUE
+	})
+
+	uploaded_bull <- reactive({
+	    temp_refresh <- input$prevreport
+	    
+	    # Create Temporary Directory and save bullets in it
+	    temp_dir <- tempfile()
+	    dir.create(temp_dir)
+	    file.copy(input$bul_x3p$datapath, paste0(temp_dir, "/", input$bul_x3p$name))
+
+	    return(read_bullet(temp_dir))
+	})
+
 	output$lpupload <- renderUI({
 									if(is.null(input$bul_x3p)) return(NULL)
 									disable("up_bull")
 									progress <- shiny::Progress$new();on.exit(progress$close())
 
-									## Refresh on Tab Change
-									temp_refresh <- input$prevreport
-
-									# Create Temporary Directory and save bullets in it
-									temp_dir <- tempfile()
-									dir.create(temp_dir)
-									file.copy(input$bul_x3p$datapath, paste0(temp_dir, "/", input$bul_x3p$name))
 									## Read Bullet
 									progress$set(message = "Reading Bullets", value = .25)
-									bull <- read_bullet(temp_dir)
+									bull <- uploaded_bull()
 									
 									# Check if we need to rotate the bullet
 									hinfo <- bull$x3p[[1]]$header.info
 									if (hinfo$sizeX < hinfo$sizeY) {
-									    alert("Detected rotated bullet, rotating 90 degrees...")
-									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = -90)
+									    if (values$show_alert) {
+									        alert("Detected rotated bullet, rotating 90 degrees...")
+									    }
+									    values$show_alert <- FALSE
+									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
 									}
 									
 									# Check if we need to down-sample the bullet
@@ -151,15 +164,21 @@ server <- function(input, output, session) {
 									    current_resolution <- x3p_get_scale(bull$x3p[[1]])
 									    
 									    # Down-sample if necessary
-								        if (reference_resolution < current_resolution) {
-								            alert("Detected higher resolution bullet, down-sampling...")
-								            m <- round(current_resolution / reference_resolution)
+								        if (reference_resolution > current_resolution) {
+								            if (values$show_alert) {
+								                alert("Detected higher resolution bullet, down-sampling...")
+								            }
+								            values$show_alert <- FALSE
+								            m <- round(reference_resolution / current_resolution)
 								            
 								            bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
-								        } else if (reference_resolution > current_resolution) {
-								            alert("Detected lower resolution bullet, down-sampling previous bullets...")
-								            
-								            m <- round(reference_resolution / current_resolution)
+								        } else if (reference_resolution < current_resolution) {
+								            if (values$show_alert) {
+								                alert("Detected lower resolution bullet, down-sampling previous bullets...")
+								            }
+								            values$show_alert <- FALSE
+								
+								            m <- round(current_resolution / reference_resolution)
 								            bulldata$allbull$x3p <- lapply(bulldata$allbull$x3p, x3p_sample, m = m)
 								        }
 									}
@@ -261,6 +280,7 @@ server <- function(input, output, session) {
 
    	## Start Process before Interactivity
   	observeEvent(input$doprocess,{
+  	                            values$show_alert <- FALSE
 								if(length(input$bullcompgroup)==0) return(NULL)
 								progress <- shiny::Progress$new();on.exit(progress$close())
 
@@ -474,7 +494,7 @@ server <- function(input, output, session) {
   	output$reportUI <- renderUI({
   									if(!is.null(bulldata$preCC)) return(NULL)
   									if(is.null(bulldata$comparison)) return(NULL)
-  									if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
+  								    if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
 
   	 								## Bullet Comparison Report
   									BullComp <- list(
