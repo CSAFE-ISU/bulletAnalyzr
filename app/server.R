@@ -151,7 +151,12 @@ server <- function(input, output, session) {
 									hinfo <- bull$x3p[[1]]$header.info
 									if (hinfo$sizeX < hinfo$sizeY) {
 									    if (values$show_alert) {
-									        alert("Detected rotated bullet, rotating 90 degrees...")
+									        showModal(modalDialog(
+									            title = "Rotated Bullet",
+									            "Detected rotated bullet, rotating 90 degrees...",
+									            easyClose = TRUE,
+									            footer = modalButton("OK")
+									        ))
 									    }
 									    values$show_alert <- FALSE
 									    bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
@@ -166,7 +171,12 @@ server <- function(input, output, session) {
 									    # Down-sample if necessary
 								        if (reference_resolution > current_resolution) {
 								            if (values$show_alert) {
-								                alert("Detected higher resolution bullet, down-sampling...")
+								                showModal(modalDialog(
+								                    title = "Higher Resolution Bullet",
+								                    "Detected higher resolution bullet, down-sampling...",
+								                    easyClose = TRUE,
+								                    footer = modalButton("OK")
+								                ))
 								            }
 								            values$show_alert <- FALSE
 								            m <- round(reference_resolution / current_resolution)
@@ -174,7 +184,12 @@ server <- function(input, output, session) {
 								            bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
 								        } else if (reference_resolution < current_resolution) {
 								            if (values$show_alert) {
-								                alert("Detected lower resolution bullet, down-sampling previous bullets...")
+								                showModal(modalDialog(
+								                    title = "Lower Resolution Bullet",
+								                    "Detected lower resolution bullet, down-sampling previous bullets...",
+								                    easyClose = TRUE,
+								                    footer = modalButton("OK")
+								                ))
 								            }
 								            values$show_alert <- FALSE
 								
