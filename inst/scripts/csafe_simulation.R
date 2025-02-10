@@ -304,13 +304,19 @@ final_results <- final_results_full %>%
     ) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
     summarise(rfscore = max(rfscore),
-              score = max(score)) %>%  # NOTE: Optimal alignment
+              score = max(score),
+              sqrt_score = max(sqrt_score),
+              log_score = max(log_score)) %>%
     group_by(N = num_lands_b1, M = num_lands_b2, match) %>%
     summarise(
         mean_rfscore = mean(rfscore),
         sd_rfscore = sd(rfscore),
         mean_score = mean(score),
-        sd_score = sd(score)
+        sd_score = sd(score),
+        mean_sqrt_score = mean(sqrt_score),
+        sd_sqrt_score = sd(sqrt_score),
+        mean_log_score = mean(log_score),
+        sd_log_score = sd(log_score)
     )
 write_csv(final_results, "bullet_degradation_simulation_results.csv")
 
