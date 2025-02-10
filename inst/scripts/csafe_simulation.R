@@ -299,8 +299,8 @@ final_results <- final_results_full %>%
     filter(consecutive) %>%
     mutate(
         score = rfscore * ((num_lands_b1 * num_lands_b2) / (max(num_lands_b1) * max(num_lands_b2))),
-        sqrt_score = rfscore * ((num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
-        log_score = rfscore * ((num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
+        sqrt_score = rfscore * (sqrt(num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
+        log_score = rfscore * (log(num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
     ) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
     summarise(rfscore = max(rfscore),
@@ -367,10 +367,10 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore))
 ggsave("bullet_degradation_simulation_nonmatch_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Visualize the simulation results with ggplot2
-ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_score)) +
+ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_sqrt_score)) +
     geom_tile() +
-    geom_text(aes(label = round(mean_score, 3), 
-                  color = ifelse(mean_score >= .6, "white", "black")),
+    geom_text(aes(label = round(mean_sqrt_score, 3), 
+                  color = ifelse(mean_sqrt_score >= .6, "white", "black")),
               fontface = "bold") +
     scale_x_continuous(breaks = 1:6) +
     scale_y_continuous(breaks = 1:6) +
