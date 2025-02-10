@@ -367,10 +367,10 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore))
 ggsave("bullet_degradation_simulation_nonmatch_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Visualize the simulation results with ggplot2
-ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_sqrt_score)) +
+ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_log_score)) +
     geom_tile() +
-    geom_text(aes(label = round(mean_sqrt_score, 3), 
-                  color = ifelse(mean_sqrt_score >= .6, "white", "black")),
+    geom_text(aes(label = round(mean_log_score, 3), 
+                  color = ifelse(mean_log_score >= .6, "white", "black")),
               fontface = "bold") +
     scale_x_continuous(breaks = 1:6) +
     scale_y_continuous(breaks = 1:6) +
@@ -411,3 +411,33 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
         legend.position = "off"
     )
 ggsave("bullet_degradation_simulation_nonmatch_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
+
+ggplot() +
+    # First layer: match == TRUE (drawn first)
+    geom_histogram(
+        data = final_results_full %>% filter(consecutive, match == TRUE) %>% mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1)),
+        aes(x = rfscore, y = after_stat(..density..), fill = match),
+        binwidth = 0.01,
+        position = "identity",
+        alpha = 0.9
+    ) +
+    # Second layer: match == FALSE (drawn on top)
+    geom_histogram(
+        data = final_results_full %>% filter(consecutive, match == FALSE),
+        aes(x = rfscore, y = after_stat(..density..), fill = match),
+        binwidth = 0.01,
+        position = "identity",
+        alpha = 0.9
+    ) +
+    facet_grid(num_lands_b1 ~ num_lands_b2) +
+    labs(
+        title = "Distribution of Unweighted Bullet Scores",
+        subtitle = "For All Hamby 252 Bullets",
+        x = "Weighted Score",
+        y = "Distribution"
+    ) +
+    theme_minimal(base_size = 16) +
+    theme(
+        axis.text.y = element_blank(),       # Remove Y-axis tick labels
+        axis.text.x = element_text(size = 8, angle = 45)  # Make X-axis tick labels smaller
+    )
