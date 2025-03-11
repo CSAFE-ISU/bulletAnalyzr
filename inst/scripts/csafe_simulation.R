@@ -415,16 +415,12 @@ ggsave("bullet_degradation_simulation_nonmatch_results_weighted.png", width = 7.
 ggplot() +
     # First layer: match == TRUE (drawn first)
     geom_histogram(
-        data = final_results_full %>% filter(consecutive, match == TRUE) %>% mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1)),
-        aes(x = rfscore, y = after_stat(..density..), fill = match),
-        binwidth = 0.01,
-        position = "identity",
-        alpha = 0.9
-    ) +
-    # Second layer: match == FALSE (drawn on top)
-    geom_histogram(
-        data = final_results_full %>% filter(consecutive, match == FALSE),
-        aes(x = rfscore, y = after_stat(..density..), fill = match),
+        data = final_results_full %>%
+            filter(consecutive, !match) %>%
+            group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
+            summarise(rfscore = max(rfscore)) %>%
+            mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1)),
+        aes(x = sqrt(rfscore), y = after_stat(..count..), fill = match),
         binwidth = 0.01,
         position = "identity",
         alpha = 0.9
@@ -440,4 +436,70 @@ ggplot() +
     theme(
         axis.text.y = element_blank(),       # Remove Y-axis tick labels
         axis.text.x = element_text(size = 8, angle = 45)  # Make X-axis tick labels smaller
+    )
+
+# Create a gradient background
+gradient_data <- expand.grid(
+    rfscore = seq(min(final_results_full$rfscore, na.rm = TRUE), 
+                  max(final_results_full$rfscore, na.rm = TRUE), 
+                  length.out = 100),
+    y = seq(0, 1, length.out = 100)
+)
+
+# Prepare the data for the histogram
+hist_data <- final_results_full %>%
+    filter(consecutive, match) %>%
+    group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
+    summarise(rfscore = max(rfscore)) %>%
+    mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1))
+
+# Calculate the maximum density across all facets for the y-range
+max_density <- hist_data %>%
+    group_by(num_lands_b1, num_lands_b2) %>%
+    summarise(density = max(density(hist(rfscore, breaks = seq(min(rfscore), max(rfscore), by = 0.01), plot = FALSE)$density))) %>%
+    pull(density) %>%
+    max()
+
+# Create gradient data spanning the full x and y range
+gradient_data <- expand.grid(
+    rfscore = seq(min(hist_data$rfscore, na.rm = TRUE), 
+                  max(hist_data$rfscore, na.rm = TRUE), 
+                  length.out = 100),
+    y = seq(0, max_density, length.out = 100)
+)
+
+# Plot with gradient spanning the full panel
+ggplot() +
+    # Gradient background
+    geom_tile(
+        data = gradient_data,
+        aes(x = rfscore, y = y, fill = rfscore),
+        alpha = 0.5
+    ) +
+    scale_fill_gradient2(
+        low = "chocolate4",
+        high = "darkgreen",
+        mid = "lightgrey",
+        midpoint = 0.5,
+        name = "Score"
+    ) +
+    # Overlay histogram
+    geom_histogram(
+        data = hist_data,
+        aes(x = rfscore, y = after_stat(density)),
+        binwidth = 0.01,
+        fill = "black",  # Solid color for contrast
+        alpha = 0.7
+    ) +
+    facet_grid(num_lands_b1 ~ num_lands_b2) +
+    labs(
+        title = "Distribution of Unweighted Bullet Scores",
+        subtitle = "For All Hamby 252 Bullets",
+        x = "Weighted Score",
+        y = "Distribution"
+    ) +
+    theme_minimal(base_size = 16) +
+    theme(
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 8, angle = 45)
     )
