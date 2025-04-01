@@ -132,8 +132,10 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
     # Filter files for the given barrel numbers and bullet numbers
     # b1_files <- grep(paste0("br", barrel1, "_", bullet1, "_land"), files, value = TRUE)
     # b2_files <- grep(paste0("br", barrel2, "_", bullet2, "_land"), files, value = TRUE)
-    b1_files <- grep(paste0("Br", barrel1, " Bullet ", bullet1, "-"), files, value = TRUE)
-    b2_files <- grep(paste0("Br", barrel2, " Bullet ", bullet2, "-"), files, value = TRUE)
+    # b1_files <- grep(paste0("Br", barrel1, " Bullet ", bullet1, "-"), files, value = TRUE)
+    # b2_files <- grep(paste0("Br", barrel2, " Bullet ", bullet2, "-"), files, value = TRUE)
+    b1_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
+    b2_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
     
     # Create a temp directory for each bullet separately, copy all files
     # for that bullet to the temp directory, and return the temp directory
@@ -164,7 +166,8 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
 # Get every combination of barrel1, barrel2, bullet1, bullet2
 
 # Define barrels and bullets
-barrels <- 1:10
+# barrels <- 1:10
+barrels <- c(1, 10, 2, 3, 4)
 bullets <- 1:2
 
 # Stats on this
@@ -291,17 +294,17 @@ final_results_full <- simulation_results %>%
         match = barrel1 == barrel2,
         consecutive = sapply(b1_lands, function(x) all(diff(as.numeric(strsplit(x, ",")[[1]])) == 1)) &
             sapply(b2_lands, function(x) all(diff(as.numeric(strsplit(x, ",")[[1]])) == 1))
+    ) %>%
+    mutate(
+        score = rfscore * ((num_lands_b1 * num_lands_b2) / (max(num_lands_b1) * max(num_lands_b2))),
+        sqrt_score = rfscore * (sqrt(num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
+        log_score = rfscore * (log(num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
     )
 write_csv(final_results_full, "bullet_degradation_full_simulation_results.csv")
     
 # Aggregate across simulation counts of b1 and b2
 final_results <- final_results_full %>%
     filter(consecutive) %>%
-    mutate(
-        score = rfscore * ((num_lands_b1 * num_lands_b2) / (max(num_lands_b1) * max(num_lands_b2))),
-        sqrt_score = rfscore * (sqrt(num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
-        log_score = rfscore * (log(num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
-    ) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
     summarise(rfscore = max(rfscore),
               score = max(score),
@@ -448,24 +451,17 @@ gradient_data <- expand.grid(
 
 # Prepare the data for the histogram
 hist_data <- final_results_full %>%
-    filter(consecutive, match) %>%
+    filter(consecutive, !match) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
-    summarise(rfscore = max(rfscore)) %>%
+    summarise(score = max(sqrt_score)) %>%
     mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1))
-
-# Calculate the maximum density across all facets for the y-range
-max_density <- hist_data %>%
-    group_by(num_lands_b1, num_lands_b2) %>%
-    summarise(density = max(density(hist(rfscore, breaks = seq(min(rfscore), max(rfscore), by = 0.01), plot = FALSE)$density))) %>%
-    pull(density) %>%
-    max()
 
 # Create gradient data spanning the full x and y range
 gradient_data <- expand.grid(
-    rfscore = seq(min(hist_data$rfscore, na.rm = TRUE), 
-                  max(hist_data$rfscore, na.rm = TRUE), 
+    score = seq(min(hist_data$score, na.rm = TRUE), 
+                  max(hist_data$score, na.rm = TRUE), 
                   length.out = 100),
-    y = seq(0, max_density, length.out = 100)
+    y = seq(0, 1, length.out = 100)
 )
 
 # Plot with gradient spanning the full panel
@@ -473,7 +469,7 @@ ggplot() +
     # Gradient background
     geom_tile(
         data = gradient_data,
-        aes(x = rfscore, y = y, fill = rfscore),
+        aes(x = score, y = y, fill = score),
         alpha = 0.5
     ) +
     scale_fill_gradient2(
@@ -486,14 +482,14 @@ ggplot() +
     # Overlay histogram
     geom_histogram(
         data = hist_data,
-        aes(x = rfscore, y = after_stat(density)),
+        aes(x = score, y = after_stat(density)),
         binwidth = 0.01,
         fill = "black",  # Solid color for contrast
         alpha = 0.7
     ) +
     facet_grid(num_lands_b1 ~ num_lands_b2) +
     labs(
-        title = "Distribution of Unweighted Bullet Scores",
+        title = "Distribution of Unweighted Non-Matching Bullet Scores",
         subtitle = "For All Hamby 252 Bullets",
         x = "Weighted Score",
         y = "Distribution"
