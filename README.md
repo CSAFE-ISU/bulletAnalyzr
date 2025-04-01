@@ -67,19 +67,20 @@ provided by CSAFE.
 Download:
 
 - [Known Bullets 1 and 2 from Barrel
-  1](examples/Hamby-44/barrel%201.zip)
-- Questioned bullets: [E](examples/Hamby-44/Questioned//Bullet%20E.zip),
-  [F](examples/Hamby-44/Questioned//Bullet%20F.zip),
-  [G](examples/Hamby-44/Questioned//Bullet%20G.zip),
-  [H](examples/Hamby-44/Questioned//Bullet%20H.zip),
-  [I](examples/Hamby-44/Questioned//Bullet%20I.zip),
-  [J](examples/Hamby-44/Questioned//Bullet%20J.zip),
-  [K](examples/Hamby-44/Questioned//Bullet%20K.zip),
-  [L](examples/Hamby-44/Questioned//Bullet%20L.zip),
-  [O](examples/Hamby-44/Questioned//Bullet%20O.zip),
-  [P](examples/Hamby-44/Questioned//Bullet%20P.zip),
-  [S](examples/Hamby-44/Questioned//Bullet%20S.zip),
-  [T](examples/Hamby-44/Questioned//Bullet%20T.zip),
-  [U](examples/Hamby-44/Questioned//Bullet%20U.zip),
-  [X](examples/Hamby-44/Questioned//Bullet%20X.zip),
-  [Y](examples/Hamby-44/Questioned//Bullet%20Y.zip)
+  1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip)
+- Questioned bullets:
+  [E](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20E.zip),
+  [F](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20F.zip),
+  [G](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20G.zip),
+  [H](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20H.zip),
+  [I](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20I.zip),
+  [J](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20J.zip),
+  [K](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20K.zip),
+  [L](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20L.zip),
+  [O](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20O.zip),
+  [P](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20P.zip),
+  [S](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20S.zip),
+  [T](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20T.zip),
+  [U](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20U.zip),
+  [X](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20X.zip),
+  [Y](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20Y.zip)
