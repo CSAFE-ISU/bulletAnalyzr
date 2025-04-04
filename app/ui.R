@@ -76,7 +76,7 @@ hr()
     fluidRow(
       column(width = 4,tags$img(src="csafe_tools_blue_h.png", alt="Logo", height = "40px")),
       column(width = 4,tags$p("195 Durham Center, 613 Morrill Road, Ames, Iowa, 50011")),
-      column(width = 4,tags$p("(C) 2023-2024 | All Rights Reserved", class="right-float"))
+      column(width = 4,tags$p("(C) 2023-2025 | All Rights Reserved", class="right-float"))
     )
   ))  
 })
