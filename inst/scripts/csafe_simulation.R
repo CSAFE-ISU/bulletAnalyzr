@@ -451,15 +451,15 @@ gradient_data <- expand.grid(
 
 # Prepare the data for the histogram
 hist_data <- final_results_full %>%
-    filter(consecutive, !match) %>%
+    filter(consecutive, match) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
     summarise(score = max(sqrt_score)) %>%
     mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1))
 
 # Create gradient data spanning the full x and y range
 gradient_data <- expand.grid(
-    score = seq(min(hist_data$score, na.rm = TRUE), 
-                  max(hist_data$score, na.rm = TRUE), 
+    score = seq(0, 
+                  1, 
                   length.out = 100),
     y = seq(0, 1, length.out = 100)
 )
@@ -489,11 +489,12 @@ ggplot() +
     ) +
     facet_grid(num_lands_b1 ~ num_lands_b2) +
     labs(
-        title = "Distribution of Unweighted Non-Matching Bullet Scores",
+        title = "Distribution of Unweighted Matching Bullet Scores",
         subtitle = "For All Hamby 252 Bullets",
         x = "Weighted Score",
         y = "Distribution"
     ) +
+    xlim(c(0, 1)) +
     theme_minimal(base_size = 16) +
     theme(
         axis.text.y = element_blank(),
