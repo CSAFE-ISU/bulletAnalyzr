@@ -134,8 +134,10 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
     # b2_files <- grep(paste0("br", barrel2, "_", bullet2, "_land"), files, value = TRUE)
     # b1_files <- grep(paste0("Br", barrel1, " Bullet ", bullet1, "-"), files, value = TRUE)
     # b2_files <- grep(paste0("Br", barrel2, " Bullet ", bullet2, "-"), files, value = TRUE)
-    b1_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
-    b2_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
+    # b1_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
+    # b2_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
+    b1_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
+    b2_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
     
     # Create a temp directory for each bullet separately, copy all files
     # for that bullet to the temp directory, and return the temp directory
@@ -335,7 +337,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_rfscore)) 
     scale_color_identity() +
     labs(
         title = "Bullet Degradation Simulation Results",
-        subtitle = "For Matching Hamby 252 Bullets",
+        subtitle = "For Matching Sensofar PGPD Baretta Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -358,7 +360,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore))
     scale_color_identity() +
     labs(
         title = "Bullet Degradation Simulation Results",
-        subtitle = "For Non-Matching Hamby 252 Bullets",
+        subtitle = "For Non-Matching Sensofar PGPD Baretta Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -381,7 +383,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_log_score)
     scale_color_identity() +
     labs(
         title = "Weighted Bullet Degradation Simulation Results",
-        subtitle = "For Matching Hamby 252 Bullets",
+        subtitle = "For Matching Sensofar PGPD Baretta Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -404,7 +406,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
     scale_color_identity() +
     labs(
         title = "Weighted Bullet Degradation Simulation Results",
-        subtitle = "For Non-Matching Hamby 252 Bullets",
+        subtitle = "For Non-Matching Sensofar PGPD Baretta Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -414,32 +416,6 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
         legend.position = "off"
     )
 ggsave("bullet_degradation_simulation_nonmatch_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
-
-ggplot() +
-    # First layer: match == TRUE (drawn first)
-    geom_histogram(
-        data = final_results_full %>%
-            filter(consecutive, !match) %>%
-            group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
-            summarise(rfscore = max(rfscore)) %>%
-            mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1)),
-        aes(x = sqrt(rfscore), y = after_stat(..count..), fill = match),
-        binwidth = 0.01,
-        position = "identity",
-        alpha = 0.9
-    ) +
-    facet_grid(num_lands_b1 ~ num_lands_b2) +
-    labs(
-        title = "Distribution of Unweighted Bullet Scores",
-        subtitle = "For All Hamby 252 Bullets",
-        x = "Weighted Score",
-        y = "Distribution"
-    ) +
-    theme_minimal(base_size = 16) +
-    theme(
-        axis.text.y = element_blank(),       # Remove Y-axis tick labels
-        axis.text.x = element_text(size = 8, angle = 45)  # Make X-axis tick labels smaller
-    )
 
 # Create a gradient background
 gradient_data <- expand.grid(
@@ -451,7 +427,7 @@ gradient_data <- expand.grid(
 
 # Prepare the data for the histogram
 hist_data <- final_results_full %>%
-    filter(consecutive, match) %>%
+    filter(consecutive) %>%
     group_by(barrel1, barrel2, bullet1, bullet2, b1_lands, b2_lands, num_lands_b1, num_lands_b2, match) %>%
     summarise(score = max(sqrt_score)) %>%
     mutate(num_lands_b1 = factor(num_lands_b1, levels = 6:1))
@@ -480,23 +456,26 @@ ggplot() +
         name = "Score"
     ) +
     # Overlay histogram
-    geom_histogram(
+    geom_density(
         data = hist_data,
-        aes(x = score, y = after_stat(density)),
-        binwidth = 0.01,
-        fill = "black",  # Solid color for contrast
-        alpha = 0.7
+        aes(x = score, y = after_stat(density), colour = match),
+        # binwidth = 0.01,
+        alpha = 0.02,
+        fill = "lightgrey",
+        position = "dodge"
     ) +
     facet_grid(num_lands_b1 ~ num_lands_b2) +
     labs(
-        title = "Distribution of Unweighted Matching Bullet Scores",
-        subtitle = "For All Hamby 252 Bullets",
+        title = "Distribution of Sqrt Weighted Bullet Scores",
+        subtitle = "For All Sensofar PGPD Baretta Bullets",
         x = "Weighted Score",
         y = "Distribution"
     ) +
+    scale_colour_manual(values = c("chocolate4", "darkgreen")) +
     xlim(c(0, 1)) +
     theme_minimal(base_size = 16) +
     theme(
         axis.text.y = element_blank(),
         axis.text.x = element_text(size = 8, angle = 45)
     )
+ggsave("bullet_degradation_simulation_histogram.png", width = 12, height = 8, dpi = 300, bg = "white")
