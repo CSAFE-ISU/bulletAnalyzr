@@ -5,8 +5,7 @@ Authors@R:
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL (>= 3)
 Imports:
     shiny   (>= 1.8.1.1),
     shinyjs (>= 2.1.0),
