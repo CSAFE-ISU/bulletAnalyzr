@@ -35,7 +35,7 @@ compute_bullet_comparisons <- function(b1_path, b2_path, b1_lands = 6, b2_lands 
     bullets <- bullets %>%
         mutate(
             x3p = purrr::map(x3p, x3p_m_to_mum),
-            x3p = purrr::map(x3p, ~ .x %>% rotate_x3p(angle = -90) %>% y_flip_x3p()),
+            # x3p = purrr::map(x3p, ~ .x %>% rotate_x3p(angle = -90) %>% y_flip_x3p()),
             crosscut = purrr::map_dbl(x3p, x3p_crosscut_optimize),
             ccdata = purrr::map2(x3p, crosscut, x3p_crosscut),
             grooves = purrr::map(ccdata, cc_locate_grooves, method = "middle", adjust = 30, return_plot = TRUE),
@@ -136,8 +136,10 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
     # b2_files <- grep(paste0("Br", barrel2, " Bullet ", bullet2, "-"), files, value = TRUE)
     # b1_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
     # b2_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
-    b1_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
-    b2_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
+    # b1_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
+    # b2_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
+    b1_files <- grep(paste0("phoenix-", barrel1, "-", "B", bullet1), files, value = TRUE)
+    b2_files <- grep(paste0("phoenix-", barrel2, "-", "B", bullet2), files, value = TRUE)
     
     # Create a temp directory for each bullet separately, copy all files
     # for that bullet to the temp directory, and return the temp directory
@@ -169,7 +171,7 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
 
 # Define barrels and bullets
 # barrels <- 1:10
-barrels <- c(1, 10, 2, 3, 4)
+barrels <- c("G1L5", "G1F6", "G1C8", "G1A9")
 bullets <- 1:2
 
 # Stats on this
@@ -204,8 +206,8 @@ features_df <- results_tibble %>%
         features = map(output, ~ compute_bullet_comparisons(.x[1], .x[2]))
     )
 
-save(features_df, file = "features_df.RData")
-load("features_df.RData")
+save(features_df, file = "phoenix_features_df.RData")
+load("phoenix_features_df.RData")
 
 bind_features <- features_df %>% mutate(features_row = row_number()) %>% select(-output) %>%
     select(barrel1, barrel2, bullet1, bullet2, b1id, b2id, features) %>%
@@ -257,7 +259,7 @@ features_temp <- simulation_results_temp %>%
     select(barrel1, barrel2, bullet1, bullet2, land1, land2, ccf:sum_peaks) %>%
     mutate(match = ifelse(barrel1 == barrel2, 1, 0))
 
-save(features_temp, file = "features_temp.RData")
+save(features_temp, file = "phoenix_features_temp.RData")
 
 # Produce the final simulation results
 simulation_results <- simulation_results_temp %>%
@@ -275,8 +277,8 @@ simulation_results <- simulation_results_temp %>%
 
 # Display the simulation results
 simulation_results
-write_csv(simulation_results, "bullet_degradation_raw_simulation_results.csv")
-simulation_results <- read_csv("bullet_degradation_raw_simulation_results.csv") %>%
+write_csv(simulation_results, "phoenix_bullet_degradation_raw_simulation_results.csv")
+simulation_results <- read_csv("phoenix_bullet_degradation_raw_simulation_results.csv") %>%
     mutate(
         b1_lands = strsplit(as.character(b1_lands), ""),
         b2_lands = strsplit(as.character(b2_lands), "")
@@ -302,7 +304,7 @@ final_results_full <- simulation_results %>%
         sqrt_score = rfscore * (sqrt(num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
         log_score = rfscore * (log(num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
     )
-write_csv(final_results_full, "bullet_degradation_full_simulation_results.csv")
+write_csv(final_results_full, "phoenix_bullet_degradation_full_simulation_results.csv")
     
 # Aggregate across simulation counts of b1 and b2
 final_results <- final_results_full %>%
@@ -323,7 +325,7 @@ final_results <- final_results_full %>%
         mean_log_score = mean(log_score),
         sd_log_score = sd(log_score)
     )
-write_csv(final_results, "bullet_degradation_simulation_results.csv")
+write_csv(final_results, "phoenix_bullet_degradation_simulation_results.csv")
 
 # Visualize the simulation results with ggplot2
 ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_rfscore)) +
@@ -337,7 +339,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_rfscore)) 
     scale_color_identity() +
     labs(
         title = "Bullet Degradation Simulation Results",
-        subtitle = "For Matching Sensofar PGPD Baretta Bullets",
+        subtitle = "For Matching Sensofar Phoenix Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -346,7 +348,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_rfscore)) 
     theme(
         legend.position = "off"
     )
-ggsave("bullet_degradation_simulation_match_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
+ggsave("phoenix_bullet_degradation_simulation_match_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Visualize the simulation results with ggplot2
 ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore)) +
@@ -360,7 +362,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore))
     scale_color_identity() +
     labs(
         title = "Bullet Degradation Simulation Results",
-        subtitle = "For Non-Matching Sensofar PGPD Baretta Bullets",
+        subtitle = "For Non-Matching Sensofar Phoenix Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -369,7 +371,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_rfscore))
     theme(
         legend.position = "off"
     )
-ggsave("bullet_degradation_simulation_nonmatch_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
+ggsave("phoenix_bullet_degradation_simulation_nonmatch_results.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Visualize the simulation results with ggplot2
 ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_log_score)) +
@@ -383,7 +385,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_log_score)
     scale_color_identity() +
     labs(
         title = "Weighted Bullet Degradation Simulation Results",
-        subtitle = "For Matching Sensofar PGPD Baretta Bullets",
+        subtitle = "For Matching Sensofar Phoenix Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -392,7 +394,7 @@ ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_log_score)
     theme(
         legend.position = "off"
     )
-ggsave("bullet_degradation_simulation_match_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
+ggsave("phoenix_bullet_degradation_simulation_match_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Visualize the simulation results with ggplot2
 ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
@@ -406,7 +408,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
     scale_color_identity() +
     labs(
         title = "Weighted Bullet Degradation Simulation Results",
-        subtitle = "For Non-Matching Sensofar PGPD Baretta Bullets",
+        subtitle = "For Non-Matching Sensofar Phoenix Bullets",
         x = "Number of Lands in Bullet 1",
         y = "Number of Lands in Bullet 2",
         fill = "Mean Bullet Score"
@@ -415,7 +417,7 @@ ggplot(final_results %>% filter(!match), aes(x = N, y = M, fill = mean_score)) +
     theme(
         legend.position = "off"
     )
-ggsave("bullet_degradation_simulation_nonmatch_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
+ggsave("phoenix_bullet_degradation_simulation_nonmatch_results_weighted.png", width = 7.7, height = 6, dpi = 300, bg = "white")
 
 # Create a gradient background
 gradient_data <- expand.grid(
@@ -467,7 +469,7 @@ ggplot() +
     facet_grid(num_lands_b1 ~ num_lands_b2) +
     labs(
         title = "Distribution of Sqrt Weighted Bullet Scores",
-        subtitle = "For All Sensofar PGPD Baretta Bullets",
+        subtitle = "For All Sensofar Phoenix Bullets",
         x = "Weighted Score",
         y = "Distribution"
     ) +
@@ -478,4 +480,4 @@ ggplot() +
         axis.text.y = element_blank(),
         axis.text.x = element_text(size = 8, angle = 45)
     )
-ggsave("bullet_degradation_simulation_histogram.png", width = 12, height = 8, dpi = 300, bg = "white")
+ggsave("phoenix_bullet_degradation_simulation_histogram.png", width = 12, height = 8, dpi = 300, bg = "white")

@@ -21,7 +21,7 @@ library(pagedown)
 library(curl) # for webshot
 
 ## Config
-options(shiny.maxRequestSize = 30*1024^2)
+options(shiny.maxRequestSize = 150*1024^2)
 addResourcePath("images", "images")
 theme_set(theme_bw())
 theme_update(
