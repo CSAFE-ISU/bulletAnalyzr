@@ -4,3 +4,6 @@
 .Ruserdata
 .DS_Store
 inst/.DS_Store
+*.png
+*.csv
+*.RData
