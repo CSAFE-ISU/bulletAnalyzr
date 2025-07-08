@@ -79,3 +79,19 @@ rf_model <- randomForest(
 )
 
 importance(rf_model)
+
+# Now fit a model with a balanced number of trues and falses
+rf_model_balanced <- randomForest(
+  factor(match) ~ .,
+  data = train_set %>% filter(match == TRUE) %>% 
+    bind_rows(train_set %>% filter(match == FALSE) %>% sample_n(nrow(train_set %>% filter(match == TRUE)))),
+  ntree = 100,  # Number of trees
+  importance = TRUE
+)
+
+importance(rf_model_balanced) %>%
+  as_tibble() %>%
+  mutate(Feature = rownames(importance(rf_model_balanced))) %>%
+  select(Feature, everything()) %>%
+  arrange(desc(MeanDecreaseGini))
+
