@@ -17,7 +17,7 @@ prepare_data <- function(data_dir) {
     NRBTDsample_download("README_files/data")
 }
 
-compute_bullet_comparisons <- function(b1_path, b2_path, b1_lands = 6, b2_lands = 6) {
+compute_bullet_comparisons <- function(b1_path, b2_path, b1_lands = 1, b2_lands = 1) {
     print(paste0("Beginning comparison of ", b1_path, " and ", b2_path))
     # Load and prepare data
     # prepare_data(b1_path)
@@ -35,7 +35,7 @@ compute_bullet_comparisons <- function(b1_path, b2_path, b1_lands = 6, b2_lands 
     bullets <- bullets %>%
         mutate(
             x3p = purrr::map(x3p, x3p_m_to_mum),
-            # x3p = purrr::map(x3p, ~ .x %>% rotate_x3p(angle = -90) %>% y_flip_x3p()),
+            x3p = purrr::map(x3p, ~ .x %>% rotate_x3p(angle = -90) %>% y_flip_x3p()),
             crosscut = purrr::map_dbl(x3p, x3p_crosscut_optimize),
             ccdata = purrr::map2(x3p, crosscut, x3p_crosscut),
             grooves = purrr::map(ccdata, cc_locate_grooves, method = "middle", adjust = 30, return_plot = TRUE),
@@ -119,8 +119,8 @@ get_unique_ordered_combinations <- function(n) {
 }
 
 # Generate unique ordered combinations for b1 and b2
-b1_indices_combinations <- get_unique_ordered_combinations(6)
-b2_indices_combinations <- get_unique_ordered_combinations(6)
+b1_indices_combinations <- get_unique_ordered_combinations(1)
+b2_indices_combinations <- get_unique_ordered_combinations(1)
 
 get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
     # Find bullet lands for a given barrel number
@@ -138,8 +138,10 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
     # b2_files <- grep(paste0("EvoFinder PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
     # b1_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel1, "-", bullet1), files, value = TRUE)
     # b2_files <- grep(paste0("Sensofar_CC PGPD Barrel ", barrel2, "-", bullet2), files, value = TRUE)
-    b1_files <- grep(paste0("phoenix-", barrel1, "-", "B", bullet1), files, value = TRUE)
-    b2_files <- grep(paste0("phoenix-", barrel2, "-", "B", bullet2), files, value = TRUE)
+    # b1_files <- grep(paste0("phoenix-", barrel1, "-", "B", bullet1), files, value = TRUE)
+    # b2_files <- grep(paste0("phoenix-", barrel2, "-", "B", bullet2), files, value = TRUE)
+    b1_files <- grep(paste0(barrel1), files, value = TRUE)
+    b2_files <- grep(paste0(barrel2), files, value = TRUE)
     
     # Create a temp directory for each bullet separately, copy all files
     # for that bullet to the temp directory, and return the temp directory
@@ -171,8 +173,9 @@ get_bullet_lands <- function(barrel1, barrel2, bullet1, bullet2) {
 
 # Define barrels and bullets
 # barrels <- 1:10
-barrels <- c("G1L5", "G1F6", "G1C8", "G1A9")
-bullets <- 1:2
+barrels <- c("Beretta 92F-2", "Beretta 92F 9mm", "Lorcin L9MM-2",
+             "Lorcin L9MM-CSAFE", "Ruger P95DC-2", "Ruger P95DC-CSAFE")
+bullets <- 1
 
 # Stats on this
 num_barrels <- length(barrels)
@@ -184,6 +187,13 @@ combinations <- expand.grid(
     barrel2 = barrels,
     bullet1 = bullets,
     bullet2 = bullets
+)
+
+combinations <- tibble(
+    barrel1 = c("Beretta 92F 9mm", "Beretta 92F-2", "Lorcin L9MM-2", "Lorcin L9MM-CSAFE", "Ruger P95DC-2", "Ruger P95DC-CSAFE"),
+    barrel2 = c("Beretta 92F 9mm", "Beretta 92F-2", "Lorcin L9MM-2", "Lorcin L9MM-CSAFE", "Ruger P95DC-2", "Ruger P95DC-CSAFE"),
+    bullet1 = 1,
+    bullet2 = 1,
 )
 
 # Compute the full bullet-level features once
@@ -206,8 +216,8 @@ features_df <- results_tibble %>%
         features = map(output, ~ compute_bullet_comparisons(.x[1], .x[2]))
     )
 
-save(features_df, file = "phoenix_features_df.RData")
-load("phoenix_features_df.RData")
+save(features_df, file = "fullbullet_features_df.RData")
+load("fullbullet_features_df.RData")
 
 bind_features <- features_df %>% mutate(features_row = row_number()) %>% select(-output) %>%
     select(barrel1, barrel2, bullet1, bullet2, b1id, b2id, features) %>%
@@ -259,7 +269,7 @@ features_temp <- simulation_results_temp %>%
     select(barrel1, barrel2, bullet1, bullet2, land1, land2, ccf:sum_peaks) %>%
     mutate(match = ifelse(barrel1 == barrel2, 1, 0))
 
-save(features_temp, file = "phoenix_features_temp.RData")
+save(features_temp, file = "fullbullet_features_temp.RData")
 
 # Produce the final simulation results
 simulation_results <- simulation_results_temp %>%
@@ -277,8 +287,8 @@ simulation_results <- simulation_results_temp %>%
 
 # Display the simulation results
 simulation_results
-write_csv(simulation_results, "phoenix_bullet_degradation_raw_simulation_results.csv")
-simulation_results <- read_csv("phoenix_bullet_degradation_raw_simulation_results.csv") %>%
+write_csv(simulation_results, "fullbullet_bullet_degradation_raw_simulation_results.csv")
+simulation_results <- read_csv("fullbullet_bullet_degradation_raw_simulation_results.csv") %>%
     mutate(
         b1_lands = strsplit(as.character(b1_lands), ""),
         b2_lands = strsplit(as.character(b2_lands), "")
@@ -304,7 +314,7 @@ final_results_full <- simulation_results %>%
         sqrt_score = rfscore * (sqrt(num_lands_b1 * num_lands_b2) / sqrt((max(num_lands_b1) * max(num_lands_b2)))),
         log_score = rfscore * (log(num_lands_b1 * num_lands_b2) / log((max(num_lands_b1) * max(num_lands_b2))))
     )
-write_csv(final_results_full, "phoenix_bullet_degradation_full_simulation_results.csv")
+write_csv(final_results_full, "fullbullet_bullet_degradation_full_simulation_results.csv")
     
 # Aggregate across simulation counts of b1 and b2
 final_results <- final_results_full %>%
@@ -325,7 +335,7 @@ final_results <- final_results_full %>%
         mean_log_score = mean(log_score),
         sd_log_score = sd(log_score)
     )
-write_csv(final_results, "phoenix_bullet_degradation_simulation_results.csv")
+write_csv(final_results, "fullbullet_bullet_degradation_simulation_results.csv")
 
 # Visualize the simulation results with ggplot2
 ggplot(final_results %>% filter(match), aes(x = N, y = M, fill = mean_rfscore)) +
@@ -481,3 +491,17 @@ ggplot() +
         axis.text.x = element_text(size = 8, angle = 45)
     )
 ggsave("phoenix_bullet_degradation_simulation_histogram.png", width = 12, height = 8, dpi = 300, bg = "white")
+
+simulation_results %>%
+    mutate(beginning1 = sapply(strsplit(barrel1, " "), `[[`, 1),
+           beginning2 = sapply(strsplit(barrel2, " "), `[[`, 1),
+           match = beginning1 == beginning2) %>%
+    ggplot(aes(x = rfscore, fill = match)) +
+    geom_bar(position = "dodge") +
+    scale_fill_manual(values = c("chocolate4", "darkgreen")) +
+    xlim(c(0, 1)) +
+    theme_minimal(base_size = 16) +
+    theme(
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 8, angle = 45)
+    )

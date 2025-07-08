@@ -21,6 +21,8 @@ file_df <- bind_rows(file_list)
 features <- map_dfr(file_list, ~ {
   tibble(
     file = .x$file,
+    barrel1 = .x$barrel1,
+    barrel2 = .x$barrel2,
     features = .x$features
   )
 }) %>%
@@ -40,4 +42,40 @@ write_csv(features, "land_training_data.csv")
 all_data <- files %>%
   map_dfr(~ read_csv(.x, col_types = cols(.default = "c")))
 
-# Get all land to land comparisons
+###
+# Model Training
+###
+features_raw <- read_csv("land_training_data.csv")
+
+# Get the top score for every pair
+top_scores <- features_raw %>%
+  group_by(file, barrel1, barrel2, bulletA, bulletB, landA) %>%
+  summarise(topscore = max(rfscore))
+
+features_scores <- features_raw %>%
+  left_join(top_scores) %>%
+  group_by(file, bulletA, bulletB, landA) %>%
+  mutate(match = rfscore == topscore & barrel1 == barrel2)  # TODO: Ground truth
+
+# We need to remove certain columns
+features <- features_scores %>%
+  ungroup() %>%
+  select(-file, -barrel1, -barrel2, -bulletA, -bulletB, -landA, -landB, -rfscore, -topscore)
+
+# Split into an 80% training 20% test set
+set.seed(123)  # For reproducibility
+train_indices <- sample(1:nrow(features), size = 0.8 * nrow(features))
+train_set <- features[train_indices, ]
+test_set <- features[-train_indices, ]
+
+# Now fit a random forest
+library(randomForest)
+
+rf_model <- randomForest(
+  factor(match) ~ .,
+  data = train_set,
+  ntree = 100,  # Number of trees
+  importance = TRUE
+)
+
+importance(rf_model)
