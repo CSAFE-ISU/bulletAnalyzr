@@ -50,10 +50,16 @@ server <- function(input, output, session) {
   # Reactive object to hold the bullet and comparison data
   bulldata <- reactiveValues(
     allbull = data.frame(),
+    allbullExport = data.frame(),
     cbull = data.frame(),
     preCC = NULL, 
     postCC = NULL, 
     comparison = NULL
+  )
+  
+  # Export values for shinytest2
+  exportTestValues(
+    allbull_export = bulldata$allbullExport
   )
   
   # Bullet Land Files Input
@@ -69,7 +75,7 @@ server <- function(input, output, session) {
   
   # Add Bullet to Comparison List button. Push current bullet data to all bullet
   # data object
-  observeEvent(input$up_bull,{
+  observeEvent(input$up_bull, {
     if(nrow(bulldata$cbull) == 0) return(NULL)
     allbull <- bulldata$allbull
     allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
@@ -77,6 +83,13 @@ server <- function(input, output, session) {
     bull$bullet <- input$bul_x3p_name
     bull$land <- factor(bull$land_names, levels = bull$land_names)
     bulldata$allbull <- rbind(allbull,bull)
+    # Modify allbullExport for testing. Drop the x3p column because it makes the
+    # snapshots 100+ MB. Change source column from filepath to filename because
+    # the temp directory filepath will change every time, but the filenames
+    # should remain consistent.
+    bulldata$allbullExport <- bulldata$allbull %>% 
+      dplyr::select(-tidyselect::any_of(c("x3p"))) %>%
+      dplyr::mutate(source = basename(source))
     disable("up_bull")
   })
   
@@ -110,7 +123,7 @@ server <- function(input, output, session) {
     progress$set(message = "Reading Bullets", value = .25)
     bull <- uploaded_bull()
     
-    # Check if we need to rotate the bullet
+    # Rotate bullet (optional) ----
     hinfo <- bull$x3p[[1]]$header.info
     if (hinfo$sizeX < hinfo$sizeY) {
       if (values$show_alert) {
@@ -125,8 +138,9 @@ server <- function(input, output, session) {
       bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
     }
     
-    # Check if we need to down-sample the bullet
-    # Calculate the closest integer `n` that samples reference resolution to match incrementX
+    # Down-sample bullet (optional) ----
+    # Check if we need to down-sample the bullet Calculate the closest integer
+    # `n` that samples reference resolution to match incrementX
     if (nrow(bulldata$allbull) > 0) {
       reference_resolution <- x3p_get_scale(bulldata$allbull$x3p[[1]]) / 1e6
       current_resolution <- x3p_get_scale(bull$x3p[[1]])
@@ -273,7 +287,8 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
   })
   
-  # Continue Process after Interactivity
+  # Continue Process after Interactivity. bulldata$postCC is populated when the
+  # 2nd Compare Bullets button (doprocessCC) is clicked
   observeEvent(bulldata$postCC, {
     if(is.null(bulldata$postCC)) return(NULL)
     progress <- shiny::Progress$new(); on.exit(progress$close())
