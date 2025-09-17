@@ -92,6 +92,12 @@ server <- function(input, output, session) {
 
 	## Reactive object to hold the bullet and comparison data
 	bulldata <- reactiveValues(allbull=data.frame(),cbull=data.frame(),preCC = NULL, postCC = NULL, comparison=NULL)
+	
+	## Export reactive values for shinytest2 tests
+	shiny::exportTestValues(
+	  show_alert = values$show_alert,
+	  allbull = bulldata$allbull
+	)
 
 	## Bullet Land Files Input
 	output$bul_x3pui <- renderUI({fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p",multiple=TRUE)})
