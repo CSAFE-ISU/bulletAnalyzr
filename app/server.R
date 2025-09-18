@@ -50,8 +50,9 @@ server <- function(input, output, session) {
   # Reactive object to hold the bullet and comparison data
   bulldata <- reactiveValues(
     allbull = data.frame(),
-    allbullExport = data.frame(),
+    allbull_export = data.frame(),
     cbull = data.frame(),
+    cbull_export = data.frame(),
     preCC = NULL, 
     postCC = NULL, 
     comparison = NULL
@@ -59,7 +60,9 @@ server <- function(input, output, session) {
   
   # Export values for shinytest2
   exportTestValues(
-    allbull_export = bulldata$allbullExport
+    show_alert_export = values$show_alert,
+    allbull_export = bulldata$allbull_export,
+    cbull_export = bulldata$cbull_export
   )
   
   # Bullet Land Files Input
@@ -83,7 +86,7 @@ server <- function(input, output, session) {
     bull$bullet <- input$bul_x3p_name
     bull$land <- factor(bull$land_names, levels = bull$land_names)
     bulldata$allbull <- rbind(allbull,bull)
-    bulldata$allbullExport <- make_export_df(df = bulldata$allbull)
+    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
     disable("up_bull")
   })
   
@@ -175,6 +178,7 @@ server <- function(input, output, session) {
     bull$land_names <- identify_lands(bull$filename)
     bull$bullet_name <- identify_bullet(bull$filename)
     bulldata$cbull <- bull
+    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
     
     # Render Bullet
     progress$set(message = "Rendering Previews", value = .75)
