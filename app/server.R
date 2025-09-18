@@ -31,7 +31,7 @@ theme_update(
 interactive_cc = TRUE
 
 # Helper Functions ----
-source("helper.R")
+source("R/helper.R")
 
 
 # Server ------------------------------------------------------------------

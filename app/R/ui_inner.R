@@ -71,8 +71,8 @@ sidebarLayout(tags$div(id="my-sidebar",
 
       ## Comparison Report
       tabPanel("Comparison Report", 
-          withSpinner(uiOutput("CCBullLand")),
-          withSpinner(uiOutput("reportUI"))
+          shinycssloaders::withSpinner(uiOutput("CCBullLand")),
+          shinycssloaders::withSpinner(uiOutput("reportUI"))
       )  
     )
   )
