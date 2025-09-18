@@ -70,6 +70,17 @@ parse_rglui <- function(x, name = "x3prgl", land_name = NULL)
   )
 }
 
+make_export_df <- function(df) {
+  # Modify data frame for export for testing. Drop the x3p column because it
+  # makes the snapshots 100+ MB. Change source column from filepath to filename
+  # because the temp directory filepath will change every time, but the
+  # filenames should remain consistent.
+  df <- df %>% 
+    dplyr::select(-tidyselect::any_of(c("x3p"))) %>%
+    dplyr::mutate(source = basename(source))
+  return(df)
+}
+
 ## Render Land into image with CrossCut line
 render_land <- function(src,x3p,ccut)
 {

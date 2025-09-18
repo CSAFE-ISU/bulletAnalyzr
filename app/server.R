@@ -83,13 +83,7 @@ server <- function(input, output, session) {
     bull$bullet <- input$bul_x3p_name
     bull$land <- factor(bull$land_names, levels = bull$land_names)
     bulldata$allbull <- rbind(allbull,bull)
-    # Modify allbullExport for testing. Drop the x3p column because it makes the
-    # snapshots 100+ MB. Change source column from filepath to filename because
-    # the temp directory filepath will change every time, but the filenames
-    # should remain consistent.
-    bulldata$allbullExport <- bulldata$allbull %>% 
-      dplyr::select(-tidyselect::any_of(c("x3p"))) %>%
-      dplyr::mutate(source = basename(source))
+    bulldata$allbullExport <- make_export_df(df = bulldata$allbull)
     disable("up_bull")
   })
   
@@ -252,6 +246,7 @@ server <- function(input, output, session) {
     )
   })
   
+  
   # Compare Bullet Selection and Processing ---------------------------------
   
   # Select Bullets to Compare sidebar
@@ -391,6 +386,7 @@ server <- function(input, output, session) {
     )
   })
 
+  
   # Cross Cut Interactivity -------------------------------------------------
 
   # Select Bullet sidebar
@@ -464,6 +460,7 @@ server <- function(input, output, session) {
     )
   })
 
+  
   # Generate Bullet Comparison Report UI ------------------------------------
 
   # Report sidebar
@@ -590,7 +587,6 @@ server <- function(input, output, session) {
           height = "250px"
         )
         
-
         # Groove Plot -------------------------------------------------------------
 
         local({
@@ -661,6 +657,7 @@ server <- function(input, output, session) {
     return(c(BullComp, LandComp$children))
   })
 
+  
   # Generate Bullet Comparison Report Server Outputs ------------------------
 
   # Bullet Comparison Score
