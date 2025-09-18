@@ -126,7 +126,7 @@ server <- function(input, output, session) {
     progress$set(message = "Reading Bullets", value = .25)
     bull <- uploaded_bull()
     
-    # Rotate bullet (optional) ----
+    # Rotate bullet (optional)
     hinfo <- bull$x3p[[1]]$header.info
     if (hinfo$sizeX < hinfo$sizeY) {
       if (values$show_alert) {
@@ -141,7 +141,7 @@ server <- function(input, output, session) {
       bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
     }
     
-    # Down-sample bullet (optional) ----
+    # Down-sample bullet (optional)
     # Check if we need to down-sample the bullet Calculate the closest integer
     # `n` that samples reference resolution to match incrementX
     if (nrow(bulldata$allbull) > 0) {
@@ -208,7 +208,6 @@ server <- function(input, output, session) {
       !!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bull$land_names[x]))
     )
   })
-  
   
   # Preview Bullet Selection ------------------------------------------------
   
