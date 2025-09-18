@@ -76,7 +76,7 @@ make_export_df <- function(df) {
   # because the temp directory filepath will change every time, but the
   # filenames should remain consistent.
   df <- df %>% 
-    dplyr::select(-tidyselect::any_of(c("x3p"))) 
+    dplyr::select(-tidyselect::any_of(c("x3p", "x3pimg"))) 
   
   if ("source" %in% colnames(df)) {
     df <- df %>%

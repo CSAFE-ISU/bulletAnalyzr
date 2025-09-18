@@ -53,16 +53,22 @@ server <- function(input, output, session) {
     allbull_export = data.frame(),
     cbull = data.frame(),
     cbull_export = data.frame(),
-    preCC = NULL, 
+    preCC = NULL,
+    preCC_export = NULL,
     postCC = NULL, 
-    comparison = NULL
+    postCC_export = NULL,
+    comparison = NULL,
+    comparison_export = NULL
   )
   
   # Export values for shinytest2
   exportTestValues(
     show_alert_export = values$show_alert,
     allbull_export = bulldata$allbull_export,
-    cbull_export = bulldata$cbull_export
+    cbull_export = bulldata$cbull_export,
+    preCC_export = bulldata$preCC_export,
+    postCC_export = bulldata$postCC_export,
+    comparison_export = bulldata$comparison_export
   )
   
   # Bullet Land Files Input
@@ -279,8 +285,14 @@ server <- function(input, output, session) {
     bullets$crosscut <- sapply(bullets$x3p, x3p_crosscut_optimize, ylimits = c(150, NA))
     
     # If Interactive Push the data to preCC Stage
-    if(interactive_cc) bulldata$preCC <- bullets
-    if(!interactive_cc) bulldata$postCC <- bullets
+    if(interactive_cc) {
+      bulldata$preCC <- bullets
+      bulldata$preCC_export <- make_export_df(df = bullets)
+    }
+    if(!interactive_cc) {
+      bulldata$postCC <- bullets
+      bulldata$postCC_export <- make_export_df(df = bullets)
+    }
     
     # Update the selected Panel
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
@@ -388,6 +400,12 @@ server <- function(input, output, session) {
       features_scaled = features,
       bullet_scores = bullet_scores
     )
+    bulldata$comparison_export <- list(
+      bullets = make_export_df(bullets),
+      comparisons = make_export_df(comparisons),
+      features_scaled = make_export_df(features),
+      bullet_scores = make_export_df(bullet_scores)
+    )
   })
 
   
@@ -422,7 +440,8 @@ server <- function(input, output, session) {
     if(is.null(bulldata$preCC)) return(NULL)
     bullets <- bulldata$preCC
     bullets[bullets$bullet == input$cc_bulsel,]$crosscut <- sapply(1:sum(bullets$bullet == input$cc_bulsel), function(x) input[[paste("CCsl",x)]])
-    bulldata$preCC = bullets
+    bulldata$preCC <- bullets
+    bulldata$preCC_export <- make_export_df(df = bullets)
   })
   
   # Compare Bullets button
@@ -430,7 +449,9 @@ server <- function(input, output, session) {
     if(is.null(bulldata$preCC)) return(NULL)
     bullets <- bulldata$preCC
     bulldata$preCC <- NULL
+    bulldata$preCC_export <- NULL
     bulldata$postCC <- bullets
+    bulldata$postCC_export <- NULL
   })
   
   # Crosscuts on Comparison Report tab panel
