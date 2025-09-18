@@ -63,12 +63,13 @@ server <- function(input, output, session) {
   
   # Export values for shinytest2
   exportTestValues(
-    show_alert_export = values$show_alert,
     allbull_export = bulldata$allbull_export,
     cbull_export = bulldata$cbull_export,
-    preCC_export = bulldata$preCC_export,
+    comparison_export = bulldata$comparison_export,
+    phase_test_export = phase$test_results,
     postCC_export = bulldata$postCC_export,
-    comparison_export = bulldata$comparison_export
+    preCC_export = bulldata$preCC_export,
+    show_alert_export = values$show_alert
   )
   
   # Bullet Land Files Input
@@ -683,43 +684,73 @@ server <- function(input, output, session) {
 
   
   # Generate Bullet Comparison Report Server Outputs ------------------------
+  
+  phase <- reactiveValues(
+    test_results = NULL
+  )
 
-  # Bullet Comparison Score
-  output$bull_comp_score <- renderText({
-    if(is.null(bulldata$comparison)) return(NULL)
+  observe({
+    req(bulldata$comparison)
+    req(bulldata$comparison$bullet_scores)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
+  
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores$selsource <- FALSE
     bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
     d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-    res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
-    if (any(class(res) %in% "try-error")) {
-      scores <- d %>%
+    
+    tryCatch({
+      phase$test_results <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
+    }, error = function(e) {
+      return(d)
+    })
+  })
+  
+  # Bullet Comparison Score
+  output$bull_comp_score <- renderText({
+    if(is.null(bulldata$comparison)) return(NULL)
+    req(phase$test_results)
+    
+    pt <- phase$test_results
+    
+    if (is.data.frame(pt)) {
+      scores <- pt %>%
         group_by(samesource) %>% 
         summarize(avg = mean(scores, na.rm = TRUE)) %>%
         purrr::pluck("avg") %>%
         unlist()
       return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
+    } else if (inherits(pt, "phase.test")) {
+      return(sprintf("Phase Test Score: %.4f", pt$estimate))
+    } else {
+      stop("Phase test results have an unexpected class")
     }
-    return(sprintf("Phase Test Score: %.4f", test$estimate))
   })
   
   # Bullet Comarison Mismatch Prob
   output$bull_comp_test <- renderText({
     if(is.null(bulldata$comparison)) return(NULL)
-    bullet_scores <- bulldata$comparison$bullet_scores
-    bullet_scores$selsource <- FALSE
-    bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
-    d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-    res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
-    if(any(class(res) %in% "try-error")) {return("Test result unstable")}
-    pval <- sprintf("%.4f", test$p.value)
-    if (test$p.value < 0.01) pval <- "Less than 1 in 100" 
-    if (test$p.value < 0.001) pval <- "Less than 1 in 1,000" 
-    if (test$p.value < 0.0001) pval <- "Less than 1 in 10,000" 
-    if (test$p.value < 0.00001) pval <- "Less than 1 in 100,000" 
-    if (test$p.value < 0.000001) pval <- "Less than 1 in 1 Million" 
-    if (test$p.value < 0.0000001) pval <- "Less than 1 in 10 Million" 
-    return(sprintf("Probability of False Identification: %s (Type I Error)", pval))
+    req(phase$test_results)
+    
+    pt <- phase$test_results
+    
+    if (is.data.frame(pt)) {
+      return("Test result unstable")
+    } else if (inherits(pt, "phase.test")) {
+      pval <- pt$p.value
+      prob <- case_when(
+        pval < 0.0000001 ~ "Less than 1 in 10 Million",
+        pval < 0.000001 ~ "Less than 1 in 1 Million",
+        pval < 0.00001 ~ "Less than 1 in 100,000",
+        pval < 0.0001 ~ "Less than 1 in 10,000",
+        pval < 0.001 ~ "Less than 1 in 1,000",
+        pval < 0.01 ~ "Less than 1 in 100"
+      )
+      return(sprintf("Probability of False Identification: %s (Type I Error)", prob))
+    } else {
+      stop("Phase test results have an unexpected class")
+    }
   })
   
   # Bullet Comparison Heatmap
