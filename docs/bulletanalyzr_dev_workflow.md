@@ -9,14 +9,17 @@
 **Tab Panel:** "Welcome"
 
 ### UI Elements
+
 - Welcome message and instructions
 - Button: `actionButton("confirm_autonomous", "Begin")`
 
 ### Server Logic
+
 - `observeEvent(input$confirm_autonomous)` → switches to "Upload Bullet" tab
 - Uses `updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")`
 
 ### Reactive Value Changes
+
 - None
 
 ---
@@ -28,6 +31,8 @@
 ### File Upload Section
 
 #### UI Elements
+
+- UI Output: `bul_x3pui`, `lpupload`
 - File input: `fileInput("bul_x3p", "Select Bullet Land x3p files")`
 - Text input: `textInput("bul_x3p_name", label="Bullet Name")`
 - Button: `actionButton("up_bull", label = "Add Bullet to Comparison List")`
@@ -35,18 +40,21 @@
 #### Server Processing Chain
 
 **1. `observeEvent(input$bul_x3p)` - File upload trigger**
+
 - Calls `identify_bullet()` to auto-name bullet
 - Updates `input$bul_x3p_name` via `updateTextInput()`
 - **Reactive Value Changes:**
   - `values$show_alert <- TRUE`
 
 **2. `uploaded_bull()` reactive - File processing**
+
 - Creates temp directory and copies files
 - Calls `read_bullet(temp_dir)`
 - **Reactive Value Changes:**
   - Returns processed bullet data structure
 
 **3. `output$lpupload` renderUI - Main processing pipeline**
+
 - Conditional rotation: checks `hinfo$sizeX < hinfo$sizeY`
 - Resolution matching: compares `x3p_get_scale()` between bullets
 - Unit conversion: `cond_x3p_m_to_mum()`
@@ -59,6 +67,7 @@
   - `bulldata$cbull_export` ← export version of current bullet
 
 **4. `observeEvent(input$up_bull)` - Add to comparison list**
+
 - Moves data from `bulldata$cbull` to `bulldata$allbull`
 - Calls `disable("up_bull")`
 - **Reactive Value Changes:**
@@ -68,10 +77,13 @@
 ### Comparison Selection
 
 #### UI Elements
+
+- UI Output: `bull_sel`
 - Checkbox group: `checkboxGroupInput("bullcompgroup")`
 - Button: `actionButton("doprocess", label = "Compare Bullets")`
 
 #### Server Logic
+
 - `observeEvent(input$doprocess)` → triggers crosscut optimization
 - **Reactive Value Changes:**
   - `values$show_alert <- FALSE`
@@ -88,14 +100,18 @@
 **Tab Panel:** "Preview Bullet"
 
 ### UI Elements
+
+- UI Output: `prevSelUI`, `lpreview`
 - Dropdown: `selectInput("prev_bul", "Preview Bullet")`
 
 ### Server Logic
+
 - `output$prevSelUI` renders bullet selection UI
 - `output$lpreview` renders 3D previews of selected bullet
 - Uses `renderRglwidget()` with prefix "x3prglprev"
 
 ### Reactive Value Changes
+
 - None (read-only operations)
 
 ---
@@ -107,6 +123,8 @@
 ### Crosscut Control Section
 
 #### UI Elements
+
+- UI Output: `CCBull1`, `CCBull2` `CCBullLand`
 - Dropdown: `selectInput("cc_bulsel", "Select Bullet")`
 - Dynamic sliders: `sliderInput(paste("CCsl",x))` for each land
 - Button: `actionButton("saveCC", label = "Finalise CrossCut")`
@@ -115,22 +133,27 @@
 #### Server Logic Chain
 
 **1. `output$CCBull1` - Renders bullet selection dropdown**
+
 - **Reactive Value Changes:** None
 
 **2. `output$CCBull2` - Renders crosscut sliders dynamically**
+
 - **Reactive Value Changes:** None
 
 **3. `output$CCBullLand` - Renders 3D visualizations with crosscut lines**
+
 - Uses `renderRglwidget()` with prefix "CC_Sel_"
 - Calls `x3p_add_hline()` for crosscut visualization
 - **Reactive Value Changes:** None
 
 **4. `observeEvent(input$saveCC)` - Save crosscut adjustments**
+
 - **Reactive Value Changes:**
   - `bulldata$preCC` ← updated with manual crosscut positions from sliders
   - `bulldata$preCC_export` ← updated export version
 
 **5. `observeEvent(input$doprocessCC)` - Trigger comparison**
+
 - **Reactive Value Changes:**
   - `bulldata$postCC` ← data from `bulldata$preCC`
   - `bulldata$postCC_export` ← export version
@@ -144,6 +167,7 @@
 **Reactive Chain:** `observeEvent(bulldata$postCC)`
 
 ### Processing Steps
+
 - Extracts crosscut data: `mapply(try_x3p_crosscut)`
 - Groove detection: `cc_locate_grooves()`
 - Signal extraction: `cc_get_signature()`
@@ -155,6 +179,7 @@
 - Image rendering: `render_land()` for each bullet
 
 ### Reactive Value Changes
+
 - `bulldata$comparison` ← complete analysis results containing:
   - `bullets` (processed bullet data with images)
   - `comparisons` (pairwise land comparisons)
@@ -169,11 +194,14 @@
 ### Report Selection
 
 #### UI Elements
+
+- UI Output: `reportSelUI`, `reportDownUI`, `reportUI`
 - Dropdown: `selectInput("comp_bul1", "Compare Bullet")`
 - Dropdown: `selectInput("comp_bul2", "With Bullet")`
 - Button: `screenshotButton(id = "reportUI")`
 
 #### Report Outputs
+
 - `output$bull_comp_score` - Phase test score text
 - `output$bull_comp_test` - Phase test probability text
 - `output$bull_comp` - Bullet score matrix plot
@@ -182,6 +210,7 @@
 - `output$land_visSig` - Signal comparison plots
 
 ### Dynamic Report Sections
+
 - `output$reportUI` - Main report renderer
   - Generates collapsible panels: `bsCollapsePanel()`
   - Creates dynamic outputs for each land comparison:
@@ -191,6 +220,7 @@
     - Data tables: `datatable()` for feature comparisons
 
 ### Reactive Value Changes
+
 - None (read-only rendering operations)
 
 ---
@@ -200,10 +230,12 @@
 **Reactive:** `observe()` with `req(bulldata$comparison)`
 
 ### Processing
+
 - Calls `bulletxtrctr:::phase_test()`
 - Handles both data.frame and phase.test class results
 
 ### Reactive Value Changes
+
 - `phase$test_results` ← phase test statistical results
 
 ---
