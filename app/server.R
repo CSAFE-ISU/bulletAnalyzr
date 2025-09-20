@@ -32,6 +32,7 @@ interactive_cc = TRUE
 
 # Helper Functions ----
 source("R/helper.R")
+source("R/bullet-lists.R")
 
 
 # Server ------------------------------------------------------------------
@@ -102,13 +103,14 @@ server <- function(input, output, session) {
   observeEvent(input$up_bull, {
     req(nrow(bulldata$cbull) > 0)
     
-    allbull <- bulldata$allbull
-    allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
-    bull <- bulldata$cbull
-    bull$bullet <- input$bul_x3p_name
-    bull$land <- factor(bull$land_names, levels = bull$land_names)
-    bulldata$allbull <- rbind(allbull,bull)
+    bulldata$allbull <- add_cbull_to_allbull(
+      cbull = bulldata$cbull,
+      bul_x3p_name = input$bul_x3p_name,
+      allbull = bulldata$allbull
+    )
     bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
+    
+    # Switch upload button off ----
     disable("up_bull")
   })
   
