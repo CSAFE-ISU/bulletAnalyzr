@@ -33,6 +33,7 @@ interactive_cc = TRUE
 # Helper Functions ----
 source("R/helper.R")
 source("R/bullet-lists.R")
+source("R/bullet-transformations.R")
 
 
 # Server ------------------------------------------------------------------
@@ -134,6 +135,7 @@ server <- function(input, output, session) {
   output$lpupload <- renderUI({
     req(input$bul_x3p)
     
+    # Switch upload button off ----
     disable("up_bull")
     progress <- shiny::Progress$new();on.exit(progress$close())
     
@@ -142,19 +144,9 @@ server <- function(input, output, session) {
     bull <- uploaded_bull()
     
     # Rotate bullet (optional) ----
-    hinfo <- bull$x3p[[1]]$header.info
-    if (hinfo$sizeX < hinfo$sizeY) {
-      if (values$show_alert) {
-        showModal(modalDialog(
-          title = "Rotated Bullet",
-          "Detected rotated bullet, rotating 90 degrees...",
-          easyClose = TRUE,
-          footer = modalButton("OK")
-        ))
-      }
-      values$show_alert <- FALSE
-      bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
-    }
+    rotate_results <- rotate_bullet(bullet = bull, values = values, session = session)
+    bull <- rotate_results$bullet
+    values$show_alert <- rotate_results$show_alert
     
     # Down-sample bullet (optional) ----
     # Check if we need to down-sample the bullet Calculate the closest integer
@@ -256,7 +248,7 @@ server <- function(input, output, session) {
   output$lpreview <- renderUI({
     req(nrow(bulldata$allbull) > 0)
     req(length(input$prev_bul) > 0)
-
+    
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Refresh on tab change ----
@@ -337,7 +329,7 @@ server <- function(input, output, session) {
   # on the Comparison Report tab panel is clicked
   observeEvent(bulldata$postCC, {
     req(bulldata$postCC)
-
+    
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Extract crosscut data ----
@@ -556,7 +548,7 @@ server <- function(input, output, session) {
   output$reportSelUI <- renderUI({
     req(is.null(bulldata$preCC))
     req(bulldata$comparison)
-
+    
     all_bullets <- unique(bulldata$comparison$bullet_scores$bulletA)
     list(
       # DROP-DOWN - Compare Bullet ----
@@ -829,7 +821,7 @@ server <- function(input, output, session) {
   # OUTPUT - Bullet score matrix ----
   output$bull_comp <- renderPlot({
     req(bulldata$comparison)
-
+    
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores$selsource <- FALSE
     bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
