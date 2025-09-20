@@ -98,8 +98,7 @@ render_land <- function(src, x3p, ccut) {
 }
 
 ## Render Slider to adjust CrossCut
-render_ccsl <- function(id, ymin,ymax,yset)
-{
+render_ccsl <- function(id, ymin, ymax, yset) {
   sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
 }
 

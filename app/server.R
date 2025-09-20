@@ -460,9 +460,16 @@ server <- function(input, output, session) {
     bullets <- bulldata$preCC
     bullets <- bullets[bullets$bullet == input$cc_bulsel,]
     
+    # Calculate Y coordinate ranges for each bullet land in microns
+    bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
+      # Get the Y coordinate range from the x3p header info
+      y_max <- floor(x3p$header.info$incrementY * (x3p$header.info$sizeY - 1))
+      return(y_max)
+    })
+    
     list(
       # Render crosscut sliders ----
-      mapply(render_ccsl, 1:nrow(bullets), 0, 500, bullets$crosscut, SIMPLIFY = FALSE),
+      mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),
       # BUTTON - Finalize Crosscut ----
       fluidRow(column(12, actionButton("saveCC", label = "Finalise CrossCut"), align="center")),
       hr(),
