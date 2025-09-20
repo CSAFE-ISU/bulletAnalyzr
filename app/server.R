@@ -100,7 +100,8 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Add Bullet to Comparison List button ----
   # Push current bullet data to all bullet data object
   observeEvent(input$up_bull, {
-    if(nrow(bulldata$cbull) == 0) return(NULL)
+    req(nrow(bulldata$cbull) > 0)
+    
     allbull <- bulldata$allbull
     allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
     bull <- bulldata$cbull
@@ -128,7 +129,8 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Upload Bullet tab panel ----
   output$lpupload <- renderUI({
-    if(is.null(input$bul_x3p)) return(NULL)
+    req(input$bul_x3p)
+    
     disable("up_bull")
     progress <- shiny::Progress$new();on.exit(progress$close())
     
@@ -232,7 +234,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Preview Bullet sidebar ----
   output$prevSelUI <- renderUI({
-    if(nrow(bulldata$allbull) == 0) return(NULL)
+    req(nrow(bulldata$allbull) > 0)
     
     # Store allbul ----
     allbull <- bulldata$allbull
@@ -249,8 +251,9 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Preview Bullet tab panel ----
   output$lpreview <- renderUI({
-    if(nrow(bulldata$allbull) == 0) return(NULL)
-    if(length(input$prev_bul) == 0) return(NULL)
+    req(nrow(bulldata$allbull) > 0)
+    req(length(input$prev_bul) > 0)
+
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Refresh on tab change ----
@@ -281,12 +284,11 @@ server <- function(input, output, session) {
   })
   
   
-  
   # SECTION: SELECT BULLETS FOR COMPARISON --------------------------------
   
   # OUTPUT UI - Select Bullets to Compare sidebar ----
   output$bull_sel <- renderUI({
-    if(nrow(bulldata$allbull) == 0) return(NULL)
+    req(nrow(bulldata$allbull) > 0)
     
     # Store allbull ----
     allbull <- bulldata$allbull
@@ -302,8 +304,9 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) ----
   observeEvent(input$doprocess, {
+    req(length(input$bullcompgroup) > 0)
+    
     values$show_alert <- FALSE
-    if(length(input$bullcompgroup) == 0) return(NULL)
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     bullets <- bulldata$allbull
@@ -330,7 +333,8 @@ server <- function(input, output, session) {
   # bulldata$postCC is populated when the Compare Bullets button (doprocessCC)
   # on the Comparison Report tab panel is clicked
   observeEvent(bulldata$postCC, {
-    if(is.null(bulldata$postCC)) return(NULL)
+    req(bulldata$postCC)
+
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Extract crosscut data ----
@@ -445,7 +449,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Crosscut sidebar 1 ----
   output$CCBull1 <- renderUI({
-    if(is.null(bulldata$preCC)) {return(NULL)}
+    req(bulldata$preCC)
     
     # DROP-DOWN - Report Select Bullet ----
     bullets <- bulldata$preCC
@@ -454,7 +458,8 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Crosscut sidebar 2 ----
   output$CCBull2 <- renderUI({
-    if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
+    req(bulldata$preCC)
+    req(input$cc_bulsel)
     
     # Filter selected bullet ----
     bullets <- bulldata$preCC
@@ -480,7 +485,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Finalize Crosscut button ----
   observeEvent(input$saveCC,{
-    if(is.null(bulldata$preCC)) return(NULL)
+    req(bulldata$preCC)
     
     bullets <- bulldata$preCC
     
@@ -494,7 +499,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Compare Bullets button ----
   observeEvent(input$doprocessCC,{
-    if(is.null(bulldata$preCC)) return(NULL)
+    req(bulldata$preCC)
     
     # Push preCC data frame to postCC ----
     bullets <- bulldata$preCC
@@ -508,7 +513,8 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Crosscuts on Report tab panel ----
   output$CCBullLand <- 	renderUI({
-    if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
+    req(bulldata$preCC)
+    req(input$cc_bulsel)
     
     # Filter selected bullet ----
     bullets <- bulldata$preCC
@@ -545,8 +551,9 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Comparison sidebar ----
   output$reportSelUI <- renderUI({
-    if(!is.null(bulldata$preCC)) return(NULL)
-    if(is.null(bulldata$comparison)) return(NULL)
+    req(is.null(bulldata$preCC))
+    req(bulldata$comparison)
+
     all_bullets <- unique(bulldata$comparison$bullet_scores$bulletA)
     list(
       # DROP-DOWN - Compare Bullet ----
@@ -559,17 +566,19 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Download sidebar ----
   output$reportDownUI <- renderUI({
-    if(!is.null(bulldata$preCC)) return(NULL)
-    if(is.null(bulldata$comparison)) return(NULL)
+    req(is.null(bulldata$preCC))
+    req(bulldata$comparison)
+    
     # BUTTON - Download Report ----
     fluidRow(column(12, screenshotButton(label = "Download Report", id = "reportUI", filename="Bullet Comparison Report", scale = 2), align="center"))
   })
   
   # OUTPUT UI - Report Comparison tab panel ----
   output$reportUI <- renderUI({
-    if(!is.null(bulldata$preCC)) return(NULL)
-    if(is.null(bulldata$comparison)) return(NULL)
-    if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
+    req(is.null(bulldata$preCC))
+    req(bulldata$comparison)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
     
     BullComp <- list(
       # Phase test results ----
@@ -772,7 +781,6 @@ server <- function(input, output, session) {
   
   # OUTPUT - Phase test score ----
   output$bull_comp_score <- renderText({
-    if(is.null(bulldata$comparison)) return(NULL)
     req(phase$test_results)
     
     pt <- phase$test_results
@@ -793,7 +801,6 @@ server <- function(input, output, session) {
   
   # OUTPUT - Phase test probability of false id ----
   output$bull_comp_test <- renderText({
-    if(is.null(bulldata$comparison)) return(NULL)
     req(phase$test_results)
     
     pt <- phase$test_results
@@ -818,7 +825,8 @@ server <- function(input, output, session) {
   
   # OUTPUT - Bullet score matrix ----
   output$bull_comp <- renderPlot({
-    if(is.null(bulldata$comparison)) return(NULL)
+    req(bulldata$comparison)
+
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores$selsource <- FALSE
     bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
@@ -840,8 +848,10 @@ server <- function(input, output, session) {
   
   # OUTPUT - Land score matrix ----
   output$land_comp <- renderPlot({
-    if(is.null(bulldata$comparison)) return(NULL)
-    if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
+    req(bulldata$comparison)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
+    
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores <- bullet_scores[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2,]
     features <- bullet_scores %>% tidyr::unnest(data)
@@ -863,8 +873,9 @@ server <- function(input, output, session) {
   
   # OUTPUT - Crosscut plots ----
   output$land_visCC <- renderPlot({
-    if(is.null(bulldata$comparison)) return(NULL)
-    if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
+    req(bulldata$comparison)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
     
     bullets <- bulldata$comparison$bullets
     bullets <- bullets[bullets$bullet %in% c(input$comp_bul1,input$comp_bul2), ]
@@ -882,8 +893,9 @@ server <- function(input, output, session) {
   
   # OUTPUT - Signal plots ----
   output$land_visSig <- renderPlot({
-    if(is.null(bulldata$comparison)) return(NULL)
-    if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
+    req(bulldata$comparison)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
     
     bullets <- bulldata$comparison$bullets
     bullets <- bullets[bullets$bullet %in% c(input$comp_bul1, input$comp_bul2),]
