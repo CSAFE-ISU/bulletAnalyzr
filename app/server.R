@@ -122,9 +122,10 @@ server <- function(input, output, session) {
     temp_refresh <- input$prevreport
     
     # Create Temporary Directory and save bullets in it ----
-    temp_dir <- tempfile()
-    dir.create(temp_dir)
-    file.copy(input$bul_x3p$datapath, paste0(temp_dir, "/", input$bul_x3p$name))
+    temp_dir <- copy_to_tempdir(
+      filepath = input$bul_x3p$datapath,
+      filename = input$bul_x3p$name
+    )
     
     return(read_bullet(temp_dir))
   })

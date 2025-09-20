@@ -5,6 +5,20 @@ cond_x3p_m_to_mum <- function(x3p)
   x3p
 }
 
+#' Copy to Temporary Directory
+#'
+#' @param filepath A string of the current filepath.
+#' @param filename A string of the current filename.
+#'
+#' @returns A path to a new temp directory
+#' @noRd
+copy_to_tempdir <- function(filepath, filename) {
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  file.copy(filepath, file.path(temp_dir, filename))
+  return(temp_dir)
+}
+
 identify_lands <- function(words) {
   # create a list of distinguishing elements between names
   
