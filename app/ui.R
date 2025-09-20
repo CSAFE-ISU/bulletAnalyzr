@@ -41,7 +41,7 @@ ui <- shinyUI({
       # navbarPage(title = div(div(id = "img-id",img(src = "csafe_tools_blue_h.png", alt="Logo", height = "40px"))),
         navbarPage(NULL,
             tabPanel("Home",
-              source("ui_inner.R", local = TRUE)$value,
+              source("R/ui_inner.R", local = TRUE)$value,
             ),
             tabPanel( 
                       "About",

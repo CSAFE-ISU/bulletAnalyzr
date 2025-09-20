@@ -31,45 +31,75 @@ theme_update(
 interactive_cc = TRUE
 
 # Helper Functions ----
-source("helper.R")
+source("R/helper.R")
 
 
 # Server ------------------------------------------------------------------
 server <- function(input, output, session) {
   
-  # Switch alerts on / off
-  values <- reactiveValues(show_alert = TRUE)
-  
-  # Report versions of packages used
+  # OUTPUT - Session Info - Report versions of packages used ----
   output$sessionInfo <- render_session_info(session)
   
+  # REACTIVE VALUES - Switch alerts on/off ----
+  values <- reactiveValues(show_alert = TRUE)
   
-  # Bullet Data Upload and Storage ------------------------------------------
-  observeEvent(input$confirm_autonomous,{updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")})
-  
-  # Reactive object to hold the bullet and comparison data
+  # REACTIVE VALUES - Bullet and comparison data ----
   bulldata <- reactiveValues(
     allbull = data.frame(),
+    allbull_export = data.frame(),
     cbull = data.frame(),
-    preCC = NULL, 
+    cbull_export = data.frame(),
+    preCC = NULL,
+    preCC_export = NULL,
     postCC = NULL, 
-    comparison = NULL
+    postCC_export = NULL,
+    comparison = NULL,
+    comparison_export = NULL
   )
   
-  # Bullet Land Files Input
+  # REACTIVE VALUES - Phase test results ----
+  phase <- reactiveValues(
+    test_results = NULL
+  )
+  
+  # EXPORT VALUES - For shinytest2 tests ----
+  exportTestValues(
+    allbull_export = bulldata$allbull_export,
+    cbull_export = bulldata$cbull_export,
+    comparison_export = bulldata$comparison_export,
+    phase_test_export = phase$test_results,
+    postCC_export = bulldata$postCC_export,
+    preCC_export = bulldata$preCC_export,
+    show_alert_export = values$show_alert
+  )
+  
+  # BUTTON - Begin ----
+  observeEvent(input$confirm_autonomous, {
+    updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
+  })
+  
+  
+  # SECTION: UPLOAD BULLET TAB -----------------------------------------------
+  
+  # OUTPUT UI - Select bullet lands sidebar ----
   output$bul_x3pui <- renderUI({
+    # Button - Bullet Land x3p Files ----
     fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
   })
   
-  # Select Bullet Land x3p Files button
+  # OBSERVE EVENT - Bullet Land x3p Files button ----
   observeEvent(input$bul_x3p, {
+    # Get default bullet name ----
     bullet_name <- identify_bullet(input$bul_x3p$name)
     updateTextInput(session, "bul_x3p_name", value = bullet_name)
+    
+    # Switch alert on ----
+    values$show_alert <- TRUE
   })
   
-  # Add Bullet to Comparison List button. Push current bullet data to all bullet
-  # data object
-  observeEvent(input$up_bull,{
+  # OBSERVE EVENT - Add Bullet to Comparison List button ----
+  # Push current bullet data to all bullet data object
+  observeEvent(input$up_bull, {
     if(nrow(bulldata$cbull) == 0) return(NULL)
     allbull <- bulldata$allbull
     allbull <- allbull[!(allbull$bullet %in% input$bul_x3p_name),]
@@ -77,22 +107,18 @@ server <- function(input, output, session) {
     bull$bullet <- input$bul_x3p_name
     bull$land <- factor(bull$land_names, levels = bull$land_names)
     bulldata$allbull <- rbind(allbull,bull)
+    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
     disable("up_bull")
   })
   
   
-  # Preview Bullets while Uploading Bullet lands ----------------------------
+  # SECTION: BULLET PREVIEWS ON UPLOAD TAB --------------------------------
   
-  # Switch alert on when bullet is uploaded
-  observeEvent(input$bul_x3p, {
-    values$show_alert <- TRUE
-  })
-  
-  # Copy lands to tempdir and read bullet
+  # REACTIVE - Copy lands to tempdir and read bullet ----
   uploaded_bull <- reactive({
     temp_refresh <- input$prevreport
     
-    # Create Temporary Directory and save bullets in it
+    # Create Temporary Directory and save bullets in it ----
     temp_dir <- tempfile()
     dir.create(temp_dir)
     file.copy(input$bul_x3p$datapath, paste0(temp_dir, "/", input$bul_x3p$name))
@@ -100,17 +126,17 @@ server <- function(input, output, session) {
     return(read_bullet(temp_dir))
   })
   
-  # Upload bullet tab panel
+  # OUTPUT UI - Upload Bullet tab panel ----
   output$lpupload <- renderUI({
     if(is.null(input$bul_x3p)) return(NULL)
     disable("up_bull")
     progress <- shiny::Progress$new();on.exit(progress$close())
     
-    # Read Bullet
+    # Read bullet ----
     progress$set(message = "Reading Bullets", value = .25)
     bull <- uploaded_bull()
     
-    # Check if we need to rotate the bullet
+    # Rotate bullet (optional) ----
     hinfo <- bull$x3p[[1]]$header.info
     if (hinfo$sizeX < hinfo$sizeY) {
       if (values$show_alert) {
@@ -125,8 +151,9 @@ server <- function(input, output, session) {
       bull$x3p <- lapply(bull$x3p, x3p_rotate, angle = 90)
     }
     
-    # Check if we need to down-sample the bullet
-    # Calculate the closest integer `n` that samples reference resolution to match incrementX
+    # Down-sample bullet (optional) ----
+    # Check if we need to down-sample the bullet Calculate the closest integer
+    # `n` that samples reference resolution to match incrementX
     if (nrow(bulldata$allbull) > 0) {
       reference_resolution <- x3p_get_scale(bulldata$allbull$x3p[[1]]) / 1e6
       current_resolution <- x3p_get_scale(bull$x3p[[1]])
@@ -141,6 +168,7 @@ server <- function(input, output, session) {
             footer = modalButton("OK")
           ))
         }
+        # Switch alert off ----
         values$show_alert <- FALSE
         m <- round(reference_resolution / current_resolution)
         
@@ -154,6 +182,7 @@ server <- function(input, output, session) {
             footer = modalButton("OK")
           ))
         }
+        # Switch alert off ----
         values$show_alert <- FALSE
         
         m <- round(current_resolution / reference_resolution)
@@ -161,19 +190,27 @@ server <- function(input, output, session) {
       }
     }
     
-    bull$x3p <- lapply(bull$x3p,cond_x3p_m_to_mum)
+    # Convert to microns (optional) ----
+    bull$x3p <- lapply(bull$x3p, cond_x3p_m_to_mum)
+    
+    # Get hash ----
     bull$md5sum <- tools::md5sum(bull$source)
+    
+    # Get names ----
     bull$filename <- basename(bull$source)
     bull$land_names <- identify_lands(bull$filename)
     bull$bullet_name <- identify_bullet(bull$filename)
-    bulldata$cbull <- bull
     
-    # Render Bullet
+    # Store current bullet ----
+    bulldata$cbull <- bull
+    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
+    
+    # Render bullet ----
     progress$set(message = "Rendering Previews", value = .75)
-    for(idx in 1:nrow(bull)) 
-    {
+    for(idx in 1:nrow(bull)) {
       local({
         cidx <- idx
+        # OUTPUT RGL - Bullet ----
         output[[paste0("x3prgl",idx)]] <- renderRglwidget({
           x3p_image(x3p_sample(bull$x3p[[cidx]], m = 5) %>% x3p_rotate(), size = 500, zoom = .4)
           rglwidget()
@@ -181,23 +218,26 @@ server <- function(input, output, session) {
       })
     }
     
-    # Enable Upload Button
+    # Enable upload button ----
     enable("up_bull")
     
-    # UI
+    # Display bullet ----
     layout_column_wrap(
       width = 1/6,
       !!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bull$land_names[x]))
     )
   })
   
+  # SECTION: PREVIEW BULLET TAB --------------------------------------------
   
-  # Preview Bullet Selection ------------------------------------------------
-  
-  # Preview Bullet sidebar
+  # OUTPUT UI - Preview Bullet sidebar ----
   output$prevSelUI <- renderUI({
     if(nrow(bulldata$allbull) == 0) return(NULL)
+    
+    # Store allbul ----
     allbull <- bulldata$allbull
+    
+    # Drop-down - Preview Bullet ----
     selectInput(
       "prev_bul", 
       "Preview Bullet", 
@@ -207,23 +247,25 @@ server <- function(input, output, session) {
     )
   })
   
-  # Preview Bullet tab panel
+  # OUTPUT UI - Preview Bullet tab panel ----
   output$lpreview <- renderUI({
     if(nrow(bulldata$allbull) == 0) return(NULL)
     if(length(input$prev_bul) == 0) return(NULL)
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
-    # Refresh on Tab Change
+    # Refresh on tab change ----
     temp_refresh <- input$prevreport
     
-    # Render Bullet
+    # Get selected bullet ----
     allbull <- bulldata$allbull
     bull <- allbull[allbull$bullet == input$prev_bul,]
     
+    # Render selected bullet ----
     progress$set(message = "Rendering Previews", value = .75)
     for(idx in 1:nrow(bull)) {
       local({
         cidx <- idx
+        # OUTPUT RGL - Bullet ----
         output[[paste0("x3prglprev",idx)]] <- renderRglwidget({
           x3p_image(x3p_sample(bull$x3p[[cidx]],m = 5) %>% x3p_rotate(), size = 500, zoom = .4)
           rglwidget()
@@ -231,19 +273,25 @@ server <- function(input, output, session) {
       })
     }
     
-    # UI
+    # Display selected bullet ----
     layout_column_wrap(
       width = 1/6, 
       !!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prglprev", land_name = bull$land_names[x]))
     )
   })
   
-  # Compare Bullet Selection and Processing ---------------------------------
   
-  # Select Bullets to Compare sidebar
+  
+  # SECTION: SELECT BULLETS FOR COMPARISON --------------------------------
+  
+  # OUTPUT UI - Select Bullets to Compare sidebar ----
   output$bull_sel <- renderUI({
     if(nrow(bulldata$allbull) == 0) return(NULL)
+    
+    # Store allbull ----
     allbull <- bulldata$allbull
+    
+    # CHECK BOX - Select Bullets to Compare ----
     checkboxGroupInput(
       "bullcompgroup",
       label = "Select Bullets to Compare", 
@@ -252,47 +300,55 @@ server <- function(input, output, session) {
     )
   })
   
-  # Start Process before Interactivity
+  # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) ----
   observeEvent(input$doprocess, {
     values$show_alert <- FALSE
     if(length(input$bullcompgroup) == 0) return(NULL)
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
-    # Fetch All Bullets
     bullets <- bulldata$allbull
     
-    # Get the ideal Cross Sections
+    # Find optimal crosscuts ----
     progress$set(message = "Get suitable Cross Sections", value = 0)
     bullets$crosscut <- sapply(bullets$x3p, x3p_crosscut_optimize, ylimits = c(150, NA))
     
-    # If Interactive Push the data to preCC Stage
-    if(interactive_cc) bulldata$preCC <- bullets
-    if(!interactive_cc) bulldata$postCC <- bullets
+    # Store bullets as preCC or postCC ----
+    if(interactive_cc) {
+      bulldata$preCC <- bullets
+      bulldata$preCC_export <- make_export_df(df = bullets)
+    }
+    if(!interactive_cc) {
+      bulldata$postCC <- bullets
+      bulldata$postCC_export <- make_export_df(df = bullets)
+    }
     
-    # Update the selected Panel
+    # Switch to Comparison Report tab panel ----
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
   })
   
-  # Continue Process after Interactivity
+  # OBSERVE EVENT - bulldata$postCC - Get crosscut data, grooves, signal, features, and random forest score ----
+  # bulldata$postCC is populated when the Compare Bullets button (doprocessCC)
+  # on the Comparison Report tab panel is clicked
   observeEvent(bulldata$postCC, {
     if(is.null(bulldata$postCC)) return(NULL)
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
+    # Extract crosscut data ----
     progress$set(message = "Finalizing Cross Sections", value = 0)
     bullets <- bulldata$postCC
     bullets$ccdata <- mapply(try_x3p_crosscut, bullets$x3p, bullets$crosscut, SIMPLIFY = FALSE)
     
-    # Get Resolution
+    # Get Resolution ----
     resolution <- x3p_get_scale(bullets$x3p[[1]])
     
-    # Get the Groove Locations
+    # Find the optimal groove locations ----
     progress$set(message = "Get the Groove Locations", value = .05)
     bullets$grooves <- lapply(
       bullets$ccdata, 
       function(x) cc_locate_grooves(x, method = "middle", adjust = 30, return_plot = FALSE)
     )
     
-    # Extracting Signal
+    # Extract the signals ----
     progress$set(message = "Extracting Signal", value = .1)
     bullets$sigs <- mapply(
       function(ccdata, grooves) cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03),
@@ -303,7 +359,7 @@ server <- function(input, output, session) {
     bullets$bulletland <- paste0(bullets$bullet, "-", bullets$land)
     lands <- unique(bullets$bulletland)
     
-    # Align Signal
+    # Align the signals ----
     progress$set(message = "Align Signals", value = .15)
     comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
     comparisons$aligned <- mapply(
@@ -314,15 +370,15 @@ server <- function(input, output, session) {
       SIMPLIFY = FALSE
     )
     
-    # Evaluating Features
+    # Calculate ccf0 ----
     progress$set(message = "Evaluating Features", value = .2)
     comparisons$ccf0 <- sapply(comparisons$aligned, function(x) extract_feature_ccf(x$lands))
     
-    # Evaluating Striation Marks
+    # Evaluate striation marks ----
     progress$set(message = "Evaluating Striation Marks", value = .25)
     comparisons$striae <- lapply(comparisons$aligned, sig_cms_max, span = 75)
     
-    # Extracting Features
+    # Extract features ----
     progress$set(message = "Extracting Features", value = .35)
     comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",1)
     comparisons$bulletB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",1)
@@ -336,7 +392,7 @@ server <- function(input, output, session) {
       SIMPLIFY = FALSE
     )
     
-    # Scaling Features
+    # Scale features ----
     progress$set(message = "Scaling Features", value = .4)
     features <- tidyr::unnest(
       comparisons[,c("land1", "land2", "ccf0", "bulletA", "bulletB", "landA", "landB", "features")], 
@@ -345,28 +401,30 @@ server <- function(input, output, session) {
     features <- features %>% 
       mutate(cms = cms_per_mm,matches = matches_per_mm, mismatches = mismatches_per_mm, non_cms = non_cms_per_mm)
     
-    # Predicting RandomForest Scores
+    # Predict random forest scores ----
     progress$set(message = "Predicting RandomForest Scores", value = .45)
     features$rfscore <- predict(rtrees, newdata = features, type = "prob")[,2]
     
-    # Preparing Data for Report
+    # Calculate bullet scores ----
     progress$set(message = "Preparing Report Data", value = .5)
     bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
     bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+    
+    # Denote same source ----
     # just get the 'best phase' not just ones that are 'matches'
     bullet_scores$data <- lapply(
       bullet_scores$data,
       function(d) cbind(d, samesource = bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference = 0.01))
     )
     
-    # Rendering Bullet Images for Report
+    # Render lands with crosscuts snapshot ----
     bullets$x3pimg <- NA
     for(idx in 1:nrow(bullets)) {
       progress$set(message = "Rendering Report Objects", value = round(seq(from = .55, to = .85, length.out = nrow(bullets)), 2)[idx])
       bullets$x3pimg[idx] <- render_land(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])	
     }
     
-    # Saving Report Data
+    # Store comparison report data ----
     progress$set(message = "Preparing Report", value = .9)
     bulldata$comparison <- list(
       bullets = bullets,
@@ -374,64 +432,96 @@ server <- function(input, output, session) {
       features_scaled = features,
       bullet_scores = bullet_scores
     )
+    bulldata$comparison_export <- list(
+      bullets = make_export_df(bullets),
+      comparisons = make_export_df(comparisons),
+      features_scaled = make_export_df(features),
+      bullet_scores = make_export_df(bullet_scores)
+    )
   })
-
-  # Cross Cut Interactivity -------------------------------------------------
-
-  # Select Bullet sidebar
+  
+  
+  # SECTION: CROSSCUT INTERACTIVITY ---------------------------------------
+  
+  # OUTPUT UI - Report Crosscut sidebar 1 ----
   output$CCBull1 <- renderUI({
     if(is.null(bulldata$preCC)) {return(NULL)}
     
-    # Pre Cross Cut Data
+    # DROP-DOWN - Report Select Bullet ----
     bullets <- bulldata$preCC
     selectInput("cc_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = NULL, multiple = FALSE)
   })
   
-  # Finalize Crosscut and Compare Bullets sidebar
+  # OUTPUT UI - Report Crosscut sidebar 2 ----
   output$CCBull2 <- renderUI({
     if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
     
-    # Pre Cross Cut Data
+    # Filter selected bullet ----
     bullets <- bulldata$preCC
     bullets <- bullets[bullets$bullet == input$cc_bulsel,]
+    
+    # Calculate Y coordinate ranges for each bullet land in microns
+    bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
+      # Get the Y coordinate range from the x3p header info
+      y_max <- floor(x3p$header.info$incrementY * (x3p$header.info$sizeY - 1))
+      return(y_max)
+    })
+    
     list(
-      mapply(render_ccsl, 1:nrow(bullets), 0, 500, bullets$crosscut, SIMPLIFY = FALSE),
+      # Render crosscut sliders ----
+      mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),
+      # BUTTON - Finalize Crosscut ----
       fluidRow(column(12, actionButton("saveCC", label = "Finalise CrossCut"), align="center")),
       hr(),
+      # BUTTON - Compare Bullets ----
       fluidRow(column(12, actionButton("doprocessCC", label = "Compare Bullets"), align="center"))
     )
   })
   
-  # Finalize Crosscut button
+  # OBSERVE EVENT - Finalize Crosscut button ----
   observeEvent(input$saveCC,{
     if(is.null(bulldata$preCC)) return(NULL)
+    
     bullets <- bulldata$preCC
+    
+    # Add crosscut locations to data frame ----
     bullets[bullets$bullet == input$cc_bulsel,]$crosscut <- sapply(1:sum(bullets$bullet == input$cc_bulsel), function(x) input[[paste("CCsl",x)]])
-    bulldata$preCC = bullets
+    
+    # Store bullets with crosscut locations ----
+    bulldata$preCC <- bullets
+    bulldata$preCC_export <- make_export_df(df = bullets)
   })
   
-  # Compare Bullets button
+  # OBSERVE EVENT - Compare Bullets button ----
   observeEvent(input$doprocessCC,{
     if(is.null(bulldata$preCC)) return(NULL)
+    
+    # Push preCC data frame to postCC ----
     bullets <- bulldata$preCC
-    bulldata$preCC <- NULL
     bulldata$postCC <- bullets
+    bulldata$postCC_export <- make_export_df(bullets)
+    
+    # Reset preCC to NULL ----
+    bulldata$preCC <- NULL
+    bulldata$preCC_export <- NULL
   })
   
-  # Crosscuts on Comparison Report tab panel
+  # OUTPUT UI - Crosscuts on Report tab panel ----
   output$CCBullLand <- 	renderUI({
     if(is.null(bulldata$preCC) | is.null(input$cc_bulsel)) return(NULL)
     
-    # Render Bullet
+    # Filter selected bullet ----
     bullets <- bulldata$preCC
     bullets <- bullets[bullets$bullet == input$cc_bulsel,]
     
-    # Refresh on Tab Change
+    # Refresh tab on change ----
     temp_refresh <- input$prevreport
     
+    # Render lands with crosscuts ---- 
     for(idx in 1:nrow(bullets)) {
       local({
         cidx <- idx
+        # OUTPUT RGL - Render lands with crosscuts ----
         output[[paste0("CC_Sel_",idx)]] <- renderRglwidget({
           bullets$x3p[[cidx]] %>%
             x3p_add_hline(yintercept = input[[paste("CCsl",cidx)]], size = 20, color = "#eeeeee") %>%
@@ -443,41 +533,46 @@ server <- function(input, output, session) {
       })
     }
     
+    # Display lands with crosscuts ---- 
     layout_column_wrap(
       width = 1/6, 
       !!!lapply(1:nrow(bullets), FUN = function(x) parse_rglui(x, name = "CC_Sel_", land_name = NULL))
     )
   })
-
-  # Generate Bullet Comparison Report UI ------------------------------------
-
-  # Report sidebar
+  
+  
+  # SECTION: GENERATE REPORT ----------------------------------------------
+  
+  # OUTPUT UI - Report Comparison sidebar ----
   output$reportSelUI <- renderUI({
     if(!is.null(bulldata$preCC)) return(NULL)
     if(is.null(bulldata$comparison)) return(NULL)
     all_bullets <- unique(bulldata$comparison$bullet_scores$bulletA)
     list(
+      # DROP-DOWN - Compare Bullet ----
       selectInput("comp_bul1", "Compare Bullet", choices = all_bullets, selected = all_bullets[1]),
+      # DROP-DOWN - With Bullet ----
       selectInput("comp_bul2", "With Bullet", choices = all_bullets, selected = all_bullets[2]),
       hr()
     )
   })
   
-  # Download Report sidebar
+  # OUTPUT UI - Report Download sidebar ----
   output$reportDownUI <- renderUI({
     if(!is.null(bulldata$preCC)) return(NULL)
     if(is.null(bulldata$comparison)) return(NULL)
+    # BUTTON - Download Report ----
     fluidRow(column(12, screenshotButton(label = "Download Report", id = "reportUI", filename="Bullet Comparison Report", scale = 2), align="center"))
   })
   
-  # Comparison Report tab panel
+  # OUTPUT UI - Report Comparison tab panel ----
   output$reportUI <- renderUI({
     if(!is.null(bulldata$preCC)) return(NULL)
     if(is.null(bulldata$comparison)) return(NULL)
     if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
     
-    # Comparison Report
     BullComp <- list(
+      # Phase test results ----
       fluidRow(
         column(12, "SUMMARY OF RESULTS", align = "left", class = "h3"), 
         column(12, "Phase Test", align = "left", class = "h3"), 
@@ -487,29 +582,39 @@ server <- function(input, output, session) {
       ),
       br(),
       fluidRow(
+        # Bullet score matrix ----
         column(6, plotOutput("bull_comp")),
+        # Land score matrix ----
         column(6, plotOutput("land_comp")),
+        # Score matrices help text ----
         column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class = "body"))
       ),
-      br(),br(),
+      br(),
+      br(),
+      # Crosscut plots ----
       fluidRow(column(12, plotOutput("land_visCC"), align = "center")),
-      br(),br(),
+      br(),
+      br(),
+      # Signal plots ----
       fluidRow(column(12, plotOutput("land_visSig"), align = "center")),
       br()
     )
     
-    # Land Comparison Collapsible Report
+    # Collapsible reports ----
     LandComp <- list()
+    
+    # Filter selected bullets ----
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores <- bullet_scores[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2,]
     if(nrow(bullet_scores$data[[1]])>0) {
-      ## Collect Land wise Data
+      # Collect land-wise data ----
       bsldata <- bullet_scores$data[[1]]
+      # Sort in descending order ----
       # just re-order the data - that will be safer and quicker
       bsldata <- bsldata %>% 
         mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
-        group_by(samesource) %>% arrange(desc(rfscore), .by_group = TRUE)
-      
+        group_by(samesource) %>% 
+        arrange(desc(rfscore), .by_group = TRUE)
       odridx <- order(bsldata$rfscore, decreasing = TRUE) # this should be in order now
       
       # getting scales and instrument info ... not correct yet, but just for the first scan
@@ -522,14 +627,14 @@ server <- function(input, output, session) {
       show_n <- min(c(sum(bsldata$samesource == TRUE) + 3, length(odridx)))
       # show all the best-phase comparisons and the three top comparisons
       for(idx in 1:show_n) {
-
+        
         # Data Table Comparison ---------------------------------------------------
         
         BullCompBulls <- bulldata$comparison$bullets
         temptable <- data.frame(
           Feature = c("Left Land File", "Left Land MD5", "Left Land Instrument (resolution [µm/px])", 
                       "Right Land File", "Right Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                      "Cross Correlation Function", "Mean Distance btw Signals [µm]",
+                      "Cross Correlation Function", "Mean Distance btw Signals [Âµm]",
                       "Signal Length [mm]", "# Matching Striae Per Millimeter",
                       "# Mis-Matching Striae Per Millimeter", "CMS Per Millimeter",
                       "Non-CMS Per Millimeter", "Peak Sum"),
@@ -555,9 +660,9 @@ server <- function(input, output, session) {
           rownames = FALSE, 
           options = list(paging = FALSE, ordering = FALSE, searching = FALSE, bLengthChange = FALSE, bInfo = FALSE)
         )
-
+        
         # RGL Render Comparison ---------------------------------------------------
-
+        
         local({
           cidx <- idx
           BullCompBulls <- bulldata$comparison$bullets
@@ -575,9 +680,8 @@ server <- function(input, output, session) {
           height = "250px"
         )
         
-
         # Groove Plot -------------------------------------------------------------
-
+        
         local({
           cidx <- idx
           BullCompBulls <- bulldata$comparison$bullets
@@ -603,18 +707,18 @@ server <- function(input, output, session) {
           ),
           fluidRow(column(12, p("Shaded areas are excluded from the analysis"), align = "center"))
         )
-
+        
         # Signal Comparison -------------------------------------------------------
-
+        
         local({
           cidx <- idx
           BullCompComps <- bulldata$comparison$comparisons
           scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
           SigPlotData <- BullCompComps$aligned[
             (BullCompComps$bulletA == input$comp_bul1) &
-            (BullCompComps$bulletB == input$comp_bul2) &
-            (BullCompComps$landA == bsldata$landA[odridx[idx]]) &
-            (BullCompComps$landB == bsldata$landB[odridx[idx]])
+              (BullCompComps$bulletB == input$comp_bul2) &
+              (BullCompComps$landA == bsldata$landA[odridx[idx]]) &
+              (BullCompComps$landB == bsldata$landB[odridx[idx]])
           ][[1]]$lands
           SigPlotData <- tidyr::gather(SigPlotData, Signal, value, sig1, sig2)
           
@@ -631,9 +735,9 @@ server <- function(input, output, session) {
           })
         })
         temp_signal <- fluidRow(column(12, plotOutput(paste0("SigPlot", idx)), align = "center"))
-
+        
         # Combine Results ---------------------------------------------------------
-
+        
         panel_name <- paste0(bsldata$land1[odridx[idx]], " vs ", bsldata$land2[odridx[idx]]," (RF Score = ", round(bsldata$rfscore[odridx[idx]],4), ")")
         bsCollapsePanelList[[idx]] <- bsCollapsePanel(panel_name, temptable_dt, br(), temp_rgl, temp_groove, br(), temp_signal, style = "primary")
       }
@@ -641,52 +745,78 @@ server <- function(input, output, session) {
       # Collapsible UI Panels ---------------------------------------------------
       LandComp <- do.call(bsCollapse, args = c(id = "collapseExample", multiple = TRUE, bsCollapsePanelList))
     }
-
+    
     # Return Full Collapsible Report
     return(c(BullComp, LandComp$children))
   })
-
-  # Generate Bullet Comparison Report Server Outputs ------------------------
-
-  # Bullet Comparison Score
-  output$bull_comp_score <- renderText({
-    if(is.null(bulldata$comparison)) return(NULL)
+  
+  
+  # SECTION: PHASE TEST ---------------------------------------------------
+  observe({
+    req(bulldata$comparison)
+    req(bulldata$comparison$bullet_scores)
+    req(input$comp_bul1)
+    req(input$comp_bul2)
+    
     bullet_scores <- bulldata$comparison$bullet_scores
     bullet_scores$selsource <- FALSE
     bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
     d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-    res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
-    if (any(class(res) %in% "try-error")) {
-      scores <- d %>%
+    
+    tryCatch({
+      phase$test_results <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
+    }, error = function(e) {
+      return(d)
+    })
+  })
+  
+  # OUTPUT - Phase test score ----
+  output$bull_comp_score <- renderText({
+    if(is.null(bulldata$comparison)) return(NULL)
+    req(phase$test_results)
+    
+    pt <- phase$test_results
+    
+    if (is.data.frame(pt)) {
+      scores <- pt %>%
         group_by(samesource) %>% 
         summarize(avg = mean(scores, na.rm = TRUE)) %>%
         purrr::pluck("avg") %>%
         unlist()
       return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
+    } else if (inherits(pt, "phase.test")) {
+      return(sprintf("Phase Test Score: %.4f", pt$estimate))
+    } else {
+      stop("Phase test results have an unexpected class")
     }
-    return(sprintf("Phase Test Score: %.4f", test$estimate))
   })
   
-  # Bullet Comarison Mismatch Prob
+  # OUTPUT - Phase test probability of false id ----
   output$bull_comp_test <- renderText({
     if(is.null(bulldata$comparison)) return(NULL)
-    bullet_scores <- bulldata$comparison$bullet_scores
-    bullet_scores$selsource <- FALSE
-    bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
-    d <- bullet_scores %>% filter(selsource) %>% tidyr::unnest(data)
-    res <- try(test <- bulletxtrctr:::phase_test(land1 = d$landA, land2 = d$landB, d$ccf), silent = TRUE)
-    if(any(class(res) %in% "try-error")) {return("Test result unstable")}
-    pval <- sprintf("%.4f", test$p.value)
-    if (test$p.value < 0.01) pval <- "Less than 1 in 100" 
-    if (test$p.value < 0.001) pval <- "Less than 1 in 1,000" 
-    if (test$p.value < 0.0001) pval <- "Less than 1 in 10,000" 
-    if (test$p.value < 0.00001) pval <- "Less than 1 in 100,000" 
-    if (test$p.value < 0.000001) pval <- "Less than 1 in 1 Million" 
-    if (test$p.value < 0.0000001) pval <- "Less than 1 in 10 Million" 
-    return(sprintf("Probability of False Identification: %s (Type I Error)", pval))
+    req(phase$test_results)
+    
+    pt <- phase$test_results
+    
+    if (is.data.frame(pt)) {
+      return("Test result unstable")
+    } else if (inherits(pt, "phase.test")) {
+      pval <- pt$p.value
+      prob <- case_when(
+        pval < 0.0000001 ~ "Less than 1 in 10 Million",
+        pval < 0.000001 ~ "Less than 1 in 1 Million",
+        pval < 0.00001 ~ "Less than 1 in 100,000",
+        pval < 0.0001 ~ "Less than 1 in 10,000",
+        pval < 0.001 ~ "Less than 1 in 1,000",
+        pval < 0.01 ~ "Less than 1 in 100"
+      )
+      return(sprintf("Probability of False Identification: %s (Type I Error)", prob))
+    } else {
+      stop("Phase test results have an unexpected class")
+    }
   })
   
-  # Bullet Comparison Heatmap
+  # OUTPUT - Bullet score matrix ----
   output$bull_comp <- renderPlot({
     if(is.null(bulldata$comparison)) return(NULL)
     bullet_scores <- bulldata$comparison$bullet_scores
@@ -708,7 +838,7 @@ server <- function(input, output, session) {
       coord_equal() 
   })
   
-  # Land Comparison Heatmap
+  # OUTPUT - Land score matrix ----
   output$land_comp <- renderPlot({
     if(is.null(bulldata$comparison)) return(NULL)
     if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
@@ -731,7 +861,7 @@ server <- function(input, output, session) {
       coord_equal() 
   })
   
-  # Visualize Cross Cuts 
+  # OUTPUT - Crosscut plots ----
   output$land_visCC <- renderPlot({
     if(is.null(bulldata$comparison)) return(NULL)
     if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
@@ -750,7 +880,7 @@ server <- function(input, output, session) {
     return(CCplot)
   })
   
-  # Visualize Signals
+  # OUTPUT - Signal plots ----
   output$land_visSig <- renderPlot({
     if(is.null(bulldata$comparison)) return(NULL)
     if(is.null(input$comp_bul1) | is.null(input$comp_bul2)) return(NULL)
@@ -771,5 +901,5 @@ server <- function(input, output, session) {
       ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
     return(Sigplot)
   })
-
+  
 }

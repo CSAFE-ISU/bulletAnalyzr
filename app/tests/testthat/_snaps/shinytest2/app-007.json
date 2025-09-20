@@ -1,0 +1,6 @@
+{
+  "output": {
+    "bull_comp_score": "Phase Test Score: 0.4548",
+    "bull_comp_test": "Probability of False Identification: Less than 1 in 10,000 (Type I Error)"
+  }
+}
