@@ -34,6 +34,7 @@ interactive_cc = TRUE
 source("R/crosscut.R")
 source("R/bullet-lists.R")
 source("R/bullet-transformations.R")
+source("R/grooves.R")
 source("R/helper.R")
 source("R/plot.R")
 source("R/render.R")
@@ -312,15 +313,11 @@ server <- function(input, output, session) {
     
     # Extract crosscut data ----
     progress$set(message = "Finalizing Cross Sections", value = 0)
-    bullets <- bulldata$postCC
-    bullets$ccdata <- mapply(try_x3p_crosscut, bullets$x3p, bullets$crosscut, SIMPLIFY = FALSE)
+    bullets <- finalize_crosscuts(postCC = bulldata$postCC)
     
     # Find the optimal groove locations ----
     progress$set(message = "Get the Groove Locations", value = .05)
-    bullets$grooves <- lapply(
-      bullets$ccdata, 
-      function(x) cc_locate_grooves(x, method = "middle", adjust = 30, return_plot = FALSE)
-    )
+    bullets$grooves <- get_grooves(ccdata = bullets$ccdata)
     
     # Extract the signals ----
     progress$set(message = "Extracting Signal", value = .1)
