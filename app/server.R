@@ -184,7 +184,10 @@ server <- function(input, output, session) {
         cidx <- idx
         # OUTPUT RGL - Bullet ----
         output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-          x3p_image(x3p_sample(bull$x3p[[cidx]], m = 5) %>% x3p_rotate(), size = 500, zoom = .4)
+          bull$x3p[[cidx]] %>%
+            x3p_sample(m = 5) %>%
+            x3p_rotate() %>%
+            x3p_image(size = 500, zoom = .4)
           rglwidget()
         })
       })
@@ -395,7 +398,7 @@ server <- function(input, output, session) {
     bullets$x3pimg <- NA
     for(idx in 1:nrow(bullets)) {
       progress$set(message = "Rendering Report Objects", value = round(seq(from = .55, to = .85, length.out = nrow(bullets)), 2)[idx])
-      bullets$x3pimg[idx] <- render_land(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])	
+      bullets$x3pimg[idx] <- render_crosscut_snap(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])	
     }
     
     # Store comparison report data ----

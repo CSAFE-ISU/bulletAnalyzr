@@ -101,7 +101,7 @@ make_export_df <- function(df) {
 }
 
 ## Render Land into image with CrossCut line
-render_land <- function(src, x3p, ccut) {
+render_crosscut_snap <- function(src, x3p, ccut) {
   imgsrc <- gsub(".x3p$", ".png", src)
   x3p %>%
     x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%

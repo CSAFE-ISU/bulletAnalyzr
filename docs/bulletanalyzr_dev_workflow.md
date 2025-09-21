@@ -176,7 +176,7 @@
 - Random forest scoring: `predict(rtrees)`
 - Bullet scoring: `compute_average_scores()`
 - Phase testing: `bullet_to_land_predict()`
-- Image rendering: `render_land()` for each bullet
+- Image rendering: `render_crosscut_snap()` for each bullet
 
 ### Reactive Value Changes
 
