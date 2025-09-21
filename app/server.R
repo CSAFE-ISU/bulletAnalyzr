@@ -144,12 +144,16 @@ server <- function(input, output, session) {
     bull <- uploaded_bull()
     
     # Rotate bullet (optional) ----
-    rotate_results <- rotate_bullet(bullet = bull, values = values, session = session)
+    rotate_results <- rotate_bullet(
+      bullet = bull, 
+      show_alert = values$show_alert, 
+      session = session
+    )
     bull <- rotate_results$bullet
     values$show_alert <- rotate_results$show_alert
     
     # Down-sample bullet (optional) ----
-    # Check if we need to down-sample the bullet Calculate the closest integer
+    # Check if we need to down-sample the bullet. Calculate the closest integer
     # `n` that samples reference resolution to match incrementX
     if (nrow(bulldata$allbull) > 0) {
       reference_resolution <- x3p_get_scale(bulldata$allbull$x3p[[1]]) / 1e6
@@ -157,28 +161,25 @@ server <- function(input, output, session) {
       
       # Down-sample if necessary
       if (reference_resolution > current_resolution) {
-        if (values$show_alert) {
-          showModal(modalDialog(
-            title = "Higher Resolution Bullet",
-            "Detected higher resolution bullet, down-sampling...",
-            easyClose = TRUE,
-            footer = modalButton("OK")
-          ))
-        }
+        show_modal(
+          title = "Higher Resolution Bullet",
+          message = "Detected higher resolution bullet, down-sampling...",
+          show_alert = values$show_alert,
+          session = session
+        )
         # Switch alert off ----
         values$show_alert <- FALSE
         m <- round(reference_resolution / current_resolution)
         
         bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
       } else if (reference_resolution < current_resolution) {
-        if (values$show_alert) {
-          showModal(modalDialog(
-            title = "Lower Resolution Bullet",
-            "Detected lower resolution bullet, down-sampling previous bullets...",
-            easyClose = TRUE,
-            footer = modalButton("OK")
-          ))
-        }
+        show_modal(
+          title = "Lower Resolution Bullet",
+          message = "Detected lower resolution bullet, down-sampling previous bullets...",
+          show_alert = values$show_alert,
+          session = session
+        )
+        
         # Switch alert off ----
         values$show_alert <- FALSE
         

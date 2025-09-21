@@ -125,6 +125,17 @@ render_session_info <- function(session) {
   }})
 }
 
+show_modal <- function(title, message, show_alert, session) {
+  if (show_alert) {
+    showModal(modalDialog(
+      title = title,
+      message,
+      easyClose = TRUE,
+      footer = modalButton("OK")
+    ), session = session)
+  }
+}
+
 try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) 
 {
   res <- x3p_crosscut(x3p=x3p, y = y, range = range)
