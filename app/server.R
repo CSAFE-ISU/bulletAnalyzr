@@ -34,6 +34,8 @@ interactive_cc = TRUE
 source("R/helper.R")
 source("R/bullet-lists.R")
 source("R/bullet-transformations.R")
+source("R/plot.R")
+source("R/render.R")
 
 
 # Server ------------------------------------------------------------------
@@ -242,7 +244,7 @@ server <- function(input, output, session) {
         cidx <- idx
         # OUTPUT RGL - Bullet ----
         output[[paste0("x3prglprev",idx)]] <- renderRglwidget({
-          x3p_image(x3p_sample(bull$x3p[[cidx]],m = 5) %>% x3p_rotate(), size = 500, zoom = .4)
+          render_land(x3p = bull$x3p[[cidx]])
           rglwidget()
         })
       })
