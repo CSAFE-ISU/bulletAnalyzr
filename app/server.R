@@ -312,34 +312,18 @@ server <- function(input, output, session) {
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Extract crosscut data ----
-    progress$set(message = "Finalizing Cross Sections", value = 0)
-    bullets <- finalize_crosscuts(postCC = bulldata$postCC)
+    bullets <- finalize_crosscuts(postCC = bulldata$postCC, progress = progress)
     
     # Find the optimal groove locations ----
-    progress$set(message = "Get the Groove Locations", value = .05)
-    bullets$grooves <- get_grooves(ccdata = bullets$ccdata)
+    bullets <- get_grooves(bullets = bullets, progress = progress)
     
     # Extract the signals ----
-    progress$set(message = "Extracting Signal", value = .1)
-    bullets$sigs <- mapply(
-      function(ccdata, grooves) cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03),
-      bullets$ccdata,
-      bullets$grooves,
-      SIMPLIFY = FALSE
-    )
-    bullets$bulletland <- paste0(bullets$bullet, "-", bullets$land)
-    lands <- unique(bullets$bulletland)
+    bullets <- get_signals(bullets = bullets, progress = progress)
     
     # Align the signals ----
-    progress$set(message = "Align Signals", value = .15)
-    comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
-    comparisons$aligned <- mapply(
-      function(x, y, bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),
-      comparisons$land1,
-      comparisons$land2,
-      MoreArgs = list(bullets = bullets),
-      SIMPLIFY = FALSE
-    )
+    signals_results <- get_aligned_signals(bullets = bullets, progress = progress)
+    bullets <- signals_results$bullets
+    comparisons <- signals_results$comparisons
     
     # Get Resolution ----
     resolution <- x3p_get_scale(bullets$x3p[[1]])

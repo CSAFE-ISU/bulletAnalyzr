@@ -1,4 +1,8 @@
-finalize_crosscuts <- function(postCC) {
+finalize_crosscuts <- function(postCC, progress = NULL) {
+  if (!is.null(progress)) {
+    progress$set(message = "Finalizing Cross Sections", value = 0)
+  }
+  
   bullets <- postCC
   bullets$ccdata <- mapply(try_x3p_crosscut, postCC$x3p, postCC$crosscut, SIMPLIFY = FALSE)
   return(bullets)
