@@ -25,6 +25,13 @@ render_ccsl <- function(id, ymin, ymax, yset) {
   sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
 }
 
+render_land <- function(x3p) {
+  x3p %>%
+    x3p_sample(m = 5) %>%
+    x3p_rotate() %>%
+    x3p_image(size = 500, zoom = .4)
+}
+
 # Render the session info as text
 render_session_info <- function(session) {
   renderText({{

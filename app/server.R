@@ -184,10 +184,7 @@ server <- function(input, output, session) {
         cidx <- idx
         # OUTPUT RGL - Bullet ----
         output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-          bull$x3p[[cidx]] %>%
-            x3p_sample(m = 5) %>%
-            x3p_rotate() %>%
-            x3p_image(size = 500, zoom = .4)
+          render_land(x3p = bull$x3p[[cidx]])
           rglwidget()
         })
       })
