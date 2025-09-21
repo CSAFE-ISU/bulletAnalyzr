@@ -1,3 +1,9 @@
+cond_x3p_m_to_mum <- function(x3p) {
+  scale <- x3p %>% x3p_get_scale()
+  if (scale < .1) x3p <-  x3p %>% x3p_m_to_mum() # only scale conditionally
+  x3p
+}
+
 # Check if we need to down-sample the bullet. Calculate the closest integer
 # `n` that samples reference resolution to match incrementX
 downsample_bullet <- function(allbull, bullet, show_alert, session) {
