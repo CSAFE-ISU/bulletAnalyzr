@@ -315,9 +315,6 @@ server <- function(input, output, session) {
     bullets <- bulldata$postCC
     bullets$ccdata <- mapply(try_x3p_crosscut, bullets$x3p, bullets$crosscut, SIMPLIFY = FALSE)
     
-    # Get Resolution ----
-    resolution <- x3p_get_scale(bullets$x3p[[1]])
-    
     # Find the optimal groove locations ----
     progress$set(message = "Get the Groove Locations", value = .05)
     bullets$grooves <- lapply(
@@ -347,36 +344,14 @@ server <- function(input, output, session) {
       SIMPLIFY = FALSE
     )
     
-    # Calculate ccf0 ----
+    # Get Resolution ----
+    resolution <- x3p_get_scale(bullets$x3p[[1]])
+    
+    # Get Features ----
     progress$set(message = "Evaluating Features", value = .2)
-    comparisons$ccf0 <- sapply(comparisons$aligned, function(x) extract_feature_ccf(x$lands))
-    
-    # Evaluate striation marks ----
-    progress$set(message = "Evaluating Striation Marks", value = .25)
-    comparisons$striae <- lapply(comparisons$aligned, sig_cms_max, span = 75)
-    
-    # Extract features ----
-    progress$set(message = "Extracting Features", value = .35)
-    comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",1)
-    comparisons$bulletB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",1)
-    comparisons$landA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",2)
-    comparisons$landB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",2)
-    comparisons$features <- mapply(
-      extract_features_all,
-      comparisons$aligned,
-      comparisons$striae,
-      MoreArgs = list(resolution = resolution),
-      SIMPLIFY = FALSE
-    )
-    
-    # Scale features ----
-    progress$set(message = "Scaling Features", value = .4)
-    features <- tidyr::unnest(
-      comparisons[,c("land1", "land2", "ccf0", "bulletA", "bulletB", "landA", "landB", "features")], 
-      cols = features
-    )
-    features <- features %>% 
-      mutate(cms = cms_per_mm,matches = matches_per_mm, mismatches = mismatches_per_mm, non_cms = non_cms_per_mm)
+    features_results <- get_features(comparisons = comparisons, resolution = resolution, progress = progress)
+    comparisons <- features_results$comparisons
+    features <- features_results$features
     
     # Predict random forest scores ----
     progress$set(message = "Predicting RandomForest Scores", value = .45)
@@ -385,7 +360,7 @@ server <- function(input, output, session) {
     # Calculate bullet scores ----
     progress$set(message = "Preparing Report Data", value = .5)
     bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
-    bullet_scores$bullet_score <- sapply(bullet_scores$data,function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+    bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
     
     # Denote same source ----
     # just get the 'best phase' not just ones that are 'matches'

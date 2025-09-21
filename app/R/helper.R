@@ -30,7 +30,6 @@ identify_lands <- function(words) {
   difflist <- purrr::discard(difflist, is.null) 
   # transpose back and make 'word'
   difflist <- difflist %>% purrr::list_transpose() %>% purrr::map_chr(paste, collapse="")
-#  if (length(words) != length(difflist)) browser()
   make.unique(difflist) # make sure that something is there and it is different
 }
 
