@@ -153,40 +153,14 @@ server <- function(input, output, session) {
     values$show_alert <- rotate_results$show_alert
     
     # Down-sample bullet (optional) ----
-    # Check if we need to down-sample the bullet. Calculate the closest integer
-    # `n` that samples reference resolution to match incrementX
-    if (nrow(bulldata$allbull) > 0) {
-      reference_resolution <- x3p_get_scale(bulldata$allbull$x3p[[1]]) / 1e6
-      current_resolution <- x3p_get_scale(bull$x3p[[1]])
-      
-      # Down-sample if necessary
-      if (reference_resolution > current_resolution) {
-        show_modal(
-          title = "Higher Resolution Bullet",
-          message = "Detected higher resolution bullet, down-sampling...",
-          show_alert = values$show_alert,
-          session = session
-        )
-        # Switch alert off ----
-        values$show_alert <- FALSE
-        m <- round(reference_resolution / current_resolution)
-        
-        bull$x3p <- lapply(bull$x3p, x3p_sample, m = m)
-      } else if (reference_resolution < current_resolution) {
-        show_modal(
-          title = "Lower Resolution Bullet",
-          message = "Detected lower resolution bullet, down-sampling previous bullets...",
-          show_alert = values$show_alert,
-          session = session
-        )
-        
-        # Switch alert off ----
-        values$show_alert <- FALSE
-        
-        m <- round(current_resolution / reference_resolution)
-        bulldata$allbull$x3p <- lapply(bulldata$allbull$x3p, x3p_sample, m = m)
-      }
-    }
+    downsample_results <- downsample_bullet(
+      allbull = bulldata$allbull,
+      bullet = bull,
+      show_alert = values$show_alert,
+      session = session
+    )
+    bulldata$allbull <- downsample_results$allbull
+    values$show_alert <- downsample_results$show_alert
     
     # Convert to microns (optional) ----
     bull$x3p <- lapply(bull$x3p, cond_x3p_m_to_mum)
