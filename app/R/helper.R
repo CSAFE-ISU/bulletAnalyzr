@@ -55,6 +55,10 @@ make_export_df <- function(df) {
   # makes the snapshots 100+ MB. Change source column from filepath to filename
   # because the temp directory filepath will change every time, but the
   # filenames should remain consistent.
+  if (is.null(df)) {
+    return(NULL)
+  }
+  
   df <- df %>% 
     dplyr::select(-tidyselect::any_of(c("x3p", "x3pimg"))) 
   

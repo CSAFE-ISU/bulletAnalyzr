@@ -31,9 +31,10 @@ theme_update(
 interactive_cc = TRUE
 
 # Helper Functions ----
-source("R/helper.R")
+source("R/crosscut.R")
 source("R/bullet-lists.R")
 source("R/bullet-transformations.R")
+source("R/helper.R")
 source("R/plot.R")
 source("R/render.R")
 
@@ -287,17 +288,15 @@ server <- function(input, output, session) {
     
     # Find optimal crosscuts ----
     progress$set(message = "Get suitable Cross Sections", value = 0)
-    bullets$crosscut <- sapply(bullets$x3p, x3p_crosscut_optimize, ylimits = c(150, NA))
-    
-    # Store bullets as preCC or postCC ----
-    if(interactive_cc) {
-      bulldata$preCC <- bullets
-      bulldata$preCC_export <- make_export_df(df = bullets)
-    }
-    if(!interactive_cc) {
-      bulldata$postCC <- bullets
-      bulldata$postCC_export <- make_export_df(df = bullets)
-    }
+    crosscut_results <- get_default_crosscuts(
+      bullets = bullets,
+      interactive_cc = interactive_cc,
+      ylimits = c(150, NA)
+    )
+    bulldata$preCC <- crosscut_results$preCC
+    bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
+    bulldata$postCC <- crosscut_results$postCC
+    bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
     
     # Switch to Comparison Report tab panel ----
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
