@@ -12,6 +12,11 @@ copy_to_tempdir <- function(filepath, filename) {
   return(temp_dir)
 }
 
+filter_preview_bullet <- function(allbull, preview_bull_name) {
+  bull <- allbull[allbull$bullet == preview_bull_name,]
+  return(bull)
+}
+
 identify_lands <- function(words) {
   # create a list of distinguishing elements between names
   

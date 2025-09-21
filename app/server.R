@@ -230,8 +230,10 @@ server <- function(input, output, session) {
     temp_refresh <- input$prevreport
     
     # Get selected bullet ----
-    allbull <- bulldata$allbull
-    bull <- allbull[allbull$bullet == input$prev_bul,]
+    bull <- fiter_preview_bullet(
+      allbull = bulldata$allbull,
+      preview_bull_name = input$prev_bul
+    )
     
     # Render selected bullet ----
     progress$set(message = "Rendering Previews", value = .75)
