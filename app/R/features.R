@@ -1,4 +1,6 @@
 get_features <- function(comparisons, resolution, progress) {
+  # Calculate CCF0 ----
+  progress$set(message = "Evaluating Features", value = .2)
   comparisons$ccf0 <- sapply(comparisons$aligned, function(x) extract_feature_ccf(x$lands))
   
   # Evaluate striation marks ----

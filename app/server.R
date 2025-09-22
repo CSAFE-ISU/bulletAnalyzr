@@ -329,7 +329,6 @@ server <- function(input, output, session) {
     resolution <- x3p_get_scale(bullets$x3p[[1]])
     
     # Get Features ----
-    progress$set(message = "Evaluating Features", value = .2)
     features_results <- get_features(comparisons = comparisons, resolution = resolution, progress = progress)
     comparisons <- features_results$comparisons
     features <- features_results$features
@@ -339,9 +338,7 @@ server <- function(input, output, session) {
     features$rfscore <- predict(rtrees, newdata = features, type = "prob")[,2]
     
     # Calculate bullet scores ----
-    progress$set(message = "Preparing Report Data", value = .5)
-    bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
-    bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+    bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
     
     # Denote same source ----
     # just get the 'best phase' not just ones that are 'matches'
