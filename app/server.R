@@ -593,7 +593,6 @@ server <- function(input, output, session) {
         )
         
         # RGL Render Comparison ---------------------------------------------------
-        
         local({
           x3pimg_results <- filter_x3pimg(
             BullCompBulls = bulldata$comparison$bullets,
@@ -614,7 +613,6 @@ server <- function(input, output, session) {
         )
         
         # Groove Plot -------------------------------------------------------------
-        
         local({
           results <- filter_grooves_ccdata(
             BullCompBulls = bulldata$comparison$bullets,
@@ -643,7 +641,6 @@ server <- function(input, output, session) {
         )
         
         # Signal Comparison -------------------------------------------------------
-        
         local({
           sig_plot_data <- filter_sig_plot_data(
             BullCompComps = bulldata$comparison$comparisons,
@@ -662,9 +659,17 @@ server <- function(input, output, session) {
         temp_signal <- fluidRow(column(12, plotOutput(paste0("SigPlot", idx)), align = "center"))
         
         # Combine Results ---------------------------------------------------------
-        
-        panel_name <- paste0(bsldata$land1[odridx[idx]], " vs ", bsldata$land2[odridx[idx]]," (RF Score = ", round(bsldata$rfscore[odridx[idx]],4), ")")
-        bsCollapsePanelList[[idx]] <- bsCollapsePanel(panel_name, temptable_dt, br(), temp_rgl, temp_groove, br(), temp_signal, style = "primary")
+        panel_name <- get_panel_name(bsldata = bsldata, odridx = odridx, idx = idx)
+        bsCollapsePanelList[[idx]] <- bsCollapsePanel(
+          panel_name, 
+          temptable_dt, 
+          br(), 
+          temp_rgl, 
+          temp_groove, 
+          br(), 
+          temp_signal, 
+          style = "primary"
+        )
       }
       
       # Collapsible UI Panels ---------------------------------------------------

@@ -26,6 +26,11 @@ get_max_microns <- function(bullets) {
   return(bullet_y_ranges)
 }
 
+get_panel_name <- function(bsldata, odridx, idx) {
+  panel_name <- paste0(bsldata$land1[odridx[idx]], " vs ", bsldata$land2[odridx[idx]]," (RF Score = ", round(bsldata$rfscore[odridx[idx]],4), ")")
+  return(panel_name)
+}
+
 identify_lands <- function(words) {
   # create a list of distinguishing elements between names
   
