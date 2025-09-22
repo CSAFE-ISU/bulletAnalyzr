@@ -403,6 +403,7 @@ server <- function(input, output, session) {
   })
   
   # OBSERVE EVENT - Finalize Crosscut button ----
+  
   observeEvent(input$saveCC,{
     req(bulldata$preCC)
     
@@ -411,7 +412,8 @@ server <- function(input, output, session) {
     # Update crosscut column in bullets data frame with crosscut sliders ----
     bullets <- update_cc_from_slider_wrapper(
       bullets = bullets, 
-      selected = input$cc_bulsel
+      selected = input$cc_bulsel,
+      all_inputs = reactiveValuesToList(input)
     )
     
     # Store bullets with crosscut locations ----

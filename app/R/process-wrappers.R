@@ -136,13 +136,12 @@ get_signals_wrapper <- function(bullets, progress = NULL) {
   return(bullets)
 }
 
-update_cc_from_slider_wrapper <- function(bullets, selected) {
+update_cc_from_slider_wrapper <- function(bullets, selected, all_inputs) {
   # Get current crosscut slider names and values as list ----
-  all_inputs <- reactiveValuesToList(input)
   cc_sliders <- unlist(all_inputs[grepl("^CCsl", names(all_inputs))])
   
   # Update crosscut column in bullets data frame ----
-  bullets[bullets$bullet == input$cc_bulsel,]$crosscut <- cc_sliders
+  bullets[bullets$bullet == selected,]$crosscut <- cc_sliders
   return(bullets)
 }
 
