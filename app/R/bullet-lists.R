@@ -8,3 +8,8 @@ add_cbull_to_allbull <- function(cbull, bul_x3p_name, allbull) {
   
   return(rbind(allbull, cbull))
 }
+
+filter_selected_bullet <- function(bullets, selected) {
+  bullets <- bullets[bullets$bullet == selected,]
+  return(bullets)
+}

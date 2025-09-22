@@ -385,11 +385,12 @@ server <- function(input, output, session) {
     req(input$cc_bulsel)
     
     # Filter selected bullet ----
-    bullets <- bulldata$preCC
-    bullets <- bullets[bullets$bullet == input$cc_bulsel,]
+    bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
     
     # Calculate Y coordinate ranges for each bullet land in microns
     bullet_y_ranges <- get_max_microns(bullets = bullets)
+    
+    # Render crosscut sliders and Finalize Crosscut and Compare Bullets buttons ----
     list(
       # Render crosscut sliders ----
       mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),
@@ -407,8 +408,11 @@ server <- function(input, output, session) {
     
     bullets <- bulldata$preCC
     
-    # Add crosscut locations to data frame ----
-    bullets[bullets$bullet == input$cc_bulsel,]$crosscut <- sapply(1:sum(bullets$bullet == input$cc_bulsel), function(x) input[[paste("CCsl",x)]])
+    # Update crosscut column in bullets data frame with crosscut sliders ----
+    bullets <- update_cc_from_slider_wrapper(
+      bullets = bullets, 
+      selected = input$cc_bulsel
+    )
     
     # Store bullets with crosscut locations ----
     bulldata$preCC <- bullets
