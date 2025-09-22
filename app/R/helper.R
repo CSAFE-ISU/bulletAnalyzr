@@ -17,6 +17,18 @@ filter_preview_bullet <- function(allbull, preview_bull_name) {
   return(bull)
 }
 
+get_bsldata <- function(bullet_scores) {
+  # Collect land-wise data ----
+  bsldata <- bullet_scores$data[[1]]
+  # Sort in descending order ----
+  # just re-order the data - that will be safer and quicker
+  bsldata <- bsldata %>% 
+    mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
+    group_by(samesource) %>% 
+    arrange(desc(rfscore), .by_group = TRUE)
+  return(bsldata)
+}
+
 get_max_microns <- function(bullets) {
   bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
     # Get the Y coordinate range from the x3p header info
@@ -29,6 +41,10 @@ get_max_microns <- function(bullets) {
 get_panel_name <- function(bsldata, odridx, idx) {
   panel_name <- paste0(bsldata$land1[odridx[idx]], " vs ", bsldata$land2[odridx[idx]]," (RF Score = ", round(bsldata$rfscore[odridx[idx]],4), ")")
   return(panel_name)
+}
+
+get_rf_order <- function(bsldata) {
+  return(order(bsldata$rfscore, decreasing = TRUE))
 }
 
 identify_lands <- function(words) {

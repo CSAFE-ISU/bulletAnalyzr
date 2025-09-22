@@ -559,15 +559,13 @@ server <- function(input, output, session) {
       selected2 = input$comp_bul2
     )
     if(nrow(bullet_scores$data[[1]])>0) {
-      # Collect land-wise data ----
-      bsldata <- bullet_scores$data[[1]]
-      # Sort in descending order ----
-      # just re-order the data - that will be safer and quicker
-      bsldata <- bsldata %>% 
-        mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
-        group_by(samesource) %>% 
-        arrange(desc(rfscore), .by_group = TRUE)
-      odridx <- order(bsldata$rfscore, decreasing = TRUE) # this should be in order now
+
+      bsldata <- get_bsldata(bullet_scores = bullet_scores)
+      
+
+      
+      odridx <- get_rf_order(bsldata)
+
       
       # getting scales and instrument info ... not correct yet, but just for the first scan
       scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
