@@ -441,8 +441,7 @@ server <- function(input, output, session) {
     req(input$cc_bulsel)
     
     # Filter selected bullet ----
-    bullets <- bulldata$preCC
-    bullets <- bullets[bullets$bullet == input$cc_bulsel,]
+    bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
     
     # Refresh tab on change ----
     temp_refresh <- input$prevreport
