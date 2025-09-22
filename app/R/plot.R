@@ -15,3 +15,13 @@ groove_plot <- function(ccdata, grooves) {
     xlab("Position along width of Land [µm]") +
     ylab("Surface Height [µm]") 
 }
+
+plot_signal <- function(sig_plot_data, scale) {
+  ggplot(sig_plot_data, aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
+    geom_line(na.rm = TRUE, alpha = 0.9, linewidth = 1) +
+    scale_color_manual(values = c("darkorange", "purple4")) + 
+    xlab("Position along width of Land [µm]") +
+    ylab("Signal [µm]") +
+    ggtitle("Aligned signals of LEAs")+
+    theme(legend.position = "bottom") 
+}
