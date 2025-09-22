@@ -466,11 +466,14 @@ server <- function(input, output, session) {
         cidx <- idx
         # OUTPUT RGL - Render lands with crosscuts ----
         output[[paste0("CC_Sel_",idx)]] <- renderRglwidget({
-          bullets$x3p[[cidx]] %>%
-            x3p_add_hline(yintercept = input[[paste("CCsl",cidx)]], size = 20, color = "#eeeeee") %>%
-            x3p_rotate %>%
-            x3p_sample(m = 5) %>%
-            x3p_image(size = 500, zoom=.4)
+          render_land(
+            x3p = bullets$x3p[[cidx]],
+            ccut = input[[paste("CCsl",cidx)]],
+            rotate = TRUE,
+            sample_m = 5,
+            img_size = 500,
+            img_zoom = 0.4
+          )
           rglwidget()
         })
       })
