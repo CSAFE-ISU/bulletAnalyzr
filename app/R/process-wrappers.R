@@ -96,6 +96,23 @@ get_grooves_wrapper <- function(bullets, progress = NULL) {
   return(bullets)
 }
 
+get_report_data_wrapper <- function(bullets, comparisons, features, bullet_scores, progress) {
+  progress$set(message = "Preparing Report", value = .9)
+  comparison <- list(
+    bullets = bullets,
+    comparisons = comparisons,
+    features_scaled = features,
+    bullet_scores = bullet_scores
+  )
+  comparison_export <- list(
+    bullets = make_export_df(bullets),
+    comparisons = make_export_df(comparisons),
+    features_scaled = make_export_df(features),
+    bullet_scores = make_export_df(bullet_scores)
+  )
+  return(list(comparison = comparison, comparison_export = comparison_export))
+}
+
 get_signals_wrapper <- function(bullets, progress = NULL) {
   if (!is.null(progress)) {
     progress$set(message = "Extracting Signal", value = .1)

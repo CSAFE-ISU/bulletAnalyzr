@@ -356,19 +356,15 @@ server <- function(input, output, session) {
     }
     
     # Store comparison report data ----
-    progress$set(message = "Preparing Report", value = .9)
-    bulldata$comparison <- list(
+    report_results <- get_report_data_wrapper(
       bullets = bullets,
       comparisons = comparisons,
-      features_scaled = features,
-      bullet_scores = bullet_scores
+      features = features,
+      bullet_scores = bullet_scores,
+      progress = progress
     )
-    bulldata$comparison_export <- list(
-      bullets = make_export_df(bullets),
-      comparisons = make_export_df(comparisons),
-      features_scaled = make_export_df(features),
-      bullet_scores = make_export_df(bullet_scores)
-    )
+    bulldata$comparison <- report_results$comparison
+    bulldata$comparison_export <- report_results$comparison_export
   })
   
   
