@@ -9,6 +9,16 @@ add_cbull_to_allbull <- function(cbull, bul_x3p_name, allbull) {
   return(rbind(allbull, cbull))
 }
 
+filter_grooves_ccdata <- function(BullCompBulls, selected1, selected2, bsldata, odridx, cidx) {
+  GroovePlotLidx <- which(BullCompBulls$bullet == selected1 & BullCompBulls$land == bsldata$landA[odridx[cidx]])
+  GroovePlotRidx <- which(BullCompBulls$bullet == selected2 & BullCompBulls$land == bsldata$landB[odridx[cidx]])
+  GroovesL <- as.numeric(BullCompBulls$grooves[[GroovePlotLidx]]$groove)
+  GroovesR <- as.numeric(BullCompBulls$grooves[[GroovePlotRidx]]$groove)
+  CCDataL <- BullCompBulls$ccdata[[GroovePlotLidx]] - GroovesL[1]
+  CCDataR <- BullCompBulls$ccdata[[GroovePlotRidx]] - GroovesR[1]
+  return(list(CCDataL = CCDataL, CCDataR = CCDataR, GroovesL = GroovesL, GroovesR = GroovesR))
+}
+
 filter_selected_bullet <- function(bullets, selected) {
   bullets <- bullets[bullets$bullet == selected,]
   return(bullets)
@@ -17,6 +27,29 @@ filter_selected_bullet <- function(bullets, selected) {
 filter_selected_bullets <- function(bullet_scores, selected1, selected2) {
   bullet_scores <- bullet_scores[bullet_scores$bulletA == selected1 & bullet_scores$bulletB == selected2,]
   return(bullet_scores)
+}
+
+filter_SigPlotData <- function(BullCompComps, selected1, selected2, bsldata, odridx, cidx) {
+  SigPlotData <- BullCompComps$aligned[
+    (BullCompComps$bulletA == selected1) &
+      (BullCompComps$bulletB == selected2) &
+      (BullCompComps$landA == bsldata$landA[odridx[cidx]]) &
+      (BullCompComps$landB == bsldata$landB[odridx[cidx]])
+  ][[1]]$lands
+  SigPlotData <- tidyr::gather(SigPlotData, Signal, value, sig1, sig2)
+  
+  SigPlotData$Signal[SigPlotData$Signal == "sig1"] <- "Left LEA"
+  SigPlotData$Signal[SigPlotData$Signal == "sig2"] <- "Right LEA"
+  
+  return(SigPlotData)
+}
+
+filter_x3pimg <- function(BullCompBulls, selected1, selected2, bsldata, odridx, cidx) {
+  rglLidx <- which(BullCompBulls$bullet == selected1 & BullCompBulls$land == bsldata$landA[odridx[cidx]])
+  rglRidx <- which(BullCompBulls$bullet == selected2 & BullCompBulls$land == bsldata$landB[odridx[cidx]])
+  rglL <- BullCompBulls$x3pimg[[rglLidx]]
+  rglR <- BullCompBulls$x3pimg[[rglRidx]]
+  return(list(rglL = rglL, rglR = rglR))
 }
 
 make_temptable <- function(BullCompBulls, selected1, selected2, bsldata, odridx, idx, instrument, scale) {

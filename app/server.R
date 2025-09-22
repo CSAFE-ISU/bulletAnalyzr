@@ -595,14 +595,16 @@ server <- function(input, output, session) {
         # RGL Render Comparison ---------------------------------------------------
         
         local({
-          cidx <- idx
-          BullCompBulls <- bulldata$comparison$bullets
-          rglLidx <- which(BullCompBulls$bullet == input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[cidx]])
-          rglRidx <- which(BullCompBulls$bullet == input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[cidx]])
-          rglL <- BullCompBulls$x3pimg[[rglLidx]]
-          rglR <- BullCompBulls$x3pimg[[rglRidx]]
-          output[[paste0("rglWinL",idx)]] <- renderImage({list(src = rglL, contentType = 'image/png')}, deleteFile = FALSE)
-          output[[paste0("rglWinR",idx)]] <- renderImage({list(src = rglR, contentType = 'image/png')}, deleteFile = FALSE)
+          x3pimg_results <- filter_x3pimg(
+            BullCompBulls = bulldata$comparison$bullets,
+            selected1 = input$comp_bul1,
+            selected2 = input$comp_bul2,
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
+          )
+          output[[paste0("rglWinL",idx)]] <- renderImage({list(src = x3pimg_results$rglL, contentType = 'image/png')}, deleteFile = FALSE)
+          output[[paste0("rglWinR",idx)]] <- renderImage({list(src = x3pimg_results$rglR, contentType = 'image/png')}, deleteFile = FALSE)
         })
         temp_rgl <- layout_column_wrap(
           width = 1/2,
@@ -614,20 +616,21 @@ server <- function(input, output, session) {
         # Groove Plot -------------------------------------------------------------
         
         local({
+          results <- filter_grooves_ccdata(
+            BullCompBulls = bulldata$comparison$bullets,
+            selected1 = input$comp_bul1,
+            selected2 = input$comp_bul2,
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
+          )
           cidx <- idx
-          BullCompBulls <- bulldata$comparison$bullets
-          GroovePlotLidx <- which(BullCompBulls$bullet == input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]])
-          GroovePlotRidx <- which(BullCompBulls$bullet == input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]])
-          GroovesL <- as.numeric(BullCompBulls$grooves[[GroovePlotLidx]]$groove)
-          GroovesR <- as.numeric(BullCompBulls$grooves[[GroovePlotRidx]]$groove)
-          CCDataL <- BullCompBulls$ccdata[[GroovePlotLidx]] - GroovesL[1]
-          CCDataR <- BullCompBulls$ccdata[[GroovePlotRidx]] - GroovesR[1]
-          output[[paste0("GroovePlotL",idx)]] <- renderPlot({
-            groove_plot(CCDataL, GroovesL) +
+          output[[paste0("GroovePlotL", cidx)]] <- renderPlot({
+            groove_plot(results$CCDataL, results$GroovesL) +
               ggtitle(sprintf("Land %s profile", bsldata$land1[odridx[cidx]]))
           })
-          output[[paste0("GroovePlotR",idx)]] <- renderPlot({
-            groove_plot(CCDataR, GroovesR) +
+          output[[paste0("GroovePlotR", cidx)]] <- renderPlot({
+            groove_plot(results$CCDataR, results$GroovesR) +
               ggtitle(sprintf("Land %s profile", bsldata$land2[odridx[cidx]]))
           })
         })
@@ -642,20 +645,17 @@ server <- function(input, output, session) {
         # Signal Comparison -------------------------------------------------------
         
         local({
+          SigPlotData <- filter_SigPlotData(
+            BullCompComps = bulldata$comparison$comparisons,
+            selected1 = input$comp_bul1,
+            selected2 = input$comp_bul2,
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
+          )
           cidx <- idx
-          BullCompComps <- bulldata$comparison$comparisons
           scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
-          SigPlotData <- BullCompComps$aligned[
-            (BullCompComps$bulletA == input$comp_bul1) &
-              (BullCompComps$bulletB == input$comp_bul2) &
-              (BullCompComps$landA == bsldata$landA[odridx[idx]]) &
-              (BullCompComps$landB == bsldata$landB[odridx[idx]])
-          ][[1]]$lands
-          SigPlotData <- tidyr::gather(SigPlotData, Signal, value, sig1, sig2)
-          
-          SigPlotData$Signal[SigPlotData$Signal == "sig1"] <- "Left LEA"
-          SigPlotData$Signal[SigPlotData$Signal == "sig2"] <- "Right LEA"
-          output[[paste0("SigPlot",idx)]] <- renderPlot({
+          output[[paste0("SigPlot", cidx)]] <- renderPlot({
             ggplot(SigPlotData, aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
               geom_line(na.rm = TRUE, alpha = 0.9, linewidth = 1) +
               scale_color_manual(values = c("darkorange", "purple4")) + 
