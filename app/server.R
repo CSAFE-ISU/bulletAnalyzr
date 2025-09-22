@@ -32,9 +32,9 @@ interactive_cc = TRUE
 
 # Helper Functions ----
 source("R/bullet-lists.R")
-source("R/bullet-transformations.R")
 source("R/helper.R")
 source("R/plot.R")
+source("R/preprocess.R")
 source("R/process-wrappers.R")
 source("R/render.R")
 
