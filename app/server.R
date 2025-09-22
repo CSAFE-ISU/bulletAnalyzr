@@ -31,13 +31,13 @@ theme_update(
 interactive_cc = TRUE
 
 # Helper Functions ----
-source("R/crosscut.R")
 source("R/bullet-lists.R")
 source("R/bullet-transformations.R")
-source("R/grooves.R")
 source("R/helper.R")
 source("R/plot.R")
+source("R/process-wrappers.R")
 source("R/render.R")
+
 
 
 # Server ------------------------------------------------------------------
@@ -289,7 +289,7 @@ server <- function(input, output, session) {
     
     # Find optimal crosscuts ----
     progress$set(message = "Get suitable Cross Sections", value = 0)
-    crosscut_results <- get_default_crosscuts(
+    crosscut_results <- get_default_cc_wrapper(
       bullets = bullets,
       interactive_cc = interactive_cc,
       ylimits = c(150, NA)
@@ -303,25 +303,26 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
   })
   
-  # OBSERVE EVENT - bulldata$postCC - Get crosscut data, grooves, signal, features, and random forest score ----
-  # bulldata$postCC is populated when the Compare Bullets button (doprocessCC)
-  # on the Comparison Report tab panel is clicked
+  # OBSERVE EVENT - bulldata$postCC - Get crosscut data, grooves, signal, features, and random forest score ---- 
+  # bulldata$postCC is populated when the
+  # Compare Bullets button (doprocessCC) on the Comparison Report tab panel is
+  # clicked
   observeEvent(bulldata$postCC, {
     req(bulldata$postCC)
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Extract crosscut data ----
-    bullets <- finalize_crosscuts(postCC = bulldata$postCC, progress = progress)
+    bullets <- get_ccdata_wrapper(postCC = bulldata$postCC, progress = progress)
     
     # Find the optimal groove locations ----
-    bullets <- get_grooves(bullets = bullets, progress = progress)
+    bullets <- get_grooves_wrapper(bullets = bullets, progress = progress)
     
     # Extract the signals ----
-    bullets <- get_signals(bullets = bullets, progress = progress)
+    bullets <- get_signals_wrapper(bullets = bullets, progress = progress)
     
     # Align the signals ----
-    signals_results <- get_aligned_signals(bullets = bullets, progress = progress)
+    signals_results <- get_aligned_signals_wrapper(bullets = bullets, progress = progress)
     bullets <- signals_results$bullets
     comparisons <- signals_results$comparisons
     
@@ -329,7 +330,7 @@ server <- function(input, output, session) {
     resolution <- x3p_get_scale(bullets$x3p[[1]])
     
     # Get Features ----
-    features_results <- get_features(comparisons = comparisons, resolution = resolution, progress = progress)
+    features_results <- get_features_wrapper(comparisons = comparisons, resolution = resolution, progress = progress)
     comparisons <- features_results$comparisons
     features <- features_results$features
     
