@@ -24,6 +24,14 @@ get_bullet_scores_wrapper <- function(features, progress) {
 }
 
 get_ccdata_wrapper <- function(postCC, progress = NULL) {
+  try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
+    res <- x3p_crosscut(x3p=x3p, y = y, range = range)
+    if (nrow(res) == 0) {
+      res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
+    }
+    return(res)
+  }
+  
   if (!is.null(progress)) {
     progress$set(message = "Finalizing Cross Sections", value = 0)
   }

@@ -389,12 +389,7 @@ server <- function(input, output, session) {
     bullets <- bullets[bullets$bullet == input$cc_bulsel,]
     
     # Calculate Y coordinate ranges for each bullet land in microns
-    bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
-      # Get the Y coordinate range from the x3p header info
-      y_max <- floor(x3p$header.info$incrementY * (x3p$header.info$sizeY - 1))
-      return(y_max)
-    })
-    
+    bullet_y_ranges <- get_max_microns(bullets = bullets)
     list(
       # Render crosscut sliders ----
       mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),

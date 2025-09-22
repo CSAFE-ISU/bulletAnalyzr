@@ -17,6 +17,15 @@ filter_preview_bullet <- function(allbull, preview_bull_name) {
   return(bull)
 }
 
+get_max_microns <- function(bullets) {
+  bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
+    # Get the Y coordinate range from the x3p header info
+    y_max <- floor(x3p$header.info$incrementY * (x3p$header.info$sizeY - 1))
+    return(y_max)
+  })
+  return(bullet_y_ranges)
+}
+
 identify_lands <- function(words) {
   # create a list of distinguishing elements between names
   
@@ -78,12 +87,4 @@ show_modal <- function(title, message, show_alert, session) {
       footer = modalButton("OK")
     ), session = session)
   }
-}
-
-try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
-  res <- x3p_crosscut(x3p=x3p, y = y, range = range)
-  if (nrow(res) == 0) {
-    res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
-  }
-  return(res)
 }
