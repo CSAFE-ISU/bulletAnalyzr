@@ -12,10 +12,18 @@ parse_rglui <- function(x, name = "x3prgl", land_name = NULL) {
 ## Render Land into image with CrossCut line
 render_crosscut_snap <- function(src, x3p, ccut) {
   imgsrc <- gsub(".x3p$", ".png", src)
-  x3p %>%
-    x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
-    x3p_sample(m = 5) %>%
-    x3p_image(size = 600, zoom = .25)
+  # x3p %>%
+  #   x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
+  #   x3p_sample(m = 5) %>%
+  #   x3p_image(size = 600, zoom = .25)
+  render_land(
+    x3p = x3p, 
+    ccut = ccut,
+    sample_m = 5,
+    rotate = FALSE,
+    img_size = 600,
+    img_zoom = 0.25
+  )
   snapshot3d(imgsrc, webshot = TRUE)
   return(imgsrc)
 }
@@ -25,11 +33,30 @@ render_ccsl <- function(id, ymin, ymax, yset) {
   sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
 }
 
-render_land <- function(x3p) {
-  x3p %>%
-    x3p_sample(m = 5) %>%
-    x3p_rotate() %>%
-    x3p_image(size = 500, zoom = .4)
+render_land <- function(x3p, ccut = NULL, sample_m = 5, rotate = TRUE, img_size = 500, img_zoom = 0.4) {
+  if (!is.null(ccut) && rotate) {
+    img <- x3p %>%
+      x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
+      x3p_sample(m = sample_m) %>%
+      x3p_rotate() %>%
+      x3p_image(size = img_size, zoom = img_zoom)
+  } else if (!is.null(ccut) && !rotate) {
+    img <- x3p %>%
+      x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
+      x3p_sample(m = sample_m) %>%
+      x3p_image(size = img_size, zoom = img_zoom)
+  } else if (is.null(ccut) && rotate) {
+    img <- x3p %>%
+      x3p_sample(m = sample_m) %>%
+      x3p_rotate() %>%
+      x3p_image(size = img_size, zoom = img_zoom)
+  } else if (is.null(ccut) && !rotate) {
+    img <- x3p %>%
+      x3p_sample(m = sample_m) %>%
+      x3p_image(size = img_size, zoom = img_zoom)
+  }
+   
+  return(img)
 }
 
 # Render the session info as text
