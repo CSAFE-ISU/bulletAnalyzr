@@ -645,7 +645,7 @@ server <- function(input, output, session) {
         # Signal Comparison -------------------------------------------------------
         
         local({
-          SigPlotData <- filter_SigPlotData(
+          sig_plot_data <- filter_sig_plot_data(
             BullCompComps = bulldata$comparison$comparisons,
             selected1 = input$comp_bul1,
             selected2 = input$comp_bul2,
@@ -656,7 +656,7 @@ server <- function(input, output, session) {
           cidx <- idx
           scale <- bulldata$cbull$x3p[[1]] %>% x3p_get_scale()
           output[[paste0("SigPlot", cidx)]] <- renderPlot({
-            ggplot(SigPlotData, aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
+            ggplot(sig_plot_data, aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
               geom_line(na.rm = TRUE, alpha = 0.9, linewidth = 1) +
               scale_color_manual(values = c("darkorange", "purple4")) + 
               xlab("Position along width of Land [µm]") +

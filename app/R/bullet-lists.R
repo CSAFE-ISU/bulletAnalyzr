@@ -29,19 +29,19 @@ filter_selected_bullets <- function(bullet_scores, selected1, selected2) {
   return(bullet_scores)
 }
 
-filter_SigPlotData <- function(BullCompComps, selected1, selected2, bsldata, odridx, cidx) {
-  SigPlotData <- BullCompComps$aligned[
+filter_sig_plot_data <- function(BullCompComps, selected1, selected2, bsldata, odridx, cidx) {
+  sig_plot_data <- BullCompComps$aligned[
     (BullCompComps$bulletA == selected1) &
       (BullCompComps$bulletB == selected2) &
       (BullCompComps$landA == bsldata$landA[odridx[cidx]]) &
       (BullCompComps$landB == bsldata$landB[odridx[cidx]])
   ][[1]]$lands
-  SigPlotData <- tidyr::gather(SigPlotData, Signal, value, sig1, sig2)
+  sig_plot_data <- tidyr::gather(sig_plot_data, Signal, value, sig1, sig2)
   
-  SigPlotData$Signal[SigPlotData$Signal == "sig1"] <- "Left LEA"
-  SigPlotData$Signal[SigPlotData$Signal == "sig2"] <- "Right LEA"
+  sig_plot_data$Signal[sig_plot_data$Signal == "sig1"] <- "Left LEA"
+  sig_plot_data$Signal[sig_plot_data$Signal == "sig2"] <- "Right LEA"
   
-  return(SigPlotData)
+  return(sig_plot_data)
 }
 
 filter_x3pimg <- function(BullCompBulls, selected1, selected2, bsldata, odridx, cidx) {
