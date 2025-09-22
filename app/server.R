@@ -553,8 +553,11 @@ server <- function(input, output, session) {
     LandComp <- list()
     
     # Filter selected bullets ----
-    bullet_scores <- bulldata$comparison$bullet_scores
-    bullet_scores <- bullet_scores[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2,]
+    bullet_scores <- filter_selected_bullets(
+      bullet_scores = bulldata$comparison$bullet_scores,
+      selected1 = input$comp_bul1,
+      selected2 = input$comp_bul2
+    )
     if(nrow(bullet_scores$data[[1]])>0) {
       # Collect land-wise data ----
       bsldata <- bullet_scores$data[[1]]
@@ -578,36 +581,15 @@ server <- function(input, output, session) {
       for(idx in 1:show_n) {
         
         # Data Table Comparison ---------------------------------------------------
-        
-        BullCompBulls <- bulldata$comparison$bullets
-        temptable <- data.frame(
-          Feature = c("Left Land File", "Left Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                      "Right Land File", "Right Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                      "Cross Correlation Function", "Mean Distance btw Signals [Âµm]",
-                      "Signal Length [mm]", "# Matching Striae Per Millimeter",
-                      "# Mis-Matching Striae Per Millimeter", "CMS Per Millimeter",
-                      "Non-CMS Per Millimeter", "Peak Sum"),
-          Value = c(
-            BullCompBulls$filename[BullCompBulls$bullet == input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
-            BullCompBulls$md5sum[BullCompBulls$bullet == input$comp_bul1 & BullCompBulls$land == bsldata$landA[odridx[idx]]],
-            sprintf("%s (%s)", instrument, scale),
-            BullCompBulls$filename[BullCompBulls$bullet == input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]]],
-            BullCompBulls$md5sum[BullCompBulls$bullet == input$comp_bul2 & BullCompBulls$land == bsldata$landB[odridx[idx]]],
-            sprintf("%s (%s)", instrument, scale),
-            round(bsldata$ccf[odridx[idx]],3),
-            round(bsldata$D[odridx[idx]],3),
-            round(bsldata$length_mm[odridx[idx]],3),
-            round(bsldata$matches_per_mm[odridx[idx]],3),
-            round(bsldata$mismatches_per_mm[odridx[idx]],3),
-            round(bsldata$cms_per_mm[odridx[idx]],3),
-            round(bsldata$non_cms_per_mm[odridx[idx]],3),
-            round(bsldata$sum_peaks[odridx[idx]],3)
-          )
-        )
-        temptable_dt <- datatable(
-          temptable, 
-          rownames = FALSE, 
-          options = list(paging = FALSE, ordering = FALSE, searching = FALSE, bLengthChange = FALSE, bInfo = FALSE)
+        temptable_dt <- make_temptable(
+          BullCompBulls = bulldata$comparison$bullets, 
+          selected1 = input$comp_bul1, 
+          selected2 = input$comp_bul2,
+          bsldata = bsldata, 
+          odridx = odridx, 
+          idx = idx, 
+          instrument = instrument, 
+          scale = scale
         )
         
         # RGL Render Comparison ---------------------------------------------------
