@@ -96,35 +96,18 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Bullet Land x3p Files button ----
   observeEvent(input$bul_x3p, {
+    
+    disable("up_bull")
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
     # Get default bullet name ----
     bullet_name <- identify_bullet(input$bul_x3p$name)
     updateTextInput(session, "bul_x3p_name", value = bullet_name)
     
     # Switch alert on ----
     values$show_alert <- TRUE
-  })
-  
-  # OBSERVE EVENT - Add Bullet to Comparison List button ----
-  # Push current bullet data to all bullet data object
-  observeEvent(input$up_bull, {
-    req(nrow(bulldata$cbull) > 0)
     
-    bulldata$allbull <- add_cbull_to_allbull(
-      cbull = bulldata$cbull,
-      bul_x3p_name = input$bul_x3p_name,
-      allbull = bulldata$allbull
-    )
-    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
-    
-    # Switch upload button off ----
-    disable("up_bull")
-  })
-  
-  
-  # SECTION: BULLET PREVIEWS ON UPLOAD TAB --------------------------------
-  
-  # REACTIVE - Copy lands to tempdir and read bullet ----
-  uploaded_bull <- reactive({
     temp_refresh <- input$prevreport
     
     # Create Temporary Directory and save bullets in it ----
@@ -133,20 +116,9 @@ server <- function(input, output, session) {
       filename = input$bul_x3p$name
     )
     
-    return(read_bullet(temp_dir))
-  })
-  
-  # OUTPUT UI - Upload Bullet tab panel ----
-  output$lpupload <- renderUI({
-    req(input$bul_x3p)
-    
-    # Switch upload button off ----
-    disable("up_bull")
-    progress <- shiny::Progress$new();on.exit(progress$close())
-    
-    # Read bullet ----
-    progress$set(message = "Reading Bullets", value = .25)
-    bull <- uploaded_bull()
+    # Read bullet from temp directory ----
+    progress$set(message = "Reading Bullet", value = .25)
+    bull <- read_bullet(temp_dir)
     
     # Rotate bullet (optional) ----
     rotate_results <- rotate_bullet(
@@ -182,15 +154,42 @@ server <- function(input, output, session) {
     bulldata$cbull <- bull
     bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
     
+  })
+  
+  # OBSERVE EVENT - Add Bullet to Comparison List button ----
+  # Push current bullet data to all bullet data object
+  observeEvent(input$up_bull, {
+    req(nrow(bulldata$cbull) > 0)
+    
+    bulldata$allbull <- add_cbull_to_allbull(
+      cbull = bulldata$cbull,
+      bul_x3p_name = input$bul_x3p_name,
+      allbull = bulldata$allbull
+    )
+    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
+    
+    # Switch upload button off ----
+    disable("up_bull")
+  })
+  
+  
+  # SECTION: BULLET PREVIEWS ON UPLOAD TAB --------------------------------
+  
+  # OUTPUT UI - Upload Bullet tab panel ----
+  output$lpupload <- renderUI({
+    req(nrow(bulldata$cbull) > 0)
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
     # Render bullet ----
     progress$set(message = "Rendering Previews", value = .75)
-    for(idx in 1:nrow(bull)) {
+    for(idx in 1:nrow(bulldata$cbull)) {
       local({
         cidx <- idx
         # OUTPUT RGL - Bullet ----
         output[[paste0("x3prgl",idx)]] <- renderRglwidget({
           render_land(
-            x3p = bull$x3p[[cidx]], 
+            x3p = bulldata$cbull$x3p[[cidx]], 
             ccut = NULL,
             sample_m = 5,
             rotate = TRUE,
@@ -208,7 +207,7 @@ server <- function(input, output, session) {
     # Display bullet ----
     layout_column_wrap(
       width = 1/6,
-      !!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bull$land_names[x]))
+      !!!lapply(1:nrow(bulldata$cbull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bulldata$cbull$land_names[x]))
     )
   })
   
@@ -515,6 +514,7 @@ server <- function(input, output, session) {
   )
   
   # SECTION: PHASE TEST ---------------------------------------------------
+  
   observe({
     req(bulldata$comparison)
     req(bulldata$comparison$bullet_scores)
