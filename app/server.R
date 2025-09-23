@@ -303,6 +303,8 @@ server <- function(input, output, session) {
     
     # Find optimal crosscuts ----
     progress$set(message = "Get suitable Cross Sections", value = 0)
+    # If interactive_cc = TRUE, crosscut results added to preCC and postCC is
+    # NULL. If interactive_cc = FALSE, crosscut results added to postCC and preCC is NULL.
     crosscut_results <- get_default_cc_wrapper(
       bullets = bullets,
       interactive_cc = interactive_cc,
