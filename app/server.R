@@ -320,8 +320,10 @@ server <- function(input, output, session) {
   })
   
   # OBSERVE EVENT - bulldata$postCC - Get crosscut data, grooves, signal, features, and random forest score ---- 
-  # bulldata$postCC is populated when the
-  # Compare Bullets button (doprocessCC) on the Comparison Report tab panel is
+  
+  # If interactive_cc = TRUE, bulldata$postCC is populated when the Compare
+  # Bullets button (doprocessCC) on the Comparison Report tab panel is clicked.
+  # If interactive_cc = FALSE, bulldata$postCC is populated when (doprocess) is
   # clicked
   observeEvent(bulldata$postCC, {
     req(bulldata$postCC)
