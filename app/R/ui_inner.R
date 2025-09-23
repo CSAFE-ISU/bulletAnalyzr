@@ -51,7 +51,7 @@ sidebarLayout(tags$div(id="my-sidebar",
     
       ## Download Report Button
       conditionalPanel(condition="input.prevreport == 'Comparison Report'",
-          uiOutput("reportDownUI"),
+                       reportSidebarUI("report1"),
       ),
   ))),
   mainPanel(
@@ -72,7 +72,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ## Comparison Report
       tabPanel("Comparison Report", 
           shinycssloaders::withSpinner(uiOutput("CCBullLand")),
-          shinycssloaders::withSpinner(uiOutput("reportUI"))
+          shinycssloaders::withSpinner(reportMainUI("report1"))
       )  
     )
   )

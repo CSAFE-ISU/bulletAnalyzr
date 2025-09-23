@@ -18,6 +18,8 @@ version <- "0.5.0-beta.1"
 options(shiny.maxRequestSize = 30*1024^2)
 addResourcePath("images", "images")
 
+source("R/report-module.R")
+
 ui <- shinyUI({
   fluidPage(title = "BulletAnalyzr",
   useShinyjs(),
