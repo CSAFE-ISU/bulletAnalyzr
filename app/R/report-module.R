@@ -48,9 +48,6 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
         br()
       )
       
-      # Collapsible reports ----
-      LandComp <- list()
-      
       # Filter selected bullets ----
       bullet_scores <- filter_selected_bullets(
         bullet_scores = bullet_data$comparison$bullet_scores,
