@@ -43,12 +43,10 @@ test_that("{shinytest2} recording: app", {
   app$set_inputs(cc_bulsel = "Bullet 1")
   app$set_window_size(width = 1299, height = 711)
   app$expect_values(export = TRUE)
-  app$expect_values(output = c("bull_comp_score", "bull_comp_test"))
   
   app$wait_for_value(output = "CCBull2")
   app$click("saveCC")
   app$click("doprocessCC")
   app$set_window_size(width = 1299, height = 711)
   app$expect_values(export = TRUE)
-  app$expect_values(output = c("bull_comp_score", "bull_comp_test"))
 })

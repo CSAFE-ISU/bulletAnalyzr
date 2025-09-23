@@ -1,8 +1,50 @@
-cond_x3p_m_to_mum <- function(x3p)
-{
-  scale <- x3p %>% x3p_get_scale()
-  if (scale < .1) x3p <-  x3p %>% x3p_m_to_mum() # only scale conditionally
-  x3p
+#' Copy to Temporary Directory
+#'
+#' @param filepath A string of the current filepath.
+#' @param filename A string of the current filename.
+#'
+#' @returns A path to a new temp directory
+#' @noRd
+copy_to_tempdir <- function(filepath, filename) {
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  file.copy(filepath, file.path(temp_dir, filename))
+  return(temp_dir)
+}
+
+filter_preview_bullet <- function(allbull, preview_bull_name) {
+  bull <- allbull[allbull$bullet == preview_bull_name,]
+  return(bull)
+}
+
+get_bsldata <- function(bullet_scores) {
+  # Collect land-wise data ----
+  bsldata <- bullet_scores$data[[1]]
+  # Sort in descending order ----
+  # just re-order the data - that will be safer and quicker
+  bsldata <- bsldata %>% 
+    mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
+    group_by(samesource) %>% 
+    arrange(desc(rfscore), .by_group = TRUE)
+  return(bsldata)
+}
+
+get_max_microns <- function(bullets) {
+  bullet_y_ranges <- sapply(bullets$x3p, function(x3p) {
+    # Get the Y coordinate range from the x3p header info
+    y_max <- floor(x3p$header.info$incrementY * (x3p$header.info$sizeY - 1))
+    return(y_max)
+  })
+  return(bullet_y_ranges)
+}
+
+get_panel_name <- function(bsldata, odridx, idx) {
+  panel_name <- paste0(bsldata$land1[odridx[idx]], " vs ", bsldata$land2[odridx[idx]]," (RF Score = ", round(bsldata$rfscore[odridx[idx]],4), ")")
+  return(panel_name)
+}
+
+get_rf_order <- function(bsldata) {
+  return(order(bsldata$rfscore, decreasing = TRUE))
 }
 
 identify_lands <- function(words) {
@@ -18,10 +60,8 @@ identify_lands <- function(words) {
   difflist <- purrr::discard(difflist, is.null) 
   # transpose back and make 'word'
   difflist <- difflist %>% purrr::list_transpose() %>% purrr::map_chr(paste, collapse="")
-#  if (length(words) != length(difflist)) browser()
   make.unique(difflist) # make sure that something is there and it is different
 }
-
 
 identify_bullet <- function(words) {
   # create a list of the same elements between names
@@ -39,42 +79,15 @@ identify_bullet <- function(words) {
   make.names(paste(samelist[[1]], collapse="")) # delete all forbidden characters
 }
 
-
-groove_plot <- function(ccdata, grooves) {
-    ccdata %>% 
-    ggplot(aes(x = x, y = value)) + 
-#    theme_bw()+
-    geom_vline(xintercept = 0, colour = "grey50") + 
-    geom_vline(xintercept = grooves[2]-grooves[1], colour = "grey50") +
-    geom_line(linewidth = .5) + # put signal in front
-    annotate("rect", fill="grey50", alpha = 0.15, xmax = 0, xmin = -Inf, ymin = -Inf, ymax = Inf) +
-    annotate("rect", fill="grey50", alpha = 0.15, xmax = Inf, xmin = grooves[2]-grooves[1], ymin = -Inf, ymax = Inf) +
-    geom_line(linewidth = 1, data = filter(ccdata, between(x, 0, grooves[2]-grooves[1]))) + # put signal in front
-    scale_x_continuous(
-      breaks=c(0,round(as.numeric(grooves[2]-grooves[1]),0),round(seq(min(ccdata$x),max(ccdata$x),by=500),-2)),
-      labels=c("\n0",paste0("\n",round(as.numeric(grooves[2]-grooves[1]),0)),round(seq(min(ccdata$x),max(ccdata$x),by=500),-2))
-    ) +
-    xlab("Position along width of Land [µm]") +
-    ylab("Surface Height [µm]") 
-}
-
-## Render RGL Widget UI
-parse_rglui <- function(x, name = "x3prgl", land_name = NULL)
-{
-  if (is.null(land_name)) land_name <- x
-  card(
-    card_header(class = "bg-dark",paste0("Land ", land_name)),
-    max_height = 600,
-    full_screen = FALSE,
-    rglwidgetOutput(paste0(name,x),height=600,width=200),
-  )
-}
-
 make_export_df <- function(df) {
   # Modify data frame for export for testing. Drop the x3p column because it
   # makes the snapshots 100+ MB. Change source column from filepath to filename
   # because the temp directory filepath will change every time, but the
   # filenames should remain consistent.
+  if (is.null(df)) {
+    return(NULL)
+  }
+  
   df <- df %>% 
     dplyr::select(-tidyselect::any_of(c("x3p", "x3pimg"))) 
   
@@ -86,34 +99,13 @@ make_export_df <- function(df) {
   return(df)
 }
 
-## Render Land into image with CrossCut line
-render_land <- function(src, x3p, ccut) {
-  imgsrc <- gsub(".x3p$", ".png", src)
-  x3p %>%
-    x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
-    x3p_sample(m = 5) %>%
-    x3p_image(size = 600, zoom = .25)
-  snapshot3d(imgsrc, webshot = TRUE)
-  return(imgsrc)
-}
-
-## Render Slider to adjust CrossCut
-render_ccsl <- function(id, ymin, ymax, yset) {
-  sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
-}
-
-# Render the session info as text
-render_session_info <- function(session) {
-  renderText({{
-    sessioninfo::session_info(to_file = TRUE)
-    sessionInfo <- readLines(con="session-info.txt")
-    paste(sessionInfo, collapse="\n")
-  }})
-}
-
-try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) 
-{
-  res <- x3p_crosscut(x3p=x3p, y = y, range = range)
-  if (nrow(res) == 0) res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
-  return(res)
+show_modal <- function(title, message, show_alert, session) {
+  if (show_alert) {
+    showModal(modalDialog(
+      title = title,
+      message,
+      easyClose = TRUE,
+      footer = modalButton("OK")
+    ), session = session)
+  }
 }
