@@ -7,19 +7,22 @@ reportSidebarUI <- function(id) {
 # UI that displays phase test, score matrices, and plots in main tab panel
 reportMainUI <- function(id) {
   ns <- NS(id)
-  uiOutput(ns("report"))
+  htmltools::tagList(
+    uiOutput(ns("report")),
+    uiOutput(ns("report_panels"))
+  )
 }
 
 reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_results) {
   moduleServer(id, function(input, output, session) {
-    # OUTPUT UI - Report Comparison tab panel ----
+    # OUTPUT UI - Report comparison top ----
     output$report <- renderUI({
       req(is.null(bullet_data$preCC))
       req(bullet_data$comparison)
       req(comp_bul1())
       req(comp_bul2())
       
-      BullComp <- list(
+      htmltools::tagList(
         # Phase test results ----
         fluidRow(
           column(12, "SUMMARY OF RESULTS", align = "left", class = "h3"), 
@@ -47,6 +50,14 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
         fluidRow(column(12, plotOutput(session$ns("land_visSig")), align = "center")),
         br()
       )
+    })
+    
+    # OUTPUT UI - Report comparison panels ----
+    output$report_panels <- renderUI({
+      req(is.null(bullet_data$preCC))
+      req(bullet_data$comparison)
+      req(comp_bul1())
+      req(comp_bul2())
       
       # Filter selected bullets ----
       bullet_scores <- filter_selected_bullets(
@@ -167,7 +178,7 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
       }
       
       # Return Full Collapsible Report
-      return(c(BullComp, LandComp$children))
+      return(LandComp$children)
     })
     
     # OUTPUT UI - Report Download sidebar ----
