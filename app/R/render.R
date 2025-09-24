@@ -12,20 +12,24 @@ parse_rglui <- function(x, name = "x3prgl", land_name = NULL) {
 ## Render Land into image with CrossCut line
 render_crosscut_snap <- function(src, x3p, ccut) {
   imgsrc <- gsub(".x3p$", ".png", src)
-  # x3p %>%
-  #   x3p_add_hline(yintercept = ccut, size = 20, color = "#eeeeee") %>%
-  #   x3p_sample(m = 5) %>%
-  #   x3p_image(size = 600, zoom = .25)
   render_land(
     x3p = x3p, 
     ccut = ccut,
     sample_m = 5,
     rotate = FALSE,
-    img_size = 600,
+    img_size = 200,
     img_zoom = 0.25
   )
   snapshot3d(imgsrc, webshot = TRUE)
   return(imgsrc)
+}
+
+render_crosscut_snap_wrapper <- function(bullets, progress) {
+  for(idx in 1:nrow(bullets)) {
+    progress$set(message = "Rendering Report Objects", value = round(seq(from = .55, to = .85, length.out = nrow(bullets)), 2)[idx])
+    bullets$x3pimg[idx] <- render_crosscut_snap(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])
+  }
+  return(bullets)
 }
 
 ## Render Slider to adjust CrossCut

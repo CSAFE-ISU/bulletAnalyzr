@@ -11,28 +11,28 @@ test_that("{shinytest2} recording: app", {
   )
   
   # Begin button ----
-  app$click("confirm_autonomous")
+  app$click("begin_button")
   app$expect_values(export = TRUE)
   
   # Select Bullet Land x3p Files button ----
   files1 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 1"), full.names = TRUE, pattern = ".x3p")
-  app$upload_file(bul_x3p = files1)
+  app$upload_file(upload_button = files1)
   app$set_window_size(width = 1299, height = 711)
   
   # Bullet Name text input ----
   app$set_inputs(bul_x3p_name = "Bullet 1")
-  app$click("up_bull")
+  app$click("add_to_list_button")
   app$set_window_size(width = 1299, height = 711)
   app$expect_values(export = TRUE)
   
   # Select Bullet Land x3p Files button ----
   files2 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
-  app$upload_file(bul_x3p = files2)
+  app$upload_file(upload_button = files2)
   app$set_window_size(width = 1299, height = 711)
   
   # Bullet Name text input ----
   app$set_inputs(bul_x3p_name = "Bullet 2")
-  app$click("up_bull")
+  app$click("add_to_list_button")
   app$set_window_size(width = 1299, height = 711)
   app$expect_values(export = TRUE)
   
