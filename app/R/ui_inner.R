@@ -39,7 +39,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ## Bullet Comparison UI
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(
-            column(12,uiOutput("bull_sel")),
+            column(12,uiOutput("bullSelCheckboxUI")),
             column(12,actionButton("doprocess", label = "Compare Bullets"),align="center"),
           ),
           div(id = "orientation-note",

@@ -9,7 +9,7 @@ This document provides a comprehensive reference for where each `bulldata` react
 **Read Access:**
 
 - `output$prevSelUI` - gets unique bullet names for dropdown: `unique(allbull$bullet)`
-- `output$bull_sel` - gets unique bullet names for checkbox group: `unique(bulldata$allbull$bullet)`
+- `output$bullSelCheckboxUI` - gets unique bullet names for checkbox group: `unique(bulldata$allbull$bullet)`
 - `observeEvent(input$doprocess)` - assigns to local `bullets` variable for processing
 - `downsample_bullet()` function - checks if `nrow(allbull) > 0` and gets reference resolution
 

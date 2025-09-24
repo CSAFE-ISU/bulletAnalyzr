@@ -82,8 +82,8 @@
 
 #### UI Elements
 
-- UI Output: `bull_sel`
-- Checkbox group: `checkboxGroupInput("bullcompgroup")`
+- UI Output: `bullSelCheckboxUI`
+- Checkbox group: `checkboxGroupInput("bull_sel_checkbox")`
 - Button: `actionButton("doprocess", label = "Compare Bullets")`
 
 #### Server Logic

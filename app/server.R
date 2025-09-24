@@ -276,7 +276,7 @@ server <- function(input, output, session) {
   # SECTION: SELECT BULLETS FOR COMPARISON --------------------------------
   
   # OUTPUT UI - Select Bullets to Compare sidebar ----
-  output$bull_sel <- renderUI({
+  output$bullSelCheckboxUI <- renderUI({
     req(nrow(bulldata$allbull) > 0)
     
     # Store allbull ----
@@ -284,7 +284,7 @@ server <- function(input, output, session) {
     
     # CHECK BOX - Select Bullets to Compare ----
     checkboxGroupInput(
-      "bullcompgroup",
+      "bull_sel_checkbox",
       label = "Select Bullets to Compare", 
       choices = unique(bulldata$allbull$bullet),
       selected = unique(bulldata$allbull$bullet)
@@ -293,7 +293,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) ----
   observeEvent(input$doprocess, {
-    req(length(input$bullcompgroup) > 0)
+    req(length(input$bull_sel_checkbox) > 0)
     
     values$show_alert <- FALSE
     progress <- shiny::Progress$new(); on.exit(progress$close())
