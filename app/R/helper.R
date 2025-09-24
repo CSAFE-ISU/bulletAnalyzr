@@ -88,8 +88,17 @@ make_export_df <- function(df) {
     return(NULL)
   }
   
-  df <- df %>% 
-    dplyr::select(-tidyselect::any_of(c("x3p", "x3pimg"))) 
+  # The x3p column makes the snapshots massive. Keep a record that the column
+  # exists, but change the entries to NA to save space.
+  if ("x3p" %in% colnames(df)) {
+    df$x3p <- NA
+  }
+  
+  # The x3pimg column makes the snapshots massive. Keep a record that the column
+  # exists, but change the entries to NA to save space.
+  if ("x3pimg" %in% colnames(df)) {
+    df$x3pimg <- NA
+  }
   
   if ("source" %in% colnames(df)) {
     df <- df %>%

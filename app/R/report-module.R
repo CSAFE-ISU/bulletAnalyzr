@@ -51,7 +51,7 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
         br()
       )
     })
-    
+
     # OUTPUT UI - Report comparison panels ----
     output$report_panels <- renderUI({
       req(is.null(bullet_data$preCC))
