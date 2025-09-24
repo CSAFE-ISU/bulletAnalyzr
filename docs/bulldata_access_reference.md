@@ -11,12 +11,12 @@ This document provides a comprehensive reference for where each `bulldata` react
 - `output$prevSelUI` - gets unique bullet names for dropdown: `unique(allbull$bullet)`
 - `output$bullSelCheckboxUI` - gets unique bullet names for checkbox group: `unique(bulldata$allbull$bullet)`
 - `observeEvent(input$doprocess)` - assigns to local `bullets` variable for processing
-- `downsample_allbull()` function - checks if `nrow(allbull) > 0` and gets reference resolution
+- `downsample_bullet()` function - checks if `nrow(allbull) > 0` and gets reference resolution
 
 **Write Access:**
 
 - `observeEvent(input$add_to_list_button)` - calls `add_cbull_to_allbull()` to append current bullet
-- `downsample_allbull()` function - updates x3p data when downsampling previous bullets
+- `downsample_bullet()` function - updates x3p data when downsampling previous bullets
 
 ### `bulldata$cbull`
 
@@ -25,7 +25,7 @@ This document provides a comprehensive reference for where each `bulldata` react
 - `observeEvent(input$add_to_list_button)` - requires `nrow(bulldata$cbull) > 0`
 - `output$lpupload` - gets number of rows and x3p data for rendering: `bulldata$cbull$x3p[[cidx]]`, `bulldata$cbull$land_names[x]`
 - `add_cbull_to_allbull()` function - source data for adding to allbull
-- `downsample_allbull()` function - gets current bullet resolution
+- `downsample_bullet()` function - gets current bullet resolution
 - `reportServer` module - gets scale and instrument info: `bullet_data$cbull$x3p[[1]]`
 
 **Write Access:**

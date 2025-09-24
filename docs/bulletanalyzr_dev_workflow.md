@@ -56,7 +56,7 @@
 **3. `output$lpupload` renderUI - Main processing pipeline**
 
 - **Bullet Rotation:** Calls `rotate_bullet()` which checks `hinfo$sizeX < hinfo$sizeY` and rotates if needed
-- **Resolution Matching:** Calls `downsample_allbull()` which compares `x3p_get_scale()` between bullets and down-samples as needed
+- **Resolution Matching:** Calls `downsample_bullet()` which compares `x3p_get_scale()` between bullets and down-samples as needed
 - **Unit Conversion:** `cond_x3p_m_to_mum()` converts from meters to microns if scale < 0.1
 - **Metadata Generation:** 
   - MD5 checksums: `tools::md5sum(bull$source)`
@@ -293,7 +293,7 @@ The report functionality is implemented as a Shiny module with:
 - `copy_to_tempdir()` - Creates temporary directories for file handling
 - `identify_bullet()`, `identify_lands()` - Auto-generate names from filenames
 - `cond_x3p_m_to_mum()` - Conditional unit conversion
-- `rotate_bullet()`, `downsample_allbull()` - Preprocessing with user alerts
+- `rotate_bullet()`, `downsample_bullet()` - Preprocessing with user alerts
 - `make_export_df()` - Creates test-friendly export versions
 
 ### Filtering & Selection  

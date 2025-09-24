@@ -129,7 +129,7 @@ server <- function(input, output, session) {
     values$show_alert <- rotate_results$show_alert
     
     # Down-sample bullet (optional) ----
-    downsample_results <- downsample_allbull(
+    downsample_results <- downsample_bullet(
       allbull = bulldata$allbull,
       cbull = cbull,
       show_alert = values$show_alert,
