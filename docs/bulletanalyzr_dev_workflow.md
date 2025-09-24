@@ -11,11 +11,11 @@
 ### UI Elements
 
 - Welcome message and instructions
-- Button: `actionButton("confirm_autonomous", "Begin")`
+- Button: `actionButton("begin_button", "Begin")`
 
 ### Server Logic
 
-- `observeEvent(input$confirm_autonomous)` → switches to "Upload Bullet" tab
+- `observeEvent(input$begin_button)` → switches to "Upload Bullet" tab
 - Uses `updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")`
 
 ### Reactive Value Changes

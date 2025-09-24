@@ -80,7 +80,7 @@ server <- function(input, output, session) {
   )
   
   # BUTTON - Begin ----
-  observeEvent(input$confirm_autonomous, {
+  observeEvent(input$begin_button, {
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
   

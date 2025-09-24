@@ -9,7 +9,7 @@ sidebarLayout(tags$div(id="my-sidebar",
                 br(),
                 helpText("Press the following button to start using the app by uploading the bullet data."),
                 br(),
-                actionButton("confirm_autonomous", "Begin")#, icon = icon("check"))
+                actionButton("begin_button", "Begin")#, icon = icon("check"))
             ),
       ),
 

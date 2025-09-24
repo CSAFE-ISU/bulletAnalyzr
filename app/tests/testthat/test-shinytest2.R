@@ -11,7 +11,7 @@ test_that("{shinytest2} recording: app", {
   )
   
   # Begin button ----
-  app$click("confirm_autonomous")
+  app$click("begin_button")
   app$expect_values(export = TRUE)
   
   # Select Bullet Land x3p Files button ----
