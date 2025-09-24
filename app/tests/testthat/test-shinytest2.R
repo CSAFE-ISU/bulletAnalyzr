@@ -12,6 +12,7 @@ test_that("{shinytest2} recording: app", {
   
   # Begin button ----
   app$click("begin_button")
+  app$wait_for_idle()
   app$expect_values(export = TRUE, input = TRUE)
   
   # Select Bullet Land x3p Files button ----

@@ -51,6 +51,7 @@ server <- function(input, output, session) {
   
   # REACTIVE VALUES - Bullet and comparison data
   bulldata <- reactiveValues(
+    stage = NULL,
     allbull = data.frame(),
     allbull_export = data.frame(),
     cbull = data.frame(),
@@ -84,6 +85,7 @@ server <- function(input, output, session) {
   
   # BUTTON - Begin Button
   observeEvent(input$begin_button, {
+    bulldata$stage <- "upload"
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
   
@@ -92,6 +94,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Upload Land x3p Files Button
   output$bul_x3pui <- renderUI({
+    req(bulldata$stage == "upload")
     
     # Button - Bullet Land x3p Files
     fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
@@ -99,6 +102,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Display Lands on Upload Tab
   output$lpupload <- renderUI({
+    req(bulldata$stage == "upload")
     req(nrow(bulldata$cbull) > 0)
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -136,6 +140,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Bullet Land x3p Files Button
   # Preprocess uploaded x3p files and push to cbull
   observeEvent(input$upload_button, {
+    req(bulldata$stage == "upload")
     
     disable("add_to_list_button")
     
@@ -172,6 +177,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Add Bullet to Comparison List button
   # Push current bullet data to all bullet data object
   observeEvent(input$add_to_list_button, {
+    req(bulldata$stage == "upload")
     req(nrow(bulldata$cbull) > 0)
     
     bulldata$allbull <- add_cbull_to_allbull(
@@ -253,6 +259,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Select Bullets to Compare sidebar
   output$bullSelCheckboxUI <- renderUI({
+    req(bulldata$stage == "upload")
     req(nrow(bulldata$allbull) > 0)
     
     # Store allbull
@@ -272,6 +279,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) - Get default
   # crosscuts before starting interactivity
   observeEvent(input$doprocess, {
+    req(bulldata$stage == "upload")
     req(length(input$bull_sel_checkbox) > 0)
     
     values$show_alert <- FALSE
@@ -294,11 +302,13 @@ server <- function(input, output, session) {
     bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
     
     # Switch to Comparison Report tab panel
+    bulldata$stage <- "crosscut"
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
   })
   
   # OUTPUT UI - Crosscut Select Bullet Drop-down
   output$CCBull1 <- renderUI({
+    req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     
     # DROP-DOWN - Report Select Bullet
@@ -308,6 +318,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Crosscut Sliders, Finalize Button, and Compare Button
   output$CCBull2 <- renderUI({
+    req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     req(input$cc_bulsel)
     
@@ -331,6 +342,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Display Lands with Crosscuts
   output$CCBullLand <- 	renderUI({
+    req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     req(input$cc_bulsel)
     
@@ -369,6 +381,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Finalize Crosscut button
   # Update crosscut location in data frame with current crosscut slider values
   observeEvent(input$saveCC,{
+    req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     
     bullets <- bulldata$preCC
@@ -388,6 +401,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Compare Bullets Button
   # Push preCC to postCC
   observeEvent(input$doprocessCC,{
+    req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     
     # Push preCC data frame to postCC

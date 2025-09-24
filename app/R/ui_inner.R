@@ -64,7 +64,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ),
 
       ## Upload Bullet RGL Windows
-      tabPanel("Upload Bullet",uiOutput("lpupload")),
+      tabPanel("Upload Bullet", uiOutput("lpupload")),
 
       ## Upload Bullet RGL Windows
       tabPanel("Preview Bullet",uiOutput("lpreview")),
