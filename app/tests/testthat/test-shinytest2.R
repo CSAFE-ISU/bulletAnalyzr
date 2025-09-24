@@ -10,6 +10,8 @@ test_that("{shinytest2} recording: app", {
     expect_values_screenshot_args = FALSE  # don't take debug snapshots with expect_values()
   )
   
+  app$expect_values(export = TRUE, input = TRUE)
+  
   # Begin button ----
   app$click("begin_button")
   app$wait_for_idle()

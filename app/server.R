@@ -77,7 +77,8 @@ server <- function(input, output, session) {
     phase_test_export = phase$test_results,
     postCC_export = bulldata$postCC_export,
     preCC_export = bulldata$preCC_export,
-    show_alert_export = values$show_alert
+    show_alert_export = values$show_alert,
+    stage_export = bulldata$stage
   )
   
   
@@ -98,6 +99,23 @@ server <- function(input, output, session) {
     
     # Button - Bullet Land x3p Files
     fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
+  })
+  
+  # OUTPUT UI - Select Bullets to Compare Checkbox
+  output$bullSelCheckboxUI <- renderUI({
+    req(bulldata$stage == "upload")
+    req(nrow(bulldata$allbull) > 0)
+    
+    # Store allbull
+    allbull <- bulldata$allbull
+    
+    # CHECK BOX - Select Bullets to Compare
+    checkboxGroupInput(
+      "bull_sel_checkbox",
+      label = "Select Bullets to Compare", 
+      choices = unique(bulldata$allbull$bullet),
+      selected = unique(bulldata$allbull$bullet)
+    )
   })
   
   # OUTPUT UI - Display Lands on Upload Tab
@@ -255,24 +273,6 @@ server <- function(input, output, session) {
   })
   
   
-  # SECTION: SELECT BULLETS FOR COMPARISON----------------------------
-  
-  # OUTPUT UI - Select Bullets to Compare sidebar
-  output$bullSelCheckboxUI <- renderUI({
-    req(bulldata$stage == "upload")
-    req(nrow(bulldata$allbull) > 0)
-    
-    # Store allbull
-    allbull <- bulldata$allbull
-    
-    # CHECK BOX - Select Bullets to Compare
-    checkboxGroupInput(
-      "bull_sel_checkbox",
-      label = "Select Bullets to Compare", 
-      choices = unique(bulldata$allbull$bullet),
-      selected = unique(bulldata$allbull$bullet)
-    )
-  })
   
   # SECTION: CROSSCUT INTERACTIVITY-----------------------------------
   
@@ -412,6 +412,8 @@ server <- function(input, output, session) {
     # Reset preCC to NULL
     bulldata$preCC <- NULL
     bulldata$preCC_export <- NULL
+    
+    bulldata$stage <- "report"
   })
   
   
@@ -424,6 +426,7 @@ server <- function(input, output, session) {
   # interactive_cc = FALSE, bulldata$postCC is populated when (doprocess) is
   # clicked
   observeEvent(bulldata$postCC, {
+    req(bulldata$stage == "report")
     req(bulldata$postCC)
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -481,6 +484,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Comparison sidebar
   output$reportSelUI <- renderUI({
+    req(bulldata$stage == "report")
     req(is.null(bulldata$preCC))
     req(bulldata$comparison)
     
@@ -506,6 +510,7 @@ server <- function(input, output, session) {
   # SECTION: PHASE TEST-----------------------------------------------
   
   observe({
+    req(bulldata$stage == "report")
     req(bulldata$comparison)
     req(bulldata$comparison$bullet_scores)
     req(input$comp_bul1)

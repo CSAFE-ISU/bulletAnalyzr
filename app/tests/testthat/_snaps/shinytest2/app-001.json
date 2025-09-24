@@ -1,11 +1,10 @@
 {
   "input": {
     "add_to_list_button": 0,
-    "begin_button": 1,
+    "begin_button": 0,
     "bul_x3p_name": "",
     "doprocess": 0,
-    "prevreport": "Upload Bullet",
-    "upload_button": null
+    "prevreport": "Welcome"
   },
   "export": {
     "allbull_export": {
@@ -18,6 +17,7 @@
     "phase_test_export": null,
     "postCC_export": null,
     "preCC_export": null,
-    "show_alert_export": true
+    "show_alert_export": true,
+    "stage_export": null
   }
 }
