@@ -1,4 +1,58 @@
 {
+  "input": {
+    "CCsl1": 156,
+    "CCsl2": 156,
+    "CCsl3": 156,
+    "CCsl4": 156,
+    "CCsl5": 206,
+    "CCsl6": 331,
+    "add_to_list_button": 2,
+    "begin_button": 1,
+    "bul_x3p_name": "Bullet 2",
+    "bull_sel_checkbox": [
+      "Bullet 1",
+      "Bullet 2"
+    ],
+    "cc_bulsel": "Bullet 1",
+    "doprocess": 1,
+    "doprocessCC": 0,
+    "prevreport": "Comparison Report",
+    "saveCC": 0,
+    "upload_button": {
+      "name": [
+        "Barrel_1-Bullet_2-Land_1.x3p",
+        "Barrel_1-Bullet_2-Land_2.x3p",
+        "Barrel_1-Bullet_2-Land_3.x3p",
+        "Barrel_1-Bullet_2-Land_4.x3p",
+        "Barrel_1-Bullet_2-Land_5.x3p",
+        "Barrel_1-Bullet_2-Land_6.x3p"
+      ],
+      "size": [
+        90519,
+        90364,
+        89208,
+        93598,
+        90809,
+        93685
+      ],
+      "type": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "datapath": [
+        "0.x3p",
+        "1.x3p",
+        "2.x3p",
+        "3.x3p",
+        "4.x3p",
+        "5.x3p"
+      ]
+    }
+  },
   "export": {
     "allbull_export": {
       "source": [

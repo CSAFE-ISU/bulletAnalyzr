@@ -34,7 +34,7 @@ render_crosscut_snap_wrapper <- function(bullets, progress) {
 
 ## Render Slider to adjust CrossCut
 render_ccsl <- function(id, ymin, ymax, yset) {
-  sliderInput(inputId = paste("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
+  sliderInput(inputId = paste0("CCsl",id), label = NULL, min = ymin, max = ymax, value = yset)
 }
 
 render_land <- function(x3p, ccut = NULL, sample_m = 5, rotate = TRUE, img_size = 500, img_zoom = 0.4) {
