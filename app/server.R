@@ -79,7 +79,10 @@ server <- function(input, output, session) {
     show_alert_export = values$show_alert
   )
   
-  # BUTTON - Begin
+  
+  # SECTION: WELCOME TAB----------------------------------------------------
+  
+  # BUTTON - Begin Button
   observeEvent(input$begin_button, {
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
@@ -87,95 +90,14 @@ server <- function(input, output, session) {
   
   # SECTION: UPLOAD BULLET TAB-------------------------------------------
   
-  # OUTPUT UI - Select bullet lands sidebar
+  # OUTPUT UI - Upload Land x3p Files Button
   output$bul_x3pui <- renderUI({
+    
     # Button - Bullet Land x3p Files
     fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
   })
   
-  # OBSERVE EVENT - Bullet Land x3p Files button
-  observeEvent(input$upload_button, {
-    
-    disable("add_to_list_button")
-    
-    progress <- shiny::Progress$new(); on.exit(progress$close())
-    
-    # Get default bullet name
-    bullet_name <- identify_bullet(input$upload_button$name)
-    updateTextInput(session, "bul_x3p_name", value = bullet_name)
-    
-    # Switch alert on
-    values$show_alert <- TRUE
-    
-    temp_refresh <- input$prevreport
-    
-    # Create Temporary Directory and save bullets in it
-    temp_dir <- copy_to_tempdir(
-      filepath = input$upload_button$datapath,
-      filename = input$upload_button$name
-    )
-    
-    # Read bullet from temp directory
-    progress$set(message = "Reading Bullet", value = .25)
-    cbull <- read_bullet(temp_dir)
-    
-    # Rotate bullet (optional)
-    rotate_results <- rotate_bullet(
-      bullet = cbull, 
-      show_alert = values$show_alert, 
-      session = session
-    )
-    cbull <- rotate_results$bullet
-    values$show_alert <- rotate_results$show_alert
-    
-    # Down-sample bullet (optional)
-    downsample_results <- downsample_bullet(
-      allbull = bulldata$allbull,
-      cbull = cbull,
-      show_alert = values$show_alert,
-      session = session
-    )
-    bulldata$allbull <- downsample_results$allbull
-    bulldata$cbull <- downsample_results$cbull
-    values$show_alert <- downsample_results$show_alert
-    
-    # Convert to microns (optional)
-    cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
-    
-    # Get hash
-    cbull$md5sum <- tools::md5sum(cbull$source)
-    
-    # Get names
-    cbull$filename <- basename(cbull$source)
-    cbull$land_names <- identify_lands(cbull$filename)
-    cbull$bullet_name <- identify_bullet(cbull$filename)
-    
-    # Store current bullet
-    bulldata$cbull <- cbull
-    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
-    
-  })
-  
-  # OBSERVE EVENT - Add Bullet to Comparison List button
-  # Push current bullet data to all bullet data object
-  observeEvent(input$add_to_list_button, {
-    req(nrow(bulldata$cbull) > 0)
-    
-    bulldata$allbull <- add_cbull_to_allbull(
-      cbull = bulldata$cbull,
-      bul_x3p_name = input$bul_x3p_name,
-      allbull = bulldata$allbull
-    )
-    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
-    
-    # Switch upload button off
-    disable("add_to_list_button")
-  })
-  
-  
-  # SECTION: BULLET PREVIEWS ON UPLOAD TAB----------------------------
-  
-  # OUTPUT UI - Upload Bullet tab panel
+  # OUTPUT UI - Display Lands on Upload Tab
   output$lpupload <- renderUI({
     req(nrow(bulldata$cbull) > 0)
     
@@ -210,6 +132,59 @@ server <- function(input, output, session) {
       !!!lapply(1:nrow(bulldata$cbull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bulldata$cbull$land_names[x]))
     )
   })
+  
+  # OBSERVE EVENT - Bullet Land x3p Files Button
+  # Preprocess uploaded x3p files and push to cbull
+  observeEvent(input$upload_button, {
+    
+    disable("add_to_list_button")
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
+    # Get default bullet name
+    bullet_name <- identify_bullet(input$upload_button$name)
+    updateTextInput(session, "bul_x3p_name", value = bullet_name)
+    
+    # Switch alert on
+    values$show_alert <- TRUE
+    
+    temp_refresh <- input$prevreport
+    
+    # Create Temporary Directory and save bullets in it
+    temp_dir <- copy_to_tempdir(
+      filepath = input$upload_button$datapath,
+      filename = input$upload_button$name
+    )
+    
+    preprocess_results <- preprocess_bullet(
+      allbull = bulldata$allbull,
+      temp_dir = temp_dir,
+      show_alert = values$show_alert,
+      progress = progress,
+      session = session
+    )
+    bulldata$allbull <- preprocess_results$allbull
+    bulldata$cbull <- preprocess_results$cbull
+    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
+  
+  })
+  
+  # OBSERVE EVENT - Add Bullet to Comparison List button
+  # Push current bullet data to all bullet data object
+  observeEvent(input$add_to_list_button, {
+    req(nrow(bulldata$cbull) > 0)
+    
+    bulldata$allbull <- add_cbull_to_allbull(
+      cbull = bulldata$cbull,
+      bul_x3p_name = input$bul_x3p_name,
+      allbull = bulldata$allbull
+    )
+    bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
+    
+    # Switch upload button off
+    disable("add_to_list_button")
+  })
+  
   
   # SECTION: PREVIEW BULLET TAB----------------------------------------
   

@@ -43,6 +43,46 @@ downsample_bullet <- function(allbull, cbull, show_alert, session) {
   return(list(allbull = allbull, cbull = cbull, show_alert = show_alert))
 }
 
+preprocess_bullet <- function(allbull, temp_dir, show_alert, progress, session) {
+  
+  # Read bullet from temp directory
+  progress$set(message = "Reading Bullet", value = .25)
+  cbull <- read_bullet(temp_dir)
+  
+  # Rotate bullet (optional)
+  rotate_results <- rotate_bullet(
+    bullet = cbull, 
+    show_alert = show_alert, 
+    session = session
+  )
+  cbull <- rotate_results$bullet
+  show_alert <- rotate_results$show_alert
+  
+  # Down-sample bullet (optional)
+  downsample_results <- downsample_bullet(
+    allbull = allbull,
+    cbull = cbull,
+    show_alert = show_alert,
+    session = session
+  )
+  allbull <- downsample_results$allbull
+  cbull <- downsample_results$cbull
+  show_alert <- downsample_results$show_alert
+  
+  # Convert to microns (optional)
+  cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
+  
+  # Get hash
+  cbull$md5sum <- tools::md5sum(cbull$source)
+  
+  # Get names
+  cbull$filename <- basename(cbull$source)
+  cbull$land_names <- identify_lands(cbull$filename)
+  cbull$bullet_name <- identify_bullet(cbull$filename)
+  
+  return(list(allbull = allbull, cbull = cbull))
+}
+
 rotate_bullet <- function(bullet, show_alert, session = NULL) {
   
   hinfo <- bullet$x3p[[1]]$header.info
