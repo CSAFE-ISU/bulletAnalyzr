@@ -117,40 +117,41 @@ server <- function(input, output, session) {
     
     # Read bullet from temp directory ----
     progress$set(message = "Reading Bullet", value = .25)
-    bull <- read_bullet(temp_dir)
+    cbull <- read_bullet(temp_dir)
     
     # Rotate bullet (optional) ----
     rotate_results <- rotate_bullet(
-      bullet = bull, 
+      bullet = cbull, 
       show_alert = values$show_alert, 
       session = session
     )
-    bull <- rotate_results$bullet
+    cbull <- rotate_results$bullet
     values$show_alert <- rotate_results$show_alert
     
     # Down-sample bullet (optional) ----
-    downsample_results <- downsample_bullet(
+    downsample_results <- downsample_allbull(
       allbull = bulldata$allbull,
-      bullet = bull,
+      cbull = cbull,
       show_alert = values$show_alert,
       session = session
     )
     bulldata$allbull <- downsample_results$allbull
+    bulldata$cbull <- downsample_results$cbull
     values$show_alert <- downsample_results$show_alert
     
     # Convert to microns (optional) ----
-    bull$x3p <- lapply(bull$x3p, cond_x3p_m_to_mum)
+    cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
     
     # Get hash ----
-    bull$md5sum <- tools::md5sum(bull$source)
+    cbull$md5sum <- tools::md5sum(cbull$source)
     
     # Get names ----
-    bull$filename <- basename(bull$source)
-    bull$land_names <- identify_lands(bull$filename)
-    bull$bullet_name <- identify_bullet(bull$filename)
+    cbull$filename <- basename(cbull$source)
+    cbull$land_names <- identify_lands(cbull$filename)
+    cbull$bullet_name <- identify_bullet(cbull$filename)
     
     # Store current bullet ----
-    bulldata$cbull <- bull
+    bulldata$cbull <- cbull
     bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
     
   })
