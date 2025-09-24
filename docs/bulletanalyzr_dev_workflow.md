@@ -129,7 +129,7 @@
 
 - UI Output: `CCBull1`, `CCBull2`, `CCBullLand`
 - Dropdown: `selectInput("cc_bulsel", "Select Bullet")`
-- Dynamic sliders: `sliderInput(paste("CCsl",x))` for each land via `render_ccsl()`
+- Dynamic sliders: `sliderInput(paste0("CCsl",x))` for each land via `render_ccsl()`
 - Button: `actionButton("saveCC", label = "Finalise CrossCut")`
 - Button: `actionButton("doprocessCC", label = "Compare Bullets")`
 

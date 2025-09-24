@@ -468,7 +468,7 @@ server <- function(input, output, session) {
         output[[paste0("CC_Sel_",idx)]] <- renderRglwidget({
           render_land(
             x3p = bullets$x3p[[cidx]],
-            ccut = input[[paste("CCsl",cidx)]],
+            ccut = input[[paste0("CCsl", cidx)]],
             rotate = TRUE,
             sample_m = 5,
             img_size = 500,

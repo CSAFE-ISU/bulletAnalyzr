@@ -48,5 +48,8 @@ test_that("{shinytest2} recording: app", {
   app$click("saveCC")
   app$click("doprocessCC")
   app$set_window_size(width = 1299, height = 711)
-  app$expect_values(export = TRUE)
+  inputs <- names(app$get_values(input = TRUE)$input)
+  inputs <- inputs[!stringr::str_detect(inputs, "shinyscreenshot")]
+  app$expect_values(export = TRUE, input = inputs)
+  
 })
