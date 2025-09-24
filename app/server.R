@@ -367,10 +367,6 @@ server <- function(input, output, session) {
     
     # Render lands with crosscuts snapshot ----
     bullets$x3pimg <- NA
-    for(idx in 1:nrow(bullets)) {
-      progress$set(message = "Rendering Report Objects", value = round(seq(from = .55, to = .85, length.out = nrow(bullets)), 2)[idx])
-      bullets$x3pimg[idx] <- render_crosscut_snap(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])	
-    }
     
     # Store comparison report data ----
     report_results <- get_report_data_wrapper(

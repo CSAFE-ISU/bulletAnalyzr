@@ -4,7 +4,7 @@ reportSidebarUI <- function(id) {
   uiOutput(ns("reportDownUI"))
 }
 
-# UI that displays phase test, score matrices, and plots in main tab panel
+# UI that displays phase test, score matrices, plots, and panels in main tab panel
 reportMainUI <- function(id) {
   ns <- NS(id)
   htmltools::tagList(
@@ -59,123 +59,129 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
       req(comp_bul1())
       req(comp_bul2())
       
+      progress <- shiny::Progress$new(); on.exit(progress$close())
+      
+      # Render crosscut snapshots ----
+      bullet_data$comparison$bullets <- render_crosscut_snap_wrapper(
+        bullets = bullet_data$comparison$bullets, 
+        progress = progress
+      )
+      
       # Filter selected bullets ----
       bullet_scores <- filter_selected_bullets(
         bullet_scores = bullet_data$comparison$bullet_scores,
         selected1 = comp_bul1(),
         selected2 = comp_bul2()
       )
-      if(nrow(bullet_scores$data[[1]]) > 0) {
+      
+      bsldata <- get_bsldata(bullet_scores = bullet_scores)
+      odridx <- get_rf_order(bsldata)
+      
+      # getting scales and instrument info ... not correct yet, but just for the first scan
+      scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
+      instrument <- bullet_data$cbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
+      
+      # Generate Collapsible UI Panel List in a loop
+      bsCollapsePanelList <- list()
+      
+      show_n <- min(c(sum(bsldata$samesource == TRUE) + 3, length(odridx)))
+      # show all the best-phase comparisons and the three top comparisons
+      for(idx in 1:show_n) {
         
-        bsldata <- get_bsldata(bullet_scores = bullet_scores)
-        odridx <- get_rf_order(bsldata)
+        # Data Table Comparison ---------------------------------------------------
+        temptable_dt <- make_temptable(
+          BullCompBulls = bullet_data$comparison$bullets, 
+          selected1 = comp_bul1(), 
+          selected2 = comp_bul2(),
+          bsldata = bsldata, 
+          odridx = odridx, 
+          idx = idx, 
+          instrument = instrument, 
+          scale = scale
+        )
         
-        # getting scales and instrument info ... not correct yet, but just for the first scan
-        scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
-        instrument <- bullet_data$cbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
-        
-        # Generate Collapsible UI Panel List in a loop
-        bsCollapsePanelList <- list()
-        
-        show_n <- min(c(sum(bsldata$samesource == TRUE) + 3, length(odridx)))
-        # show all the best-phase comparisons and the three top comparisons
-        for(idx in 1:show_n) {
-          
-          # Data Table Comparison ---------------------------------------------------
-          temptable_dt <- make_temptable(
-            BullCompBulls = bullet_data$comparison$bullets, 
-            selected1 = comp_bul1(), 
+        # RGL Render Comparison ---------------------------------------------------
+        local({
+          x3pimg_results <- filter_x3pimg(
+            BullCompBulls = bullet_data$comparison$bullets,
+            selected1 = comp_bul1(),
             selected2 = comp_bul2(),
-            bsldata = bsldata, 
-            odridx = odridx, 
-            idx = idx, 
-            instrument = instrument, 
-            scale = scale
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
           )
-          
-          # RGL Render Comparison ---------------------------------------------------
-          local({
-            x3pimg_results <- filter_x3pimg(
-              BullCompBulls = bullet_data$comparison$bullets,
-              selected1 = comp_bul1(),
-              selected2 = comp_bul2(),
-              bsldata = bsldata,
-              odridx = odridx,
-              cidx = idx
-            )
-            output[[paste0("rglWinL",idx)]] <- renderImage({list(src = x3pimg_results$rglL, contentType = 'image/png')}, deleteFile = FALSE)
-            output[[paste0("rglWinR",idx)]] <- renderImage({list(src = x3pimg_results$rglR, contentType = 'image/png')}, deleteFile = FALSE)
-          })
-          temp_rgl <- layout_column_wrap(
-            width = 1/2,
-            imageOutput(session$ns(paste0("rglWinL",idx))),
-            imageOutput(session$ns(paste0("rglWinR",idx))),
-            height = "250px"
-          )
-          
-          # Groove Plot -------------------------------------------------------------
-          local({
-            results <- filter_grooves_ccdata(
-              BullCompBulls = bullet_data$comparison$bullets,
-              selected1 = comp_bul1(),
-              selected2 = comp_bul2(),
-              bsldata = bsldata,
-              odridx = odridx,
-              cidx = idx
-            )
-            cidx <- idx
-            output[[paste0("GroovePlotL", cidx)]] <- renderPlot({
-              groove_plot(results$CCDataL, results$GroovesL) +
-                ggtitle(sprintf("Land %s profile", bsldata$land1[odridx[cidx]]))
-            })
-            output[[paste0("GroovePlotR", cidx)]] <- renderPlot({
-              groove_plot(results$CCDataR, results$GroovesR) +
-                ggtitle(sprintf("Land %s profile", bsldata$land2[odridx[cidx]]))
-            })
-          })
-          temp_groove <- list(
-            fluidRow(
-              column(6, plotOutput(session$ns(paste0("GroovePlotL", idx))), align = "center"),
-              column(6, plotOutput(session$ns(paste0("GroovePlotR", idx))), align = "center")
-            ),
-            fluidRow(column(12, p("Shaded areas are excluded from the analysis"), align = "center"))
-          )
-          
-          # Signal Comparison -------------------------------------------------------
-          local({
-            sig_plot_data <- filter_sig_plot_data(
-              BullCompComps = bullet_data$comparison$comparisons,
-              selected1 = comp_bul1(),
-              selected2 = comp_bul2(),
-              bsldata = bsldata,
-              odridx = odridx,
-              cidx = idx
-            )
-            cidx <- idx
-            scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
-            output[[paste0("SigPlot", cidx)]] <- renderPlot({
-              plot_signal(sig_plot_data = sig_plot_data, scale = scale)
-            })
-          })
-          temp_signal <- fluidRow(column(12, plotOutput(session$ns(paste0("SigPlot", idx))), align = "center"))
-          
-          # Combine Results ---------------------------------------------------------
-          panel_name <- get_panel_name(bsldata = bsldata, odridx = odridx, idx = idx)
-          bsCollapsePanelList[[idx]] <- bsCollapsePanel(
-            panel_name, 
-            temptable_dt, 
-            br(), 
-            temp_rgl, 
-            temp_groove, 
-            br(), 
-            temp_signal, 
-            style = "primary"
-          )
-        }
+          output[[paste0("rglWinL",idx)]] <- renderImage({list(src = x3pimg_results$rglL, contentType = 'image/png')}, deleteFile = FALSE)
+          output[[paste0("rglWinR",idx)]] <- renderImage({list(src = x3pimg_results$rglR, contentType = 'image/png')}, deleteFile = FALSE)
+        })
+        temp_rgl <- layout_column_wrap(
+          width = 1/2,
+          imageOutput(session$ns(paste0("rglWinL",idx))),
+          imageOutput(session$ns(paste0("rglWinR",idx))),
+          height = "250px"
+        )
         
-        # Collapsible UI Panels ---------------------------------------------------
-        LandComp <- do.call(bsCollapse, args = c(id = "collapseExample", multiple = TRUE, bsCollapsePanelList))
+        # Groove Plot -------------------------------------------------------------
+        local({
+          results <- filter_grooves_ccdata(
+            BullCompBulls = bullet_data$comparison$bullets,
+            selected1 = comp_bul1(),
+            selected2 = comp_bul2(),
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
+          )
+          cidx <- idx
+          output[[paste0("GroovePlotL", cidx)]] <- renderPlot({
+            groove_plot(results$CCDataL, results$GroovesL) +
+              ggtitle(sprintf("Land %s profile", bsldata$land1[odridx[cidx]]))
+          })
+          output[[paste0("GroovePlotR", cidx)]] <- renderPlot({
+            groove_plot(results$CCDataR, results$GroovesR) +
+              ggtitle(sprintf("Land %s profile", bsldata$land2[odridx[cidx]]))
+          })
+        })
+        temp_groove <- list(
+          fluidRow(
+            column(6, plotOutput(session$ns(paste0("GroovePlotL", idx))), align = "center"),
+            column(6, plotOutput(session$ns(paste0("GroovePlotR", idx))), align = "center")
+          ),
+          fluidRow(column(12, p("Shaded areas are excluded from the analysis"), align = "center"))
+        )
+        
+        # Signal Comparison -------------------------------------------------------
+        local({
+          sig_plot_data <- filter_sig_plot_data(
+            BullCompComps = bullet_data$comparison$comparisons,
+            selected1 = comp_bul1(),
+            selected2 = comp_bul2(),
+            bsldata = bsldata,
+            odridx = odridx,
+            cidx = idx
+          )
+          cidx <- idx
+          scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
+          output[[paste0("SigPlot", cidx)]] <- renderPlot({
+            plot_signal(sig_plot_data = sig_plot_data, scale = scale)
+          })
+        })
+        temp_signal <- fluidRow(column(12, plotOutput(session$ns(paste0("SigPlot", idx))), align = "center"))
+        
+        # Combine Results ---------------------------------------------------------
+        panel_name <- get_panel_name(bsldata = bsldata, odridx = odridx, idx = idx)
+        bsCollapsePanelList[[idx]] <- bsCollapsePanel(
+          panel_name, 
+          temptable_dt, 
+          br(), 
+          temp_rgl,
+          temp_groove, 
+          br(), 
+          temp_signal, 
+          style = "primary"
+        )
       }
+      
+      # Collapsible UI Panels ---------------------------------------------------
+      LandComp <- do.call(bsCollapse, args = c(id = "collapseExample", multiple = TRUE, bsCollapsePanelList))
       
       # Return Full Collapsible Report
       return(LandComp$children)
