@@ -15,14 +15,14 @@ This document provides a comprehensive reference for where each `bulldata` react
 
 **Write Access:**
 
-- `observeEvent(input$up_bull)` - calls `add_cbull_to_allbull()` to append current bullet
+- `observeEvent(input$add_to_list_button)` - calls `add_cbull_to_allbull()` to append current bullet
 - `downsample_bullet()` function - updates x3p data when downsampling previous bullets
 
 ### `bulldata$cbull`
 
 **Read Access:**
 
-- `observeEvent(input$up_bull)` - requires `nrow(bulldata$cbull) > 0`
+- `observeEvent(input$add_to_list_button)` - requires `nrow(bulldata$cbull) > 0`
 - `output$lpupload` - gets number of rows and x3p data for rendering: `bulldata$cbull$x3p[[cidx]]`, `bulldata$cbull$land_names[x]`
 - `add_cbull_to_allbull()` function - source data for adding to allbull
 - `downsample_bullet()` function - gets current bullet resolution
@@ -30,7 +30,7 @@ This document provides a comprehensive reference for where each `bulldata` react
 
 **Write Access:**
 
-- `observeEvent(input$bul_x3p)` - assigns processed bullet data after reading, rotating, downsampling
+- `observeEvent(input$upload_button)` - assigns processed bullet data after reading, rotating, downsampling
 
 ### `bulldata$preCC`
 

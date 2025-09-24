@@ -31,7 +31,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(
             column(12,textInput("bul_x3p_name", label="Bullet Name",value="",placeholder="Bullet Name Here ...")),
-            column(12,actionButton("up_bull", label = "Add Bullet to Comparison List"),align="center")
+            column(12,actionButton("add_to_list_button", label = "Add Bullet to Comparison List"),align="center")
           ),
           hr(),
       ),

@@ -33,13 +33,13 @@
 #### UI Elements
 
 - UI Output: `bul_x3pui`, `lpupload`
-- File input: `fileInput("bul_x3p", "Select Bullet Land x3p files")`
+- File input: `fileInput("upload_button", "Select Bullet Land x3p files")`
 - Text input: `textInput("bul_x3p_name", label="Bullet Name")`
-- Button: `actionButton("up_bull", label = "Add Bullet to Comparison List")`
+- Button: `actionButton("add_to_list_button", label = "Add Bullet to Comparison List")`
 
 #### Server Processing Chain
 
-**1. `observeEvent(input$bul_x3p)` - File upload trigger**
+**1. `observeEvent(input$upload_button)` - File upload trigger**
 
 - Calls `identify_bullet()` to auto-name bullet
 - Updates `input$bul_x3p_name` via `updateTextInput()`
@@ -70,10 +70,10 @@
   - `bulldata$cbull` ← current bullet data
   - `bulldata$cbull_export` ← export version of current bullet
 
-**4. `observeEvent(input$up_bull)` - Add to comparison list**
+**4. `observeEvent(input$add_to_list_button)` - Add to comparison list**
 
 - Calls `add_cbull_to_allbull()` to move data from `bulldata$cbull` to `bulldata$allbull`
-- Calls `disable("up_bull")`
+- Calls `disable("add_to_list_button")`
 - **Reactive Value Changes:**
   - `bulldata$allbull` ← updated with new bullet (removes existing if same name)
   - `bulldata$allbull_export` ← export version updated
@@ -262,8 +262,8 @@ The report functionality is implemented as a Shiny module with:
 ### `bulldata` - Main Data Store
 | Slot | Updated When | Trigger | Helper Functions |
 |------|--------------|---------|------------------|
-| `allbull` | File uploaded and added to comparison | `observeEvent(input$up_bull)` | `add_cbull_to_allbull()` |
-| `allbull_export` | File uploaded and added to comparison | `observeEvent(input$up_bull)` | `make_export_df()` |
+| `allbull` | File uploaded and added to comparison | `observeEvent(input$add_to_list_button)` | `add_cbull_to_allbull()` |
+| `allbull_export` | File uploaded and added to comparison | `observeEvent(input$add_to_list_button)` | `make_export_df()` |
 | `cbull` | File uploaded and processed | `output$lpupload` renderUI | Various preprocessing functions |
 | `cbull_export` | File uploaded and processed | `output$lpupload` renderUI | `make_export_df()` |
 | `preCC` | Compare button clicked (interactive mode) | `observeEvent(input$doprocess)` | `get_default_cc_wrapper()` |

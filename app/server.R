@@ -90,18 +90,18 @@ server <- function(input, output, session) {
   # OUTPUT UI - Select bullet lands sidebar ----
   output$bul_x3pui <- renderUI({
     # Button - Bullet Land x3p Files ----
-    fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
+    fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
   })
   
   # OBSERVE EVENT - Bullet Land x3p Files button ----
-  observeEvent(input$bul_x3p, {
+  observeEvent(input$upload_button, {
     
-    disable("up_bull")
+    disable("add_to_list_button")
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Get default bullet name ----
-    bullet_name <- identify_bullet(input$bul_x3p$name)
+    bullet_name <- identify_bullet(input$upload_button$name)
     updateTextInput(session, "bul_x3p_name", value = bullet_name)
     
     # Switch alert on ----
@@ -111,8 +111,8 @@ server <- function(input, output, session) {
     
     # Create Temporary Directory and save bullets in it ----
     temp_dir <- copy_to_tempdir(
-      filepath = input$bul_x3p$datapath,
-      filename = input$bul_x3p$name
+      filepath = input$upload_button$datapath,
+      filename = input$upload_button$name
     )
     
     # Read bullet from temp directory ----
@@ -157,7 +157,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Add Bullet to Comparison List button ----
   # Push current bullet data to all bullet data object
-  observeEvent(input$up_bull, {
+  observeEvent(input$add_to_list_button, {
     req(nrow(bulldata$cbull) > 0)
     
     bulldata$allbull <- add_cbull_to_allbull(
@@ -168,7 +168,7 @@ server <- function(input, output, session) {
     bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
     
     # Switch upload button off ----
-    disable("up_bull")
+    disable("add_to_list_button")
   })
   
   
@@ -201,7 +201,7 @@ server <- function(input, output, session) {
     }
     
     # Enable upload button ----
-    enable("up_bull")
+    enable("add_to_list_button")
     
     # Display bullet ----
     layout_column_wrap(
