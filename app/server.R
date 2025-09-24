@@ -40,7 +40,6 @@ source("R/render.R")
 source("R/report-module.R")
 
 
-
 # Server ------------------------------------------------------------------
 server <- function(input, output, session) {
   
@@ -81,7 +80,7 @@ server <- function(input, output, session) {
   )
   
   # BUTTON - Begin ----
-  observeEvent(input$confirm_autonomous, {
+  observeEvent(input$begin_button, {
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
   
@@ -91,22 +90,75 @@ server <- function(input, output, session) {
   # OUTPUT UI - Select bullet lands sidebar ----
   output$bul_x3pui <- renderUI({
     # Button - Bullet Land x3p Files ----
-    fileInput("bul_x3p", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
+    fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
   })
   
   # OBSERVE EVENT - Bullet Land x3p Files button ----
-  observeEvent(input$bul_x3p, {
+  observeEvent(input$upload_button, {
+    
+    disable("add_to_list_button")
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
     # Get default bullet name ----
-    bullet_name <- identify_bullet(input$bul_x3p$name)
+    bullet_name <- identify_bullet(input$upload_button$name)
     updateTextInput(session, "bul_x3p_name", value = bullet_name)
     
     # Switch alert on ----
     values$show_alert <- TRUE
+    
+    temp_refresh <- input$prevreport
+    
+    # Create Temporary Directory and save bullets in it ----
+    temp_dir <- copy_to_tempdir(
+      filepath = input$upload_button$datapath,
+      filename = input$upload_button$name
+    )
+    
+    # Read bullet from temp directory ----
+    progress$set(message = "Reading Bullet", value = .25)
+    cbull <- read_bullet(temp_dir)
+    
+    # Rotate bullet (optional) ----
+    rotate_results <- rotate_bullet(
+      bullet = cbull, 
+      show_alert = values$show_alert, 
+      session = session
+    )
+    cbull <- rotate_results$bullet
+    values$show_alert <- rotate_results$show_alert
+    
+    # Down-sample bullet (optional) ----
+    downsample_results <- downsample_bullet(
+      allbull = bulldata$allbull,
+      cbull = cbull,
+      show_alert = values$show_alert,
+      session = session
+    )
+    bulldata$allbull <- downsample_results$allbull
+    bulldata$cbull <- downsample_results$cbull
+    values$show_alert <- downsample_results$show_alert
+    
+    # Convert to microns (optional) ----
+    cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
+    
+    # Get hash ----
+    cbull$md5sum <- tools::md5sum(cbull$source)
+    
+    # Get names ----
+    cbull$filename <- basename(cbull$source)
+    cbull$land_names <- identify_lands(cbull$filename)
+    cbull$bullet_name <- identify_bullet(cbull$filename)
+    
+    # Store current bullet ----
+    bulldata$cbull <- cbull
+    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
+    
   })
   
   # OBSERVE EVENT - Add Bullet to Comparison List button ----
   # Push current bullet data to all bullet data object
-  observeEvent(input$up_bull, {
+  observeEvent(input$add_to_list_button, {
     req(nrow(bulldata$cbull) > 0)
     
     bulldata$allbull <- add_cbull_to_allbull(
@@ -117,80 +169,27 @@ server <- function(input, output, session) {
     bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
     
     # Switch upload button off ----
-    disable("up_bull")
+    disable("add_to_list_button")
   })
   
   
   # SECTION: BULLET PREVIEWS ON UPLOAD TAB --------------------------------
   
-  # REACTIVE - Copy lands to tempdir and read bullet ----
-  uploaded_bull <- reactive({
-    temp_refresh <- input$prevreport
-    
-    # Create Temporary Directory and save bullets in it ----
-    temp_dir <- copy_to_tempdir(
-      filepath = input$bul_x3p$datapath,
-      filename = input$bul_x3p$name
-    )
-    
-    return(read_bullet(temp_dir))
-  })
-  
   # OUTPUT UI - Upload Bullet tab panel ----
   output$lpupload <- renderUI({
-    req(input$bul_x3p)
+    req(nrow(bulldata$cbull) > 0)
     
-    # Switch upload button off ----
-    disable("up_bull")
-    progress <- shiny::Progress$new();on.exit(progress$close())
-    
-    # Read bullet ----
-    progress$set(message = "Reading Bullets", value = .25)
-    bull <- uploaded_bull()
-    
-    # Rotate bullet (optional) ----
-    rotate_results <- rotate_bullet(
-      bullet = bull, 
-      show_alert = values$show_alert, 
-      session = session
-    )
-    bull <- rotate_results$bullet
-    values$show_alert <- rotate_results$show_alert
-    
-    # Down-sample bullet (optional) ----
-    downsample_results <- downsample_bullet(
-      allbull = bulldata$allbull,
-      bullet = bull,
-      show_alert = values$show_alert,
-      session = session
-    )
-    bulldata$allbull <- downsample_results$allbull
-    values$show_alert <- downsample_results$show_alert
-    
-    # Convert to microns (optional) ----
-    bull$x3p <- lapply(bull$x3p, cond_x3p_m_to_mum)
-    
-    # Get hash ----
-    bull$md5sum <- tools::md5sum(bull$source)
-    
-    # Get names ----
-    bull$filename <- basename(bull$source)
-    bull$land_names <- identify_lands(bull$filename)
-    bull$bullet_name <- identify_bullet(bull$filename)
-    
-    # Store current bullet ----
-    bulldata$cbull <- bull
-    bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
+    progress <- shiny::Progress$new(); on.exit(progress$close())
     
     # Render bullet ----
     progress$set(message = "Rendering Previews", value = .75)
-    for(idx in 1:nrow(bull)) {
+    for(idx in 1:nrow(bulldata$cbull)) {
       local({
         cidx <- idx
         # OUTPUT RGL - Bullet ----
         output[[paste0("x3prgl",idx)]] <- renderRglwidget({
           render_land(
-            x3p = bull$x3p[[cidx]], 
+            x3p = bulldata$cbull$x3p[[cidx]], 
             ccut = NULL,
             sample_m = 5,
             rotate = TRUE,
@@ -203,12 +202,12 @@ server <- function(input, output, session) {
     }
     
     # Enable upload button ----
-    enable("up_bull")
+    enable("add_to_list_button")
     
     # Display bullet ----
     layout_column_wrap(
       width = 1/6,
-      !!!lapply(1:nrow(bull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bull$land_names[x]))
+      !!!lapply(1:nrow(bulldata$cbull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bulldata$cbull$land_names[x]))
     )
   })
   
@@ -278,7 +277,7 @@ server <- function(input, output, session) {
   # SECTION: SELECT BULLETS FOR COMPARISON --------------------------------
   
   # OUTPUT UI - Select Bullets to Compare sidebar ----
-  output$bull_sel <- renderUI({
+  output$bullSelCheckboxUI <- renderUI({
     req(nrow(bulldata$allbull) > 0)
     
     # Store allbull ----
@@ -286,7 +285,7 @@ server <- function(input, output, session) {
     
     # CHECK BOX - Select Bullets to Compare ----
     checkboxGroupInput(
-      "bullcompgroup",
+      "bull_sel_checkbox",
       label = "Select Bullets to Compare", 
       choices = unique(bulldata$allbull$bullet),
       selected = unique(bulldata$allbull$bullet)
@@ -295,7 +294,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) ----
   observeEvent(input$doprocess, {
-    req(length(input$bullcompgroup) > 0)
+    req(length(input$bull_sel_checkbox) > 0)
     
     values$show_alert <- FALSE
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -304,6 +303,8 @@ server <- function(input, output, session) {
     
     # Find optimal crosscuts ----
     progress$set(message = "Get suitable Cross Sections", value = 0)
+    # If interactive_cc = TRUE, crosscut results added to preCC and postCC is
+    # NULL. If interactive_cc = FALSE, crosscut results added to postCC and preCC is NULL.
     crosscut_results <- get_default_cc_wrapper(
       bullets = bullets,
       interactive_cc = interactive_cc,
@@ -319,8 +320,10 @@ server <- function(input, output, session) {
   })
   
   # OBSERVE EVENT - bulldata$postCC - Get crosscut data, grooves, signal, features, and random forest score ---- 
-  # bulldata$postCC is populated when the
-  # Compare Bullets button (doprocessCC) on the Comparison Report tab panel is
+  
+  # If interactive_cc = TRUE, bulldata$postCC is populated when the Compare
+  # Bullets button (doprocessCC) on the Comparison Report tab panel is clicked.
+  # If interactive_cc = FALSE, bulldata$postCC is populated when (doprocess) is
   # clicked
   observeEvent(bulldata$postCC, {
     req(bulldata$postCC)
@@ -365,10 +368,6 @@ server <- function(input, output, session) {
     
     # Render lands with crosscuts snapshot ----
     bullets$x3pimg <- NA
-    for(idx in 1:nrow(bullets)) {
-      progress$set(message = "Rendering Report Objects", value = round(seq(from = .55, to = .85, length.out = nrow(bullets)), 2)[idx])
-      bullets$x3pimg[idx] <- render_crosscut_snap(bullets$source[idx], bullets$x3p[[idx]], bullets$crosscut[idx])	
-    }
     
     # Store comparison report data ----
     report_results <- get_report_data_wrapper(
@@ -515,6 +514,7 @@ server <- function(input, output, session) {
   )
   
   # SECTION: PHASE TEST ---------------------------------------------------
+  
   observe({
     req(bulldata$comparison)
     req(bulldata$comparison$bullet_scores)

@@ -9,7 +9,7 @@ sidebarLayout(tags$div(id="my-sidebar",
                 br(),
                 helpText("Press the following button to start using the app by uploading the bullet data."),
                 br(),
-                actionButton("confirm_autonomous", "Begin")#, icon = icon("check"))
+                actionButton("begin_button", "Begin")#, icon = icon("check"))
             ),
       ),
 
@@ -31,7 +31,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(
             column(12,textInput("bul_x3p_name", label="Bullet Name",value="",placeholder="Bullet Name Here ...")),
-            column(12,actionButton("up_bull", label = "Add Bullet to Comparison List"),align="center")
+            column(12,actionButton("add_to_list_button", label = "Add Bullet to Comparison List"),align="center")
           ),
           hr(),
       ),
@@ -39,7 +39,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ## Bullet Comparison UI
       conditionalPanel(condition="input.prevreport == 'Upload Bullet'",
           fluidRow(
-            column(12,uiOutput("bull_sel")),
+            column(12,uiOutput("bullSelCheckboxUI")),
             column(12,actionButton("doprocess", label = "Compare Bullets"),align="center"),
           ),
           div(id = "orientation-note",
