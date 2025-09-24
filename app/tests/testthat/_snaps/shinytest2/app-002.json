@@ -1,4 +1,46 @@
 {
+  "input": {
+    "add_to_list_button": 1,
+    "begin_button": 1,
+    "bul_x3p_name": "Bullet 1",
+    "bull_sel_checkbox": "Bullet 1",
+    "doprocess": 0,
+    "prevreport": "Upload Bullet",
+    "upload_button": {
+      "name": [
+        "Barrel_1-Bullet_1-Land_1.x3p",
+        "Barrel_1-Bullet_1-Land_2.x3p",
+        "Barrel_1-Bullet_1-Land_3.x3p",
+        "Barrel_1-Bullet_1-Land_4.x3p",
+        "Barrel_1-Bullet_1-Land_5.x3p",
+        "Barrel_1-Bullet_1-Land_6.x3p"
+      ],
+      "size": [
+        91468,
+        87938,
+        90839,
+        91552,
+        91984,
+        88779
+      ],
+      "type": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "datapath": [
+        "0.x3p",
+        "1.x3p",
+        "2.x3p",
+        "3.x3p",
+        "4.x3p",
+        "5.x3p"
+      ]
+    }
+  },
   "export": {
     "allbull_export": {
       "source": [

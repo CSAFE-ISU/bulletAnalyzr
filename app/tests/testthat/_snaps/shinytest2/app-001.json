@@ -1,4 +1,12 @@
 {
+  "input": {
+    "add_to_list_button": 0,
+    "begin_button": 1,
+    "bul_x3p_name": "",
+    "doprocess": 0,
+    "prevreport": "Upload Bullet",
+    "upload_button": null
+  },
   "export": {
     "allbull_export": {
 
