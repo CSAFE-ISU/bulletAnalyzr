@@ -29,6 +29,8 @@ sidebarLayout(tags$div(id="my-sidebar",
           # Grooves
           uiOutput("grooveBullSelUI"),
           uiOutput("grooveLandSelUI"),
+          uiOutput("grooveSlidersUI"),
+          uiOutput("saveGroovesUI"),
           
           # Report
           uiOutput("reportSelUI"),

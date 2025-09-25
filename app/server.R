@@ -426,18 +426,39 @@ server <- function(input, output, session) {
   # SECTION: GROOVES INTERACTIVITY------------------------------------------
   
   # REACTIVE - Filtered profile for grooves interactivity
-  profile <- reactive({
+  profile_df <- reactive({
     req(bulldata$stage == "groove")
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
     
-    bullets <- filter_selected_bullet_land(
+    land <- filter_selected_bullet_land(
       bullets = bulldata$postCC, 
       sel_bullet = input$groove_bulsel,
       sel_land = input$groove_landsel
     )
-    bullets %>% tidyr::unnest(ccdata)
+    land %>% tidyr::unnest(ccdata)
+  })
+  
+  # OBSERVE EVENT - Save Grooves
+  observeEvent(input$save_grooves_button, {
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    req(input$groove_landsel)
+    req(profile_df())
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+
+    bullets <- bulldata$postCC
+    
+    idx <- which(bullets$bullet == input$groove_bulsel & bullets$land == input$groove_landsel)
+    bullets$grooves[[idx]]$groove[1] <- input$grooveL
+    bullets$grooves[[idx]]$groove[2] <- input$grooveR
+    
+    bulldata$postCC <- bullets
+    progress$set(message = "Grooves saved", value = 0)
+    
   })
   
   # OUTPUT UI - Groove Select Bullet Drop-down
@@ -460,48 +481,68 @@ server <- function(input, output, session) {
     selectInput("groove_landsel", "Select Land", choices = unique(bullets$land), selected = NULL, multiple = FALSE)
   })
   
-  # # OUTPUT UI - Groove Sliders
-  # output$CCBull2 <- renderUI({
-  #   req(bulldata$stage == "groove")
-  #   req(bulldata$postCC)
-  #   req(input$groove_bulsel)
-  #   req(input$groove_landsel)
-  #   
-  #   # Filter selected bullet
-  #   bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
-  #   
-  #   # Calculate Y coordinate ranges for each bullet land in microns
-  #   bullet_y_ranges <- get_max_microns(bullets = bullets)
-  #   
-  #   # Render crosscut sliders and Finalize Crosscut and Compare Bullets buttons
-  #   list(
-  #     # Render crosscut sliders
-  #     mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),
-  #     # # BUTTON - Finalize Crosscut
-  #     # fluidRow(column(12, actionButton("saveCC", label = "Finalise CrossCut"), align="center")),
-  #     # hr(),
-  #     # # BUTTON - Compare Bullets
-  #     # fluidRow(column(12, actionButton("doprocessCC", label = "Compare Bullets"), align="center"))
-  #   )
-  # })
+  # OUTPUT UI - Groove Sliders
+  output$grooveSlidersUI <- renderUI({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    req(input$groove_landsel)
+
+    # Profile data frame of selected bullet and land
+    df <- profile_df()
+    
+    # Get default groove locations
+    grooveL_default <- df$grooves[[1]]$groove[1]
+    grooveR_default <- df$grooves[[1]]$groove[2]
+
+    # Render crosscut sliders and Finalize Crosscut and Compare Bullets buttons
+    list(
+      sliderInput(
+        inputId = "grooveL",
+        label = "Left Groove",
+        min = 0,
+        max = floor(max(df$x) / 2),
+        value = grooveL_default,
+        round = TRUE
+      ),
+      sliderInput(
+        inputId = "grooveR",
+        label = "Right Groove",
+        min = floor(max(df$x) / 2),
+        max = floor(max(df$x)),
+        value = grooveR_default,
+        round = TRUE
+      )
+    )
+  })
+  
+  # OUTPUT UI - Save Grooves Button
+  output$saveGroovesUI <- renderUI({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    req(input$groove_landsel)
+
+    fluidRow(
+      column(12, actionButton("save_grooves_button", label = "Save Grooves"), align="center")
+    )
+
+  })
   
   # PLOT OUTPUT - Render profiles with grooves
-  output$profiles <- renderPlot({
+  output$profile_plot <- renderPlot({
     req(bulldata$stage == "groove")
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
     
-    df <- profile()
-    
-    grooveL <- df$grooves[[1]]$groove[1]
-    grooveR <- df$grooves[[1]]$groove[2]
+    df <- profile_df()
 
     df %>% 
       ggplot(aes(x = x, y = value)) + 
       geom_line() +
-      geom_vline(xintercept = grooveL, color = "red") +
-      geom_vline(xintercept = grooveR, color = "red") +
+      geom_vline(xintercept = input$grooveL, color = "red") +
+      geom_vline(xintercept = input$grooveR, color = "red") +
       facet_grid(bullet~land, labeller="label_both") +
       theme_bw()
   })
@@ -515,7 +556,7 @@ server <- function(input, output, session) {
     # Refresh tab on change
     temp_refresh <- input$prevreport
     
-    plotOutput(session$ns("profiles"))
+    plotOutput(session$ns("profile_plot"))
   })
   
 
