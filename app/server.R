@@ -209,6 +209,36 @@ server <- function(input, output, session) {
     disable("add_to_list_button")
   })
   
+  # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) - Get default
+  # crosscuts before starting interactivity
+  observeEvent(input$doprocess, {
+    req(bulldata$stage == "upload")
+    req(length(input$bull_sel_checkbox) > 0)
+    
+    values$show_alert <- FALSE
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
+    bullets <- bulldata$allbull
+    
+    # Find optimal crosscuts
+    progress$set(message = "Get suitable Cross Sections", value = 0)
+    # If interactive_cc = TRUE, crosscut results added to preCC and postCC is
+    # NULL. If interactive_cc = FALSE, crosscut results added to postCC and preCC is NULL.
+    crosscut_results <- get_default_cc_wrapper(
+      bullets = bullets,
+      interactive_cc = interactive_cc,
+      ylimits = c(150, NA)
+    )
+    bulldata$preCC <- crosscut_results$preCC
+    bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
+    bulldata$postCC <- crosscut_results$postCC
+    bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
+    
+    # Switch to Comparison Report tab panel
+    bulldata$stage <- "crosscut"
+    updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
+  })
+  
   
   # SECTION: PREVIEW BULLET TAB----------------------------------------
   
@@ -273,38 +303,7 @@ server <- function(input, output, session) {
   })
   
   
-  
   # SECTION: CROSSCUT INTERACTIVITY-----------------------------------
-  
-  # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) - Get default
-  # crosscuts before starting interactivity
-  observeEvent(input$doprocess, {
-    req(bulldata$stage == "upload")
-    req(length(input$bull_sel_checkbox) > 0)
-    
-    values$show_alert <- FALSE
-    progress <- shiny::Progress$new(); on.exit(progress$close())
-    
-    bullets <- bulldata$allbull
-    
-    # Find optimal crosscuts
-    progress$set(message = "Get suitable Cross Sections", value = 0)
-    # If interactive_cc = TRUE, crosscut results added to preCC and postCC is
-    # NULL. If interactive_cc = FALSE, crosscut results added to postCC and preCC is NULL.
-    crosscut_results <- get_default_cc_wrapper(
-      bullets = bullets,
-      interactive_cc = interactive_cc,
-      ylimits = c(150, NA)
-    )
-    bulldata$preCC <- crosscut_results$preCC
-    bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
-    bulldata$postCC <- crosscut_results$postCC
-    bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
-    
-    # Switch to Comparison Report tab panel
-    bulldata$stage <- "crosscut"
-    updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
-  })
   
   # OUTPUT UI - Crosscut Select Bullet Drop-down
   output$CCBull1 <- renderUI({
@@ -399,13 +398,20 @@ server <- function(input, output, session) {
   })
   
   # OBSERVE EVENT - Compare Bullets Button
-  # Push preCC to postCC
+  # Push preCC to postCC and change stage to "grooves"
   observeEvent(input$doprocessCC,{
     req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
+    # Extract crosscut data
+    bullets <- get_ccdata_wrapper(postCC = bulldata$preCC, progress = progress)
+    
+    # Find the optimal groove locations
+    bullets <- get_grooves_wrapper(bullets = bullets, progress = progress)
+    
     # Push preCC data frame to postCC
-    bullets <- bulldata$preCC
     bulldata$postCC <- bullets
     bulldata$postCC_export <- make_export_df(bullets)
     
@@ -415,6 +421,9 @@ server <- function(input, output, session) {
     
     bulldata$stage <- "report"
   })
+  
+  
+  # SECTION: GROOVES INTERACTIVITY------------------------------------------
   
   
   # SECTION: GENERATE REPORT------------------------------------------
@@ -431,14 +440,8 @@ server <- function(input, output, session) {
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
-    # Extract crosscut data
-    bullets <- get_ccdata_wrapper(postCC = bulldata$postCC, progress = progress)
-    
-    # Find the optimal groove locations
-    bullets <- get_grooves_wrapper(bullets = bullets, progress = progress)
-    
     # Extract the signals
-    bullets <- get_signals_wrapper(bullets = bullets, progress = progress)
+    bullets <- get_signals_wrapper(bullets = bulldata$postCC, progress = progress)
     
     # Align the signals
     signals_results <- get_aligned_signals_wrapper(bullets = bullets, progress = progress)
