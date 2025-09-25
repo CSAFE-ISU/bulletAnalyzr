@@ -425,6 +425,21 @@ server <- function(input, output, session) {
   
   # SECTION: GROOVES INTERACTIVITY------------------------------------------
   
+  # REACTIVE - Filtered profile for grooves interactivity
+  profile <- reactive({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    req(input$groove_landsel)
+    
+    bullets <- filter_selected_bullet_land(
+      bullets = bulldata$postCC, 
+      sel_bullet = input$groove_bulsel,
+      sel_land = input$groove_landsel
+    )
+    bullets %>% tidyr::unnest(ccdata)
+  })
+  
   # OUTPUT UI - Groove Select Bullet Drop-down
   output$grooveBullSelUI <- renderUI({
     req(bulldata$stage == "groove")
@@ -445,35 +460,65 @@ server <- function(input, output, session) {
     selectInput("groove_landsel", "Select Land", choices = unique(bullets$land), selected = NULL, multiple = FALSE)
   })
   
+  # # OUTPUT UI - Groove Sliders
+  # output$CCBull2 <- renderUI({
+  #   req(bulldata$stage == "groove")
+  #   req(bulldata$postCC)
+  #   req(input$groove_bulsel)
+  #   req(input$groove_landsel)
+  #   
+  #   # Filter selected bullet
+  #   bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
+  #   
+  #   # Calculate Y coordinate ranges for each bullet land in microns
+  #   bullet_y_ranges <- get_max_microns(bullets = bullets)
+  #   
+  #   # Render crosscut sliders and Finalize Crosscut and Compare Bullets buttons
+  #   list(
+  #     # Render crosscut sliders
+  #     mapply(render_ccsl, id = 1:nrow(bullets), ymin = 0, ymax = bullet_y_ranges, yset = bullets$crosscut, SIMPLIFY = FALSE),
+  #     # # BUTTON - Finalize Crosscut
+  #     # fluidRow(column(12, actionButton("saveCC", label = "Finalise CrossCut"), align="center")),
+  #     # hr(),
+  #     # # BUTTON - Compare Bullets
+  #     # fluidRow(column(12, actionButton("doprocessCC", label = "Compare Bullets"), align="center"))
+  #   )
+  # })
+  
+  # PLOT OUTPUT - Render profiles with grooves
+  output$profiles <- renderPlot({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    req(input$groove_landsel)
+    
+    df <- profile()
+    
+    grooveL <- df$grooves[[1]]$groove[1]
+    grooveR <- df$grooves[[1]]$groove[2]
+
+    df %>% 
+      ggplot(aes(x = x, y = value)) + 
+      geom_line() +
+      geom_vline(xintercept = grooveL, color = "red") +
+      geom_vline(xintercept = grooveR, color = "red") +
+      facet_grid(bullet~land, labeller="label_both") +
+      theme_bw()
+  })
+  
   # OUTPUT UI - Display Crosscut (Profiles) with Grooves
   output$groovePlotsUI <- 	renderUI({
     req(bulldata$stage == "groove")
     req(bulldata$postCC)
     req(input$groove_bulsel)
     
-    # Filter selected bullet and land 
-    bullets <- filter_selected_bullet_land(
-      bullets = bulldata$postCC, 
-      sel_bullet = input$groove_bulsel,
-      sel_land = input$groove_landsel
-    )
-
     # Refresh tab on change
     temp_refresh <- input$prevreport
     
-    crosscuts <- bullets %>% tidyr::unnest(ccdata)
-    
-    # Render profiles with grooves
-    output$profiles <- renderPlot({
-      crosscuts %>% 
-        ggplot(aes(x = x, y = value)) + 
-        geom_line() +
-        facet_grid(bullet~land, labeller="label_both") +
-        theme_bw()
-    })
     plotOutput(session$ns("profiles"))
-    
   })
+  
+
   
   # SECTION: GENERATE REPORT------------------------------------------
   
