@@ -189,7 +189,7 @@ server <- function(input, output, session) {
     bulldata$allbull <- preprocess_results$allbull
     bulldata$cbull <- preprocess_results$cbull
     bulldata$cbull_export <- make_export_df(df = bulldata$cbull)
-  
+    
   })
   
   # OBSERVE EVENT - Add Bullet to Comparison List button
@@ -449,7 +449,7 @@ server <- function(input, output, session) {
     req(profile_df())
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
-
+    
     bullets <- bulldata$postCC
     
     idx <- which(bullets$bullet == input$groove_bulsel & bullets$land == input$groove_landsel)
@@ -487,14 +487,14 @@ server <- function(input, output, session) {
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
-
+    
     # Profile data frame of selected bullet and land
     df <- profile_df()
     
     # Get default groove locations
     grooveL_default <- df$grooves[[1]]$groove[1]
     grooveR_default <- df$grooves[[1]]$groove[2]
-
+    
     # Render crosscut sliders and Finalize Crosscut and Compare Bullets buttons
     list(
       sliderInput(
@@ -516,17 +516,23 @@ server <- function(input, output, session) {
     )
   })
   
-  # OUTPUT UI - Save Grooves Button
-  output$saveGroovesUI <- renderUI({
+  # OUTPUT UI - Save Grooves and Next Step Buttons
+  output$groovesButtonsUI <- renderUI({
     req(bulldata$stage == "groove")
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
-
-    fluidRow(
-      column(12, actionButton("save_grooves_button", label = "Save Grooves"), align="center")
+    
+    list(
+      fluidRow(
+        column(12, actionButton("save_grooves_button", label = "Save Grooves"), align="center")
+      ),
+      hr(),
+      fluidRow(
+        column(12, actionButton("grooves_next_button", label = "Next Step"), align="center")
+      )
     )
-
+    
   })
   
   # PLOT OUTPUT - Render profiles with grooves
@@ -537,7 +543,7 @@ server <- function(input, output, session) {
     req(input$groove_landsel)
     
     df <- profile_df()
-
+    
     df %>% 
       ggplot(aes(x = x, y = value)) + 
       geom_line() +
@@ -553,25 +559,18 @@ server <- function(input, output, session) {
     req(bulldata$postCC)
     req(input$groove_bulsel)
     
-    # Refresh tab on change
-    temp_refresh <- input$prevreport
-    
     plotOutput(session$ns("profile_plot"))
   })
   
-
-  
-  # SECTION: GENERATE REPORT------------------------------------------
-  
-  # OBSERVE EVENT - bulldata$postCC
-  # Get crosscut data, grooves, signal, features, and random forest score - If
-  # interactive_cc = TRUE, bulldata$postCC is populated when the Compare Bullets
-  # button (doprocessCC) on the Comparison Report tab panel is clicked. If
-  # interactive_cc = FALSE, bulldata$postCC is populated when (doprocess) is
-  # clicked
-  observeEvent(bulldata$postCC, {
-    req(bulldata$stage == "report")
+  # OBSERVE EVENT - Next Step
+  # Get signal, features, and random forest score, and bullet scores
+  observeEvent(input$grooves_next_button, {
+    req(bulldata$stage == "groove")
     req(bulldata$postCC)
+    req(bulldata$postCC$grooves)
+    
+    bulldata$stage = "report"
+    updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
     
@@ -619,6 +618,9 @@ server <- function(input, output, session) {
     bulldata$comparison <- report_results$comparison
     bulldata$comparison_export <- report_results$comparison_export
   })
+  
+  
+  # SECTION: GENERATE REPORT------------------------------------------
   
   # OUTPUT UI - Report Comparison sidebar
   output$reportSelUI <- renderUI({

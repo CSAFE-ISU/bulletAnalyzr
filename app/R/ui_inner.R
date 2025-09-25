@@ -30,7 +30,7 @@ sidebarLayout(tags$div(id="my-sidebar",
           uiOutput("grooveBullSelUI"),
           uiOutput("grooveLandSelUI"),
           uiOutput("grooveSlidersUI"),
-          uiOutput("saveGroovesUI"),
+          uiOutput("groovesButtonsUI"),
           
           # Report
           uiOutput("reportSelUI"),
