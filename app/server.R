@@ -310,7 +310,7 @@ server <- function(input, output, session) {
     req(bulldata$stage == "crosscut")
     req(bulldata$preCC)
     
-    # DROP-DOWN - Report Select Bullet
+    # DROP-DOWN - Select Bullet
     bullets <- bulldata$preCC
     selectInput("cc_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = NULL, multiple = FALSE)
   })
@@ -419,12 +419,61 @@ server <- function(input, output, session) {
     bulldata$preCC <- NULL
     bulldata$preCC_export <- NULL
     
-    bulldata$stage <- "report"
+    bulldata$stage <- "groove"
   })
   
   
   # SECTION: GROOVES INTERACTIVITY------------------------------------------
   
+  # OUTPUT UI - Groove Select Bullet Drop-down
+  output$grooveBullSelUI <- renderUI({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    
+    # DROP-DOWN - Select Bullet
+    bullets <- bulldata$postCC
+    selectInput("groove_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = NULL, multiple = FALSE)
+  })
+  
+  # OUTPUT UI - Land Select Bullet Drop-down
+  output$grooveLandSelUI <- renderUI({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    
+    # DROP-DOWN - Select Land
+    bullets <- bulldata$postCC
+    selectInput("groove_landsel", "Select Land", choices = unique(bullets$land), selected = NULL, multiple = FALSE)
+  })
+  
+  # OUTPUT UI - Display Crosscut (Profiles) with Grooves
+  output$groovePlotsUI <- 	renderUI({
+    req(bulldata$stage == "groove")
+    req(bulldata$postCC)
+    req(input$groove_bulsel)
+    
+    # Filter selected bullet and land 
+    bullets <- filter_selected_bullet_land(
+      bullets = bulldata$postCC, 
+      sel_bullet = input$groove_bulsel,
+      sel_land = input$groove_landsel
+    )
+
+    # Refresh tab on change
+    temp_refresh <- input$prevreport
+    
+    crosscuts <- bullets %>% tidyr::unnest(ccdata)
+    
+    # Render profiles with grooves
+    output$profiles <- renderPlot({
+      crosscuts %>% 
+        ggplot(aes(x = x, y = value)) + 
+        geom_line() +
+        facet_grid(bullet~land, labeller="label_both") +
+        theme_bw()
+    })
+    plotOutput(session$ns("profiles"))
+    
+  })
   
   # SECTION: GENERATE REPORT------------------------------------------
   
