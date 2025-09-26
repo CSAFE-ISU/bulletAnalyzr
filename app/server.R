@@ -436,8 +436,8 @@ server <- function(input, output, session) {
       bullets = bulldata$postCC, 
       sel_bullet = input$groove_bulsel,
       sel_land = input$groove_landsel
-    )
-    land %>% tidyr::unnest(ccdata)
+    ) %>% 
+      tidyr::unnest(ccdata)
   })
   
   # OBSERVE EVENT - Save Grooves
@@ -457,6 +457,7 @@ server <- function(input, output, session) {
     bullets$grooves[[idx]]$groove[2] <- input$grooveR
     
     bulldata$postCC <- bullets
+    bulldata$postCC_export <- make_export_df(bulldata$postCC)
     progress$set(message = "Grooves saved", value = 0)
     
   })
@@ -544,7 +545,7 @@ server <- function(input, output, session) {
     
     df <- profile_df()
     
-    df %>% 
+    df %>%
       ggplot(aes(x = x, y = value)) + 
       geom_line() +
       geom_vline(xintercept = input$grooveL, color = "red") +
