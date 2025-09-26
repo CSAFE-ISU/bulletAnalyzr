@@ -46,6 +46,7 @@ test_that("{shinytest2} recording: pipeline", {
   # Finds and displays "optimal" crosscuts on Comparison Report tab
   app$click("doprocess")
   app$wait_for_value(output = "CCBull1")
+  app$wait_for_value(input = "cc_bulsel")
   app$set_inputs(cc_bulsel = "Bullet 1")
   app$wait_for_idle()
   app$set_window_size(width = 1139, height = 674)

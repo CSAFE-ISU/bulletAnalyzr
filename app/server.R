@@ -312,7 +312,7 @@ server <- function(input, output, session) {
     
     # DROP-DOWN - Select Bullet
     bullets <- bulldata$preCC
-    selectInput("cc_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = NULL, multiple = FALSE)
+    selectInput("cc_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = unique(bullets$bullet)[1], multiple = FALSE)
   })
   
   # OUTPUT UI - Crosscut Sliders, Finalize Button, and Compare Button
