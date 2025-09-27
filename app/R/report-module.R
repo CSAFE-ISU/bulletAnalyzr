@@ -13,10 +13,12 @@ reportMainUI <- function(id) {
   )
 }
 
-reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_results) {
+reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = NULL, phase_test_results = NULL) {
   moduleServer(id, function(input, output, session) {
     # OUTPUT UI - Report comparison top ----
     output$report <- renderUI({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(is.null(bullet_data$preCC))
       req(bullet_data$comparison)
       req(comp_bul1())
@@ -54,6 +56,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
 
     # OUTPUT UI - Report comparison panels ----
     output$report_panels <- renderUI({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(is.null(bullet_data$preCC))
       req(bullet_data$comparison)
       req(comp_bul1())
@@ -189,6 +193,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT UI - Report Download sidebar ----
     output$reportDownUI <- renderUI({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(is.null(bullet_data$preCC))
       req(bullet_data$comparison)
       
@@ -198,6 +204,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Phase test score ----
     output$bull_comp_score <- renderText({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(phase_test_results)
       
       if (is.data.frame(phase_test_results)) {
@@ -216,6 +224,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Phase test probability of false id ----
     output$bull_comp_test <- renderText({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(phase_test_results)
       
       if (is.data.frame(phase_test_results)) {
@@ -238,6 +248,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Bullet score matrix ----
     output$bull_comp <- renderPlot({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(bullet_data$comparison)
       
       bullet_scores <- bullet_data$comparison$bullet_scores
@@ -261,6 +273,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Land score matrix ----
     output$land_comp <- renderPlot({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(bullet_data$comparison)
       req(comp_bul1())
       req(comp_bul1())
@@ -286,6 +300,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Crosscut plots ----
     output$land_visCC <- renderPlot({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(bullet_data$comparison)
       req(comp_bul1())
       req(comp_bul2())
@@ -306,6 +322,8 @@ reportServer <- function(id, bullet_data, comp_bul1, comp_bul2, phase_test_resul
     
     # OUTPUT - Signal plots ----
     output$land_visSig <- renderPlot({
+      req(bullet_data)
+      req(bullet_data$stage == "report")
       req(bullet_data$comparison)
       req(comp_bul1())
       req(comp_bul2())

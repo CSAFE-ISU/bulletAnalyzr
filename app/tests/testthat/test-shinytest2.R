@@ -1,55 +1,116 @@
 library(shinytest2)
 
 
-test_that("{shinytest2} recording: app", {
+test_that("{shinytest2} recording: pipeline", {
   app <- AppDriver$new(
-    name = "app", 
-    height = 711, 
-    width = 1299,
+    name = "pipeline", 
+    height = 674, 
+    width = 1139,
     timeout = 240000,
     expect_values_screenshot_args = FALSE  # don't take debug snapshots with expect_values()
   )
   
+  # Make list of input names to test. Drops "__shinyscreenshot..." from the list
+  inputs <- get_inputs_for_tests(app = app)
+  
+  app$expect_values(export = TRUE, input = inputs)  # 1
+  
   # Begin button ----
   app$click("begin_button")
-  app$expect_values(export = TRUE, input = TRUE)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 2
   
-  # Select Bullet Land x3p Files button ----
+  # Select Bullet 1 Land x3p Files button ----
   files1 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 1"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files1)
-  app$set_window_size(width = 1299, height = 711)
+  app$set_window_size(width = 1139, height = 674)
   
-  # Bullet Name text input ----
+  # Name Bullet 1 ----
   app$set_inputs(bul_x3p_name = "Bullet 1")
   app$click("add_to_list_button")
-  app$set_window_size(width = 1299, height = 711)
-  app$expect_values(export = TRUE, input = TRUE)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 3
   
-  # Select Bullet Land x3p Files button ----
+  # Select Bullet 2 Land x3p Files button ----
   files2 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files2)
-  app$set_window_size(width = 1299, height = 711)
-  
-  # Bullet Name text input ----
+  app$set_window_size(width = 1139, height = 674)
+
+  # Name Bullet 2 ----
   app$set_inputs(bul_x3p_name = "Bullet 2")
   app$click("add_to_list_button")
-  app$set_window_size(width = 1299, height = 711)
-  app$expect_values(export = TRUE, input = TRUE)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 4
   
   # Compare Bullets (Upload Bullet tab) ----
   # Finds and displays "optimal" crosscuts on Comparison Report tab
   app$click("doprocess")
   app$wait_for_value(output = "CCBull1")
+  app$wait_for_value(input = "cc_bulsel")
   app$set_inputs(cc_bulsel = "Bullet 1")
-  app$set_window_size(width = 1299, height = 711)
-  app$expect_values(export = TRUE, input = TRUE)
+  app$wait_for_idle()
+  app$set_window_size(width = 1139, height = 674)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 5
   
-  app$wait_for_value(output = "CCBull2")
+  # Change Bullet 1 Land 4 Crosscut Location ----
+  app$set_inputs(CCsl4 = 507)
   app$click("saveCC")
+  app$wait_for_idle()
+  app$set_window_size(width = 1139, height = 674)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 6
+  
+  app$set_inputs(cc_bulsel = "Bullet 2")
+  app$set_inputs(CCsl1 = 396)
+  app$click("saveCC")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 7
+
+  # Click Compare Bullets ----
   app$click("doprocessCC")
-  app$set_window_size(width = 1299, height = 711)
-  inputs <- names(app$get_values(input = TRUE)$input)
-  inputs <- inputs[!stringr::str_detect(inputs, "shinyscreenshot")]
-  app$expect_values(export = TRUE, input = inputs)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 8
+
+  # Adjust left and right grooves of Bullet 1 Land 1 ----
+  app$set_inputs(grooveL = 278)
+  app$set_inputs(grooveR = 2230)
+  app$wait_for_idle()
+  app$click("save_grooves_button")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 10
+  
+  # Adjust left and right grooves of Bullet 1 Land 4 ----
+  app$set_inputs(groove_landsel = "4")
+  app$set_inputs(grooveL = 224)
+  app$set_inputs(grooveR = 2149)
+  app$wait_for_idle()
+  app$click("save_grooves_button")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs) # 12
+  
+  # Adjust left and right grooves of Bullet 2 Land 1 and save ----
+  app$set_inputs(groove_bulsel = "Bullet 2")
+  app$set_inputs(grooveL = 212)
+  app$set_inputs(grooveR = 2020)
+  app$wait_for_idle()
+  app$click("save_grooves_button")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 14
+  
+  # Adjust left and right grooves of Bullet 2 Land 5 and save ----
+  app$set_inputs(groove_bulsel = "Bullet 2")
+  app$set_inputs(groove_landsel = "5")
+  app$set_inputs(grooveL = 235)
+  app$set_inputs(grooveR = 1991)
+  app$wait_for_idle()
+  app$click("save_grooves_button")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 16
+  
+  # Click Next Step on grooves page ----
+  app$click("grooves_next_button")
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 17
   
 })

@@ -22,8 +22,17 @@ sidebarLayout(tags$div(id="my-sidebar",
           uiOutput("prevSelUI"),
       ),
       conditionalPanel(condition="input.prevreport == 'Comparison Report'",
+          # Crosscuts
           uiOutput("CCBull1"),
           uiOutput("CCBull2"),
+          
+          # Grooves
+          uiOutput("grooveBullSelUI"),
+          uiOutput("grooveLandSelUI"),
+          uiOutput("grooveSlidersUI"),
+          uiOutput("groovesButtonsUI"),
+          
+          # Report
           uiOutput("reportSelUI"),
       ),
 
@@ -64,7 +73,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ),
 
       ## Upload Bullet RGL Windows
-      tabPanel("Upload Bullet",uiOutput("lpupload")),
+      tabPanel("Upload Bullet", uiOutput("lpupload")),
 
       ## Upload Bullet RGL Windows
       tabPanel("Preview Bullet",uiOutput("lpreview")),
@@ -72,6 +81,7 @@ sidebarLayout(tags$div(id="my-sidebar",
       ## Comparison Report
       tabPanel("Comparison Report", 
           shinycssloaders::withSpinner(uiOutput("CCBullLand")),
+          shinycssloaders::withSpinner(uiOutput("groovePlotsUI")),
           shinycssloaders::withSpinner(reportMainUI("report1"))
       )  
     )
