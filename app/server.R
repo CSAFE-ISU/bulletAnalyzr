@@ -56,6 +56,7 @@ server <- function(input, output, session) {
     allbull_export = data.frame(),
     cbull = data.frame(),
     cbull_export = data.frame(),
+    cbull_name = NULL,
     preCC = NULL,
     preCC_export = NULL,
     postCC = NULL, 
@@ -179,9 +180,13 @@ server <- function(input, output, session) {
       filename = input$upload_button$name
     )
     
+    # Read bullet from temp directory
+    progress$set(message = "Reading Bullet", value = .25)
+    cbull <- read_bullet(temp_dir)
+    
     preprocess_results <- preprocess_bullet(
       allbull = bulldata$allbull,
-      temp_dir = temp_dir,
+      cbull = cbull,
       show_alert = values$show_alert,
       progress = progress,
       session = session

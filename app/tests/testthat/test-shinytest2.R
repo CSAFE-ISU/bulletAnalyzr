@@ -75,7 +75,7 @@ test_that("{shinytest2} recording: pipeline", {
   # Adjust left and right grooves of Bullet 1 Land 1 ----
   app$set_inputs(grooveL = 278)
   app$set_inputs(grooveR = 2230)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 10
@@ -84,7 +84,7 @@ test_that("{shinytest2} recording: pipeline", {
   app$set_inputs(groove_landsel = "4")
   app$set_inputs(grooveL = 224)
   app$set_inputs(grooveR = 2149)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs) # 12
@@ -93,7 +93,7 @@ test_that("{shinytest2} recording: pipeline", {
   app$set_inputs(groove_bulsel = "Bullet 2")
   app$set_inputs(grooveL = 212)
   app$set_inputs(grooveR = 2020)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 14
@@ -103,7 +103,7 @@ test_that("{shinytest2} recording: pipeline", {
   app$set_inputs(groove_landsel = "5")
   app$set_inputs(grooveL = 235)
   app$set_inputs(grooveR = 1991)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 16
