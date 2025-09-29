@@ -82,8 +82,8 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       odridx <- get_rf_order(bsldata)
       
       # getting scales and instrument info ... not correct yet, but just for the first scan
-      scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
-      instrument <- bullet_data$cbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
+      scale <- bullet_data$allbull$x3p[[1]] %>% x3p_get_scale()
+      instrument <- bullet_data$allbull$x3p[[1]] %>% x3p_show_xml("Manufacturer")
       
       # Generate Collapsible UI Panel List in a loop
       bsCollapsePanelList <- list()
@@ -163,7 +163,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
             cidx = idx
           )
           cidx <- idx
-          scale <- bullet_data$cbull$x3p[[1]] %>% x3p_get_scale()
+          scale <- bullet_data$allbull$x3p[[1]] %>% x3p_get_scale()
           output[[paste0("SigPlot", cidx)]] <- renderPlot({
             plot_signal(sig_plot_data = sig_plot_data, scale = scale)
           })

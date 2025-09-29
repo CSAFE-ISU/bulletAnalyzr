@@ -54,8 +54,8 @@ server <- function(input, output, session) {
     stage = NULL,
     allbull = data.frame(),
     allbull_export = data.frame(),
-    cbull = data.frame(),
-    cbull_export = data.frame(),
+    cbull = NULL,
+    cbull_export = NULL,
     cbull_name = NULL,
     preCC = NULL,
     preCC_export = NULL,
@@ -74,6 +74,7 @@ server <- function(input, output, session) {
   exportTestValues(
     allbull_export = bulldata$allbull_export,
     cbull_export = bulldata$cbull_export,
+    cbull_name_export = bulldata$cbull_name,
     comparison_export = bulldata$comparison_export,
     phase_test_export = phase$test_results,
     postCC_export = bulldata$postCC_export,
@@ -91,8 +92,8 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
   
-  
-  # SECTION: UPLOAD BULLET TAB-------------------------------------------
+
+  # SECTION: UPLOAD BULLET TAB - CBULL --------------------------------------
   
   # OUTPUT UI - Upload Land x3p Files Button
   output$bul_x3pui <- renderUI({
@@ -100,60 +101,6 @@ server <- function(input, output, session) {
     
     # Button - Bullet Land x3p Files
     fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
-  })
-  
-  # OUTPUT UI - Select Bullets to Compare Checkbox
-  output$bullSelCheckboxUI <- renderUI({
-    req(bulldata$stage == "upload")
-    req(nrow(bulldata$allbull) > 0)
-    
-    # Store allbull
-    allbull <- bulldata$allbull
-    
-    # CHECK BOX - Select Bullets to Compare
-    checkboxGroupInput(
-      "bull_sel_checkbox",
-      label = "Select Bullets to Compare", 
-      choices = unique(bulldata$allbull$bullet),
-      selected = unique(bulldata$allbull$bullet)
-    )
-  })
-  
-  # OUTPUT UI - Display Lands on Upload Tab
-  output$lpupload <- renderUI({
-    req(bulldata$stage == "upload")
-    req(nrow(bulldata$cbull) > 0)
-    
-    progress <- shiny::Progress$new(); on.exit(progress$close())
-    
-    # Render bullet
-    progress$set(message = "Rendering Previews", value = .75)
-    for(idx in 1:nrow(bulldata$cbull)) {
-      local({
-        cidx <- idx
-        # OUTPUT RGL - Bullet
-        output[[paste0("x3prgl",idx)]] <- renderRglwidget({
-          render_land(
-            x3p = bulldata$cbull$x3p[[cidx]], 
-            ccut = NULL,
-            sample_m = 5,
-            rotate = TRUE,
-            img_size = 500,
-            img_zoom = 0.4
-          )
-          rglwidget()
-        })
-      })
-    }
-    
-    # Enable upload button
-    enable("add_to_list_button")
-    
-    # Display bullet
-    layout_column_wrap(
-      width = 1/6,
-      !!!lapply(1:nrow(bulldata$cbull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = bulldata$cbull$land_names[x]))
-    )
   })
   
   # OBSERVE EVENT - Bullet Land x3p Files Button
@@ -197,21 +144,99 @@ server <- function(input, output, session) {
     
   })
   
+  # OUTPUT UI - Display Lands on Upload Tab
+  output$lpupload <- renderUI({
+    req(bulldata$stage == "upload")
+    req(isTruthy(bulldata$cbull) || isTruthy(bulldata$cbull_name))
+    
+    progress <- shiny::Progress$new(); on.exit(progress$close())
+    
+    if (!is.null(bulldata$cbull)) {
+      cbull <- bulldata$cbull
+    } else if (!is.null(bulldata$cbull_name) & (nrow(bulldata$allbull) > 0)) {
+      cbull <- filter_selected_bullet(
+        bullets = bulldata$allbull,
+        selected = bulldata$cbull_name
+      )
+    } else {
+      warning("Current bullet data frame not found for rendering RGLs")
+    }
+    
+    # Render bullet
+    progress$set(message = "Rendering Previews", value = .75)
+    for(idx in 1:nrow(cbull)) {
+      local({
+        cidx <- idx
+        # OUTPUT RGL - Bullet
+        output[[paste0("x3prgl",idx)]] <- renderRglwidget({
+          render_land(
+            x3p = cbull$x3p[[cidx]], 
+            ccut = NULL,
+            sample_m = 5,
+            rotate = TRUE,
+            img_size = 500,
+            img_zoom = 0.4
+          )
+          rglwidget()
+        })
+      })
+    }
+    
+    # Enable upload button
+    enable("add_to_list_button")
+    
+    # Display bullet
+    layout_column_wrap(
+      width = 1/6,
+      !!!lapply(1:nrow(cbull), FUN = function(x) parse_rglui(x, name = "x3prgl", land_name = cbull$land_names[x]))
+    )
+  })
+  
+
+  # SECTION: UPLOAD BULLET TAB - ALLBULL ------------------------------------
+  
   # OBSERVE EVENT - Add Bullet to Comparison List button
   # Push current bullet data to all bullet data object
   observeEvent(input$add_to_list_button, {
     req(bulldata$stage == "upload")
-    req(nrow(bulldata$cbull) > 0)
+    req(bulldata$cbull)
+    
+    # Add bullet and land columns to current bullet
+    cbull <- bulldata$cbull
+    cbull$bullet <- input$bul_x3p_name
+    cbull$land <- factor(cbull$land_names, levels = cbull$land_names)
     
     bulldata$allbull <- add_cbull_to_allbull(
-      cbull = bulldata$cbull,
-      bul_x3p_name = input$bul_x3p_name,
+      cbull = cbull,
+      cbull_name = cbull$bullet[1],
       allbull = bulldata$allbull
     )
     bulldata$allbull_export <- make_export_df(df = bulldata$allbull)
     
+    # Store cbull name and reset cbull
+    bulldata$cbull_name <- cbull$bullet[1]
+    bulldata$cbull <- NULL
+    bulldata$cbull_export <- NULL
+    
     # Switch upload button off
     disable("add_to_list_button")
+  })
+  
+  # OUTPUT UI - Select Bullets to Compare Checkbox
+  output$bullSelCheckboxUI <- renderUI({
+    req(bulldata$stage == "upload")
+    req(nrow(bulldata$allbull) > 0)
+    
+    # Store allbull
+    allbull <- bulldata$allbull
+    
+    # CHECK BOX - Select Bullets to Compare
+    checkboxGroupInput(
+      "bull_sel_checkbox",
+      label = "Select Bullets to Compare", 
+      choices = unique(bulldata$allbull$bullet),
+      selected = unique(bulldata$allbull$bullet)
+    )
   })
   
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) - Get default

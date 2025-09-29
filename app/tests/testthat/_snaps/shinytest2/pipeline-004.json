@@ -1,8 +1,8 @@
 {
   "input": {
-    "add_to_list_button": 2,
+    "add_to_list_button": 1,
     "begin_button": 1,
-    "bul_x3p_name": "Bullet 2",
+    "bul_x3p_name": "Bullet 1",
     "doprocess": 0,
     "prevreport": "Upload Bullet"
   },
@@ -14,21 +14,9 @@
         "Barrel_1-Bullet_1-Land_3.x3p",
         "Barrel_1-Bullet_1-Land_4.x3p",
         "Barrel_1-Bullet_1-Land_5.x3p",
-        "Barrel_1-Bullet_1-Land_6.x3p",
-        "Barrel_1-Bullet_2-Land_1.x3p",
-        "Barrel_1-Bullet_2-Land_2.x3p",
-        "Barrel_1-Bullet_2-Land_3.x3p",
-        "Barrel_1-Bullet_2-Land_4.x3p",
-        "Barrel_1-Bullet_2-Land_5.x3p",
-        "Barrel_1-Bullet_2-Land_6.x3p"
+        "Barrel_1-Bullet_1-Land_6.x3p"
       ],
       "x3p": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
         null,
         null,
         null,
@@ -42,13 +30,7 @@
         "4e196ec7a3ec4bb09e1e9e0a9c8ca825",
         "678b5b9b384e8090716a268452bdb505",
         "7d09d78d689f3cd8f5e464864466fbbe",
-        "c8635e266517265b615d78d217842a83",
-        "ca0d4e87feb09b5d76f15be2edc0cce0",
-        "bf5d73df16b1f085f815a31e8c314e57",
-        "c88128f4e7f39d3cf1917396bbfeac5f",
-        "ef4db6d34539f336001397eaa874083c",
-        "562541fd2d3febb794762019b360d256",
-        "7bc57f9feceb6ce64f66d8eb14b01962"
+        "c8635e266517265b615d78d217842a83"
       ],
       "filename": [
         "Barrel_1-Bullet_1-Land_1.x3p",
@@ -56,21 +38,9 @@
         "Barrel_1-Bullet_1-Land_3.x3p",
         "Barrel_1-Bullet_1-Land_4.x3p",
         "Barrel_1-Bullet_1-Land_5.x3p",
-        "Barrel_1-Bullet_1-Land_6.x3p",
-        "Barrel_1-Bullet_2-Land_1.x3p",
-        "Barrel_1-Bullet_2-Land_2.x3p",
-        "Barrel_1-Bullet_2-Land_3.x3p",
-        "Barrel_1-Bullet_2-Land_4.x3p",
-        "Barrel_1-Bullet_2-Land_5.x3p",
-        "Barrel_1-Bullet_2-Land_6.x3p"
+        "Barrel_1-Bullet_1-Land_6.x3p"
       ],
       "land_names": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
         "1",
         "2",
         "3",
@@ -84,13 +54,7 @@
         "Barrel_1.Bullet_1.Land_.x3p",
         "Barrel_1.Bullet_1.Land_.x3p",
         "Barrel_1.Bullet_1.Land_.x3p",
-        "Barrel_1.Bullet_1.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p"
+        "Barrel_1.Bullet_1.Land_.x3p"
       ],
       "bullet": [
         "Bullet 1",
@@ -98,13 +62,7 @@
         "Bullet 1",
         "Bullet 1",
         "Bullet 1",
-        "Bullet 1",
-        "Bullet 2",
-        "Bullet 2",
-        "Bullet 2",
-        "Bullet 2",
-        "Bullet 2",
-        "Bullet 2"
+        "Bullet 1"
       ],
       "land": [
         "1",
@@ -112,65 +70,11 @@
         "3",
         "4",
         "5",
-        "6",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
         "6"
       ]
     },
-    "cbull_export": {
-      "source": [
-        "Barrel_1-Bullet_2-Land_1.x3p",
-        "Barrel_1-Bullet_2-Land_2.x3p",
-        "Barrel_1-Bullet_2-Land_3.x3p",
-        "Barrel_1-Bullet_2-Land_4.x3p",
-        "Barrel_1-Bullet_2-Land_5.x3p",
-        "Barrel_1-Bullet_2-Land_6.x3p"
-      ],
-      "x3p": [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
-      ],
-      "md5sum": [
-        "ca0d4e87feb09b5d76f15be2edc0cce0",
-        "bf5d73df16b1f085f815a31e8c314e57",
-        "c88128f4e7f39d3cf1917396bbfeac5f",
-        "ef4db6d34539f336001397eaa874083c",
-        "562541fd2d3febb794762019b360d256",
-        "7bc57f9feceb6ce64f66d8eb14b01962"
-      ],
-      "filename": [
-        "Barrel_1-Bullet_2-Land_1.x3p",
-        "Barrel_1-Bullet_2-Land_2.x3p",
-        "Barrel_1-Bullet_2-Land_3.x3p",
-        "Barrel_1-Bullet_2-Land_4.x3p",
-        "Barrel_1-Bullet_2-Land_5.x3p",
-        "Barrel_1-Bullet_2-Land_6.x3p"
-      ],
-      "land_names": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6"
-      ],
-      "bullet_name": [
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p",
-        "Barrel_1.Bullet_2.Land_.x3p"
-      ]
-    },
+    "cbull_export": null,
+    "cbull_name_export": "Bullet 1",
     "comparison_export": null,
     "phase_test_export": null,
     "postCC_export": null,
