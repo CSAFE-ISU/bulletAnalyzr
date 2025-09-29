@@ -23,24 +23,26 @@ test_that("{shinytest2} recording: pipeline", {
   # Select Bullet 1 Land x3p Files button ----
   files1 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 1"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files1)
-  app$set_window_size(width = 1139, height = 674)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 3
   
   # Name Bullet 1 ----
   app$set_inputs(bul_x3p_name = "Bullet 1")
   app$click("add_to_list_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 3
+  app$expect_values(export = TRUE, input = inputs)  # 4
   
   # Select Bullet 2 Land x3p Files button ----
   files2 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files2)
-  app$set_window_size(width = 1139, height = 674)
+  app$wait_for_idle()
+  app$expect_values(export = TRUE, input = inputs)  # 5
 
   # Name Bullet 2 ----
   app$set_inputs(bul_x3p_name = "Bullet 2")
   app$click("add_to_list_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 4
+  app$expect_values(export = TRUE, input = inputs)  # 6
   
   # Compare Bullets (Upload Bullet tab) ----
   # Finds and displays "optimal" crosscuts on Comparison Report tab
@@ -49,42 +51,40 @@ test_that("{shinytest2} recording: pipeline", {
   app$wait_for_value(input = "cc_bulsel")
   app$set_inputs(cc_bulsel = "Bullet 1")
   app$wait_for_idle()
-  app$set_window_size(width = 1139, height = 674)
-  app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 5
+  app$expect_values(export = TRUE, input = inputs)  # 7
   
   # Change Bullet 1 Land 4 Crosscut Location ----
   app$set_inputs(CCsl4 = 507)
   app$click("saveCC")
   app$wait_for_idle()
-  app$set_window_size(width = 1139, height = 674)
-  app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 6
+  app$expect_values(export = TRUE, input = inputs)  # 8
   
   app$set_inputs(cc_bulsel = "Bullet 2")
   app$set_inputs(CCsl1 = 396)
   app$click("saveCC")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 7
+  app$expect_values(export = TRUE, input = inputs)  # 9
 
   # Click Compare Bullets ----
   app$click("doprocessCC")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 8
+  app$expect_values(export = TRUE, input = inputs)  # 10
 
   # Adjust left and right grooves of Bullet 1 Land 1 ----
   app$set_inputs(grooveL = 278)
+  app$wait_for_value(output = "grooveSlidersUI")
   app$set_inputs(grooveR = 2230)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 10
+  app$expect_values(export = TRUE, input = inputs)  # 11
   
   # Adjust left and right grooves of Bullet 1 Land 4 ----
   app$set_inputs(groove_landsel = "4")
   app$set_inputs(grooveL = 224)
+  app$wait_for_value(output = "grooveSlidersUI")
   app$set_inputs(grooveR = 2149)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs) # 12
@@ -92,25 +92,27 @@ test_that("{shinytest2} recording: pipeline", {
   # Adjust left and right grooves of Bullet 2 Land 1 and save ----
   app$set_inputs(groove_bulsel = "Bullet 2")
   app$set_inputs(grooveL = 212)
+  app$wait_for_value(output = "grooveSlidersUI")
   app$set_inputs(grooveR = 2020)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 14
+  app$expect_values(export = TRUE, input = inputs)  # 13
   
   # Adjust left and right grooves of Bullet 2 Land 5 and save ----
   app$set_inputs(groove_bulsel = "Bullet 2")
   app$set_inputs(groove_landsel = "5")
   app$set_inputs(grooveL = 235)
+  app$wait_for_value(output = "grooveSlidersUI")
   app$set_inputs(grooveR = 1991)
-  app$wait_for_idle()
+  app$wait_for_value(output = "grooveSlidersUI")
   app$click("save_grooves_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 16
+  app$expect_values(export = TRUE, input = inputs)  # 14
   
   # Click Next Step on grooves page ----
   app$click("grooves_next_button")
   app$wait_for_idle()
-  app$expect_values(export = TRUE, input = inputs)  # 17
+  app$expect_values(export = TRUE, input = inputs)  # 15
   
 })

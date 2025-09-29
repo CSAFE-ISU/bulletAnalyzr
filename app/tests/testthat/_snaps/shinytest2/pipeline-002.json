@@ -10,9 +10,8 @@
     "allbull_export": {
 
     },
-    "cbull_export": {
-
-    },
+    "cbull_export": null,
+    "cbull_name_export": null,
     "comparison_export": null,
     "phase_test_export": null,
     "postCC_export": null,

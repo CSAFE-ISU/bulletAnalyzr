@@ -43,11 +43,7 @@ downsample_bullet <- function(allbull, cbull, show_alert, session) {
   return(list(allbull = allbull, cbull = cbull, show_alert = show_alert))
 }
 
-preprocess_bullet <- function(allbull, temp_dir, show_alert, progress, session) {
-  
-  # Read bullet from temp directory
-  progress$set(message = "Reading Bullet", value = .25)
-  cbull <- read_bullet(temp_dir)
+preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   
   # Rotate bullet (optional)
   rotate_results <- rotate_bullet(

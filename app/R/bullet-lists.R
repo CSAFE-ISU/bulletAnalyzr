@@ -1,10 +1,6 @@
-add_cbull_to_allbull <- function(cbull, bul_x3p_name, allbull) {
+add_cbull_to_allbull <- function(cbull, cbull_name, allbull) {
   # If current bullet is already in allbull, remove it
-  allbull <- allbull[!(allbull$bullet %in% bul_x3p_name),]
-  
-  # Add bullet and land columns to current bullet
-  cbull$bullet <- bul_x3p_name
-  cbull$land <- factor(cbull$land_names, levels = cbull$land_names)
+  allbull <- allbull[!(allbull$bullet %in% cbull_name),]
   
   return(rbind(allbull, cbull))
 }
