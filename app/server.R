@@ -29,6 +29,7 @@ theme_update(
   plot.title = element_text(size = 22, face = "bold")
 )
 interactive_cc = TRUE
+sample_m = 10
 
 # Helper Functions
 source("R/bullet-lists.R")
@@ -172,7 +173,7 @@ server <- function(input, output, session) {
           render_land(
             x3p = cbull$x3p[[cidx]], 
             ccut = NULL,
-            sample_m = 5,
+            sample_m = sample_m,
             rotate = TRUE,
             img_size = 500,
             img_zoom = 0.4
@@ -315,7 +316,7 @@ server <- function(input, output, session) {
           render_land(
             x3p = bull$x3p[[cidx]], 
             ccut = NULL,
-            sample_m = 5,
+            sample_m = sample_m,
             rotate = TRUE,
             img_size = 500,
             img_zoom = 0.4
@@ -391,7 +392,7 @@ server <- function(input, output, session) {
             x3p = bullets$x3p[[cidx]],
             ccut = input[[paste0("CCsl", cidx)]],
             rotate = TRUE,
-            sample_m = 5,
+            sample_m = sample_m,
             img_size = 500,
             img_zoom = 0.4
           )
