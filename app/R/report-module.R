@@ -24,45 +24,6 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       req(comp_bul1())
       req(comp_bul2())
       
-      htmltools::tagList(
-        # Phase test results ----
-        fluidRow(
-          column(12, "SUMMARY OF RESULTS", align = "left", class = "h3"), 
-          column(12, "Phase Test", align = "left", class = "h3"), 
-          column(12, textOutput(session$ns("bull_comp_score")), align = "left", class = "h4"), 
-          column(12, textOutput(session$ns("bull_comp_test")), align = "left", class = "h4"),
-          hr(),
-        ),
-        br(),
-        fluidRow(
-          # Bullet score matrix ----
-          column(6, plotOutput(session$ns("bull_comp"))),
-          # Land score matrix ----
-          column(6, plotOutput(session$ns("land_comp"))),
-          # Score matrices help text ----
-          column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class = "body"))
-        ),
-        br(),
-        br(),
-        # Crosscut plots ----
-        fluidRow(column(12, plotOutput(session$ns("land_visCC")), align = "center")),
-        br(),
-        br(),
-        # Signal plots ----
-        fluidRow(column(12, plotOutput(session$ns("land_visSig")), align = "center")),
-        br()
-      )
-    })
-
-    # OUTPUT UI - Report comparison panels ----
-    output$report_panels <- renderUI({
-      req(bullet_data)
-      req(bullet_data$stage == "report")
-      req(is.null(bullet_data$preCC))
-      req(bullet_data$comparison)
-      req(comp_bul1())
-      req(comp_bul2())
-      
       progress <- shiny::Progress$new(); on.exit(progress$close())
       
       # Render crosscut snapshots ----
@@ -187,8 +148,36 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       # Collapsible UI Panels ---------------------------------------------------
       LandComp <- do.call(bsCollapse, args = c(id = "collapseExample", multiple = TRUE, bsCollapsePanelList))
       
-      # Return Full Collapsible Report
-      return(LandComp$children)
+      htmltools::tagList(
+        # Phase test results ----
+        fluidRow(
+          column(12, "SUMMARY OF RESULTS", align = "left", class = "h3"), 
+          column(12, "Phase Test", align = "left", class = "h3"), 
+          column(12, textOutput(session$ns("bull_comp_score")), align = "left", class = "h4"), 
+          column(12, textOutput(session$ns("bull_comp_test")), align = "left", class = "h4"),
+          hr(),
+        ),
+        br(),
+        fluidRow(
+          # Bullet score matrix ----
+          column(6, plotOutput(session$ns("bull_comp"))),
+          # Land score matrix ----
+          column(6, plotOutput(session$ns("land_comp"))),
+          # Score matrices help text ----
+          column(12, tags$p("Higher scores indicate more similarity. The thick frames indicate the selected bullet comparison (left) and the land comparisons of the best phase (right).", class = "body"))
+        ),
+        br(),
+        br(),
+        # Crosscut plots ----
+        fluidRow(column(12, plotOutput(session$ns("land_visCC")), align = "center")),
+        br(),
+        br(),
+        # Signal plots ----
+        fluidRow(column(12, plotOutput(session$ns("land_visSig")), align = "center")),
+        br(),
+        br(),
+        LandComp$children
+      )
     })
     
     # OUTPUT UI - Report Download sidebar ----
