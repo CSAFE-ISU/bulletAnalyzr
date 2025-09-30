@@ -89,7 +89,7 @@ server <- function(input, output, session) {
   
   # BUTTON - Begin Button
   observeEvent(input$begin_button, {
-    bulldata$stage <- "upload"
+    bulldata$stage <- c("upload")
     updateTabsetPanel(session, "prevreport", selected = "Upload Bullet")
   })
   
@@ -98,7 +98,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Upload Land x3p Files Button
   output$bul_x3pui <- renderUI({
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     
     # Button - Bullet Land x3p Files
     fileInput("upload_button", "Select Bullet Land x3p files", accept = ".x3p", multiple = TRUE)
@@ -107,7 +107,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Bullet Land x3p Files Button
   # Preprocess uploaded x3p files and push to cbull
   observeEvent(input$upload_button, {
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     
     disable("add_to_list_button")
     
@@ -147,7 +147,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Display Lands on Upload Tab
   output$lpupload <- renderUI({
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     req(isTruthy(bulldata$cbull) || isTruthy(bulldata$cbull_name))
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -199,7 +199,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Add Bullet to Comparison List button
   # Push current bullet data to all bullet data object
   observeEvent(input$add_to_list_button, {
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     req(bulldata$cbull)
     
     # Add bullet and land columns to current bullet
@@ -225,7 +225,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Select Bullets to Compare Checkbox
   output$bullSelCheckboxUI <- renderUI({
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     req(nrow(bulldata$allbull) > 0)
     
     # Store allbull
@@ -243,7 +243,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Compare Bullets button (Upload Bullet Tab) - Get default
   # crosscuts before starting interactivity
   observeEvent(input$doprocess, {
-    req(bulldata$stage == "upload")
+    req(is_upload(bulldata$stage))
     req(length(input$bull_sel_checkbox) > 0)
     
     values$show_alert <- FALSE
@@ -266,7 +266,7 @@ server <- function(input, output, session) {
     bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
     
     # Switch to Comparison Report tab panel
-    bulldata$stage <- "crosscut"
+    bulldata$stage <- c("upload", "crosscut")
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
   })
   
@@ -338,7 +338,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Crosscut Select Bullet Drop-down
   output$CCBull1 <- renderUI({
-    req(bulldata$stage == "crosscut")
+    req(is_crosscut(bulldata$stage))
     req(bulldata$preCC)
     
     # DROP-DOWN - Select Bullet
@@ -348,7 +348,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Crosscut Sliders, Finalize Button, and Compare Button
   output$CCBull2 <- renderUI({
-    req(bulldata$stage == "crosscut")
+    req(is_crosscut(bulldata$stage))
     req(bulldata$preCC)
     req(input$cc_bulsel)
     
@@ -372,7 +372,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Display Lands with Crosscuts
   output$CCBullLand <- 	renderUI({
-    req(bulldata$stage == "crosscut")
+    req(is_crosscut(bulldata$stage))
     req(bulldata$preCC)
     req(input$cc_bulsel)
     
@@ -411,7 +411,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Finalize Crosscut button
   # Update crosscut location in data frame with current crosscut slider values
   observeEvent(input$saveCC,{
-    req(bulldata$stage == "crosscut")
+    req(is_crosscut(bulldata$stage))
     req(bulldata$preCC)
     
     bullets <- bulldata$preCC
@@ -431,7 +431,7 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Compare Bullets Button
   # Push preCC to postCC and change stage to "grooves"
   observeEvent(input$doprocessCC,{
-    req(bulldata$stage == "crosscut")
+    req(is_crosscut(bulldata$stage))
     req(bulldata$preCC)
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -450,7 +450,7 @@ server <- function(input, output, session) {
     bulldata$preCC <- NULL
     bulldata$preCC_export <- NULL
     
-    bulldata$stage <- "groove"
+    bulldata$stage <- c("upload", "crosscut", "groove")
   })
   
   
@@ -458,7 +458,7 @@ server <- function(input, output, session) {
   
   # REACTIVE - Filtered profile for grooves interactivity
   profile_df <- reactive({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
@@ -473,7 +473,7 @@ server <- function(input, output, session) {
   
   # OBSERVE EVENT - Save Grooves
   observeEvent(input$save_grooves_button, {
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
@@ -495,7 +495,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Groove Select Bullet Drop-down
   output$grooveBullSelUI <- renderUI({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     
     # DROP-DOWN - Select Bullet
@@ -505,7 +505,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Land Select Bullet Drop-down
   output$grooveLandSelUI <- renderUI({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     
     # DROP-DOWN - Select Land
@@ -515,7 +515,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Groove Sliders
   output$grooveSlidersUI <- renderUI({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
@@ -550,7 +550,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Save Grooves and Next Step Buttons
   output$groovesButtonsUI <- renderUI({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
@@ -569,7 +569,7 @@ server <- function(input, output, session) {
   
   # PLOT OUTPUT - Render profiles with grooves
   output$profile_plot <- renderPlot({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     req(input$groove_landsel)
@@ -587,7 +587,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Display Crosscut (Profiles) with Grooves
   output$groovePlotsUI <- 	renderUI({
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(input$groove_bulsel)
     
@@ -597,11 +597,11 @@ server <- function(input, output, session) {
   # OBSERVE EVENT - Next Step
   # Get signal, features, and random forest score, and bullet scores
   observeEvent(input$grooves_next_button, {
-    req(bulldata$stage == "groove")
+    req(is_groove(bulldata$stage, strict = TRUE))
     req(bulldata$postCC)
     req(bulldata$postCC$grooves)
     
-    bulldata$stage = "report"
+    bulldata$stage = c("upload", "crosscut", "groove", "report")
     updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
     
     progress <- shiny::Progress$new(); on.exit(progress$close())
@@ -656,7 +656,7 @@ server <- function(input, output, session) {
   
   # OUTPUT UI - Report Comparison sidebar
   output$reportSelUI <- renderUI({
-    req(bulldata$stage == "report")
+    req(is_report(bulldata$stage))
     req(is.null(bulldata$preCC))
     req(bulldata$comparison)
     
@@ -682,7 +682,7 @@ server <- function(input, output, session) {
   # SECTION: PHASE TEST-----------------------------------------------
   
   observe({
-    req(bulldata$stage == "report")
+    req(is_report(bulldata$stage))
     req(bulldata$comparison)
     req(bulldata$comparison$bullet_scores)
     req(input$comp_bul1)
