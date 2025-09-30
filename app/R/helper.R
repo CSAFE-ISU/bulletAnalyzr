@@ -79,6 +79,36 @@ identify_bullet <- function(words) {
   make.names(paste(samelist[[1]], collapse="")) # delete all forbidden characters
 }
 
+is_crosscut <- function(stages, strict = FALSE) {
+  return(is_stage(current = "crosscut", stages = stages, strict = strict))
+}
+
+is_groove <- function(stages, strict = FALSE) {
+  return(is_stage(current = "groove", stages = stages, strict = strict))
+}
+
+is_report <- function(stages, strict = FALSE) {
+  return(is_stage(current = "report", stages = stages, strict = strict))
+}
+
+is_stage <- function(current, stages, strict = FALSE) {
+
+  if (current %in% stages) {
+    if (strict && (current != stages[length(stages)])) {
+      return(FALSE)
+    } else {
+      return(TRUE)
+    }
+  } else {
+    return(FALSE)
+  }
+  
+}
+
+is_upload <- function(stages, strict = FALSE) {
+  return(is_stage(current = "upload", stages = stages, strict = strict))
+}
+
 make_export_df <- function(df) {
   # Modify data frame for export for testing. Drop the x3p column because it
   # makes the snapshots 100+ MB. Change source column from filepath to filename
