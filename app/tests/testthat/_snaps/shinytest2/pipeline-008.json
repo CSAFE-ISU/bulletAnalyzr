@@ -255,6 +255,9 @@
       ]
     },
     "show_alert_export": false,
-    "stage_export": "crosscut"
+    "stage_export": [
+      "upload",
+      "crosscut"
+    ]
   }
 }
