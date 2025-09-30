@@ -73,7 +73,7 @@ preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   
   # Get names
   cbull$filename <- basename(cbull$source)
-  cbull$land_names <- identify_lands(cbull$filename)
+  cbull$land_names <- as.character(1:nrow(cbull))
   cbull$bullet_name <- identify_bullet(cbull$filename)
   
   return(list(allbull = allbull, cbull = cbull))
