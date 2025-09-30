@@ -301,7 +301,7 @@ server <- function(input, output, session) {
     temp_refresh <- input$prevreport
     
     # Get selected bullet
-    bull <- fiter_preview_bullet(
+    bull <- filter_preview_bullet(
       allbull = bulldata$allbull,
       preview_bull_name = input$prev_bul
     )
