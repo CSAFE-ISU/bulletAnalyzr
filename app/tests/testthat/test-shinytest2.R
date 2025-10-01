@@ -91,6 +91,7 @@ test_that("{shinytest2} recording: pipeline", {
   
   # Adjust left and right grooves of Bullet 2 Land 1 and save ----
   app$set_inputs(groove_bulsel = "Bullet 2")
+  app$set_inputs(groove_landsel = "1")
   app$set_inputs(grooveL = 212)
   app$wait_for_value(output = "grooveSlidersUI")
   app$set_inputs(grooveR = 2020)
@@ -100,7 +101,6 @@ test_that("{shinytest2} recording: pipeline", {
   app$expect_values(export = TRUE, input = inputs)  # 13
   
   # Adjust left and right grooves of Bullet 2 Land 5 and save ----
-  app$set_inputs(groove_bulsel = "Bullet 2")
   app$set_inputs(groove_landsel = "5")
   app$set_inputs(grooveL = 235)
   app$wait_for_value(output = "grooveSlidersUI")

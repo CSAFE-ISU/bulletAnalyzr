@@ -446,6 +446,11 @@ server <- function(input, output, session) {
     bulldata$postCC <- bullets
     bulldata$postCC_export <- make_export_df(bullets)
     
+    # Push unique bullet and land names to reactive values for grooves drop-down
+    # menus
+    grooves$bullets <- unique(bulldata$postCC$bullet)
+    grooves$lands <- unique(bulldata$postCC$land)
+    
     # Reset preCC to NULL
     bulldata$preCC <- NULL
     bulldata$preCC_export <- NULL
@@ -470,6 +475,12 @@ server <- function(input, output, session) {
     ) %>% 
       tidyr::unnest(ccdata)
   })
+  
+  # REACTIVE VALUES - Store unique bullet and land names for drop-down menus
+  grooves <- reactiveValues(
+    bullets = NULL,
+    lands = NULL
+  )
   
   # OBSERVE EVENT - Save Grooves
   observeEvent(input$save_grooves_button, {
@@ -496,21 +507,31 @@ server <- function(input, output, session) {
   # OUTPUT UI - Groove Select Bullet Drop-down
   output$grooveBullSelUI <- renderUI({
     req(is_groove(bulldata$stage, strict = TRUE))
-    req(bulldata$postCC)
+    req(grooves$bullets)
     
     # DROP-DOWN - Select Bullet
-    bullets <- bulldata$postCC
-    selectInput("groove_bulsel", "Select Bullet", choices = unique(bullets$bullet), selected = NULL, multiple = FALSE)
+    selectInput(
+      "groove_bulsel", 
+      "Select Bullet", 
+      choices = grooves$bullets, 
+      selected = NULL, 
+      multiple = FALSE
+    )
   })
   
   # OUTPUT UI - Land Select Bullet Drop-down
   output$grooveLandSelUI <- renderUI({
     req(is_groove(bulldata$stage, strict = TRUE))
-    req(bulldata$postCC)
+    req(grooves$bullets)
     
     # DROP-DOWN - Select Land
-    bullets <- bulldata$postCC
-    selectInput("groove_landsel", "Select Land", choices = unique(bullets$land), selected = NULL, multiple = FALSE)
+    selectInput(
+      "groove_landsel", 
+      "Select Land", 
+      choices = grooves$lands, 
+      selected = NULL, 
+      multiple = FALSE
+    )
   })
   
   # OUTPUT UI - Groove Sliders
