@@ -42,7 +42,17 @@ get_ccdata_wrapper <- function(postCC, progress = NULL) {
 }
 
 get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)) {
+  
   bullets$crosscut <- sapply(bullets$x3p, x3p_crosscut_optimize, ylimits = ylimits)
+  
+  # Check for NA values
+  na_idx <- is.na(bullets$crosscut)
+  if (any(na_idx)) {
+    bullet_land <- paste("Bullet", bullets$bullet, "Land", bullets$land)
+    
+    stop(paste("x3p_crosscut_optimize could not find a stable region in land:", 
+            paste(bullet_land[na_idx], collapse = ", ")))
+  }
   
   # Store bullets as preCC or postCC ----
   if(interactive_cc) {
