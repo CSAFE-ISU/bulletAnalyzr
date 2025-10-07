@@ -7,11 +7,35 @@
 
 <!-- badges: end -->
 
+## Overview
+
 BulletAnalyzr is an innovative tool that integrates advanced 3D imaging
 technology with sophisticated algorithms to revolutionize bullet
-analysis in forensics.
+analysis in forensics. The application streamlines the process of
+comparing fired bullets to determine whether they were fired from the
+same firearm. Using high-resolution surface scans, the application
+automates key steps in bullet comparison while providing forensic
+examiners with intuitive controls to review and adjust the analysis.
+
+## Key Features
+
+- **Interactive Visualization** - View 3D renderings of bullet surfaces
+  (x3p format) and examine crosscut profiles with adjustable parameters
+- **Automated 3D Analysis** - Processes bullet surface scans,
+  automatically identifies crosscut locations, and detects groove
+  boundaries
+- **Manual Refinement Controls** - Fine-tune automated decisions using
+  intuitive sliders at each step of the analysis
+- **Comprehensive Reporting** - Generate and export detailed comparison
+  reports in a professional, shareable format
+
+BulletAnalyzr bridges the gap between sophisticated algorithmic analysis
+and practical forensic workflows, making advanced bullet comparison
+techniques easily accessible to examiners.
 
 ## Installation
+
+***Total estimated time:** 1-2 hours*
 
 **Install R** from <https://cran.r-project.org/>
 
@@ -50,11 +74,21 @@ for (pkg in github_packages) {
 
 ## Walkthrough
 
+***Total estimated time:** 15-20 minutes*
+
+| Step             | Estimated Time |
+|------------------|----------------|
+| Launch app       | ~1 minute      |
+| Upload bullets   | 1-2 minutes    |
+| Adjust crosscuts | 3-5 minutes    |
+| Adjust grooves   | 3-5 minutes    |
+| View results     | 5-10 minutes   |
+
 The app includes 3d scans from the Hamby-Brundage bullet set \#44
 provided by CSAFE so you can practice the workflow. Here’s a
 step-by-step example:
 
-### Launch the app
+### Launch the app (~1 minute)
 
 - Open RStudio
 
@@ -66,7 +100,13 @@ step-by-step example:
   - Select the RStudio project File named rstudio.Rproj
 
 - In the bottom-right panel of RStudio, navigate to the app folder
-  ![](www/readme-app-folder.png)
+
+  <p align="center">
+
+  <img src="www/readme-app-folder.png" alt="App folder"> <br>
+  <em>Navigate to the app folder and double-click to open.</em>
+
+  </p>
 
 - Open the server.R file
 
@@ -78,7 +118,7 @@ step-by-step example:
 
   ![](www/readme-welcome.png)
 
-### Upload the bullets
+### Upload the bullets (1-2 minutes)
 
 - Upload the first bullet.
   - Click Browse and navigate to:
@@ -91,7 +131,7 @@ step-by-step example:
   - Repeat the same process for the Bullet 2 images:
     bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 2.
 
-### Adjust the crosscut location
+### Adjust the crosscut location (3-5 minutes)
 
 BulletAnalyzr attempts to identify suitable crosscut locations. The
 crosscuts are displayed as light grey lines on the lands.
@@ -106,7 +146,7 @@ crosscuts are displayed as light grey lines on the lands.
   - Click Finalize Crosscut when satisfied.
 - When both bullets are ready, click Compare Bullets.
 
-### Adjust the groove placements
+### Adjust the groove placements (3-5 minutes)
 
 In order to capture the full land, the scans also contain parts of the
 grooves. BulletAnalyzr needs to remove the grooves before further
@@ -125,9 +165,29 @@ profile, but manual adjustment is sometimes required.
 - Repeat for all lands on both bullets.
 - Once grooves are defined, click Next Step.
 
-### Comparison results report
+### Comparison results report (5-10 minutes)
 
 - The output page will display the comparison results.
 - Each section at the bottom can be expanded to show more detailed
   information.
 - Click Download Report to download a copy of the report.
+
+## License
+
+BulletAnalyzr is released under the GPL-3 license, allowing free use,
+modification, and distribution of the software.
+
+## Citation
+
+If you use BulletAnalyzr in your work, please cite the following
+publications:
+
+Eric Hare, Heike Hofmann, Alicia Carriquiry. Algorithmic approaches to
+match degraded land impressions, *Law, Probability and Risk*, Volume 16,
+Issue 4, December 2017, Pages 203–221,
+<https://doi.org/10.1093/lpr/mgx018>
+
+Eric Hare, Heike Hofmann and Alicia Carriquiry. Automatic Matching of
+Bullet Land Impressions, *The Annals of Applied Statistics*, Volume 11,
+Number 4, 2017, pp. 2332–56. JSTOR,
+<http://www.jstor.org/stable/26362188>.
