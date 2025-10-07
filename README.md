@@ -28,6 +28,7 @@ examiners with intuitive controls to review and adjust the analysis.
   intuitive sliders at each step of the analysis
 - **Comprehensive Reporting** - Generate and export detailed comparison
   reports in a professional, shareable format
+- **Free and Open-Source** - BulletAnalyzr is open-source and free to use.
 
 BulletAnalyzr bridges the gap between sophisticated algorithmic analysis
 and practical forensic workflows, making advanced bullet comparison
@@ -37,25 +38,25 @@ techniques easily accessible to examiners.
 
 ***Total estimated time:** 1-2 hours*
 
-**Install R** from <https://cran.r-project.org/>
+**Install R** from <https://cran.r-project.org/>.
 
-**Install RStudio** from <https://posit.co/download/rstudio-desktop/>
+**Install RStudio** from <https://posit.co/download/rstudio-desktop/>.
 
-**Download bulletAnalyzr**
+**Download bulletAnalyzr**.
 
-- Go to <https://github.com/CSAFE-ISU/bulletAnalyzr>
-- Click the green Code button and select Download Zip
+- Go to the GitHub page for BulletAnalyzr: <https://github.com/CSAFE-ISU/bulletAnalyzr>.
+- Click the green Code button and select Download Zip.
   <p align="center">
     <img src="www/readme-download-bulletanalyzr.png" alt="Green code button" width="50%">
     <br>
-    <em>Click the green Code button and select Download Zip.</em>
+    <em>Fig. 1. Click the green Code button and select Download Zip.</em>
   </p>
 - Double-click on the downloaded file to unzip it. You may save the
-  unzipped folder anywhere on your computer
+  unzipped folder anywhere on your computer. By default, the unzipped folder will be named "bulletAnalyzr-main". You may rename the folder.
 
 **Install R packages**
 
-- Open RStudio
+- Open RStudio.
 - Install packages from the Comprehensive R Archive Network (CRAN) and
   GitHub by copying and pasting the following lines of code into the
   console.
@@ -94,28 +95,29 @@ step-by-step example:
 
 ### Launch the app (~1 minute)
 
-- Open RStudio
-- Open the BulletAnalyzr R project
-  - Click Open Project in the top-right corner
-  - Select the bulletAnalyzer-main folder that you unzipped during
-    installation
-  - Select the RStudio project File named rstudio.Rproj
+- Open RStudio.
+- Open the BulletAnalyzr R project.
+  - Click Open Project in the top-right corner.
+  - Select the bulletAnalyzer folder that you unzipped during
+    installation.
+  - Select the RStudio project File named rstudio.Rproj.
 - In the bottom-right panel of RStudio, navigate to the Files tab and
-  double-click the app folder to open it
+  double-click the app folder to open it.
   <p align="center">
     <img src="www/readme-app-folder.png" alt="App folder" width="50%">
     <br> 
-    <em>Navigate to the app folder and double-click to open.</em>
+    <em>Open the app folder on the Files tab in RStudio.</em>
   </p>
-- Open the server.R file
-- Click Run App
+- Click the server.R file to open it in RStudio's main window.
+- Click Run App in the main window to launch the app.
   <p align="center">
     <img src="www/readme-run-app.png" alt="App folder" width="50%"> 
     <br>
-    <em>Navigate to the app folder and double-click to open.</em>
+    <em>Click Run App to launch the app.</em>
   </p>
-- The start page will appear
-- Click Begin
+- Alternatively, you can launch the app by typing `r shiny::runApp("app")` in the console. The server.R file does not need to be opened first in this case.
+- The start page will appear.
+- Click Begin.
   <p align="center">
     <img src="www/readme-welcome.png" alt="Begin button" width="50%">
     <br>
@@ -126,7 +128,7 @@ step-by-step example:
 
 - Upload the first bullet.
   - Click Browse and navigate to:
-    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 1
+    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 1.
   - Select all 6 files in this folder. Each x3p file is an image of a
     bullet land engraved area.
   - Give the bullet a name (e.g., Bullet 1).
@@ -140,11 +142,11 @@ step-by-step example:
 BulletAnalyzr attempts to identify suitable crosscut locations. The
 crosscuts are displayed as light grey lines on the lands.
 
-- Adjust the crosscuts for Bullet 1
-  - Select Bullet 1 from the drop-down menu if it isn’t already selected
+- Adjust the crosscuts for Bullet 1.
+  - Select Bullet 1 from the drop-down menu if it isn’t already selected.
   - Use the sliders to adjust the crosscuts if needed.
   - Click Finalize Crosscut when satisfied.
-- Adjust the crosscuts for Bullet 2
+- Adjust the crosscuts for Bullet 2.
   - Select Bullet 2 from the drop-down menu.
   - Use the sliders to adjust the crosscuts if needed.
   - Click Finalize Crosscut when satisfied.
