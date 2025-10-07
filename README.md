@@ -46,9 +46,9 @@ techniques easily accessible to examiners.
 - Go to <https://github.com/CSAFE-ISU/bulletAnalyzr>
 - Click the green Code button and select Download Zip
   <p align="center">
-
-  <img src="www/readme-download-bulletanalyzr.png" alt="Green code button" width="50%">
-  <br> <em>Click the green Code button and select Download Zip.</em>
+    <img src="www/readme-download-bulletanalyzr.png" alt="Green code button" width="50%">
+    <br>
+    <em>Click the green Code button and select Download Zip.</em>
   </p>
 - Double-click on the downloaded file to unzip it. You may save the
   unzipped folder anywhere on your computer
@@ -103,23 +103,23 @@ step-by-step example:
 - In the bottom-right panel of RStudio, navigate to the Files tab and
   double-click the app folder to open it
   <p align="center">
-
-  <img src="www/readme-app-folder.png" alt="App folder" width="50%">
-  <br> <em>Navigate to the app folder and double-click to open.</em>
+    <img src="www/readme-app-folder.png" alt="App folder" width="50%">
+    <br> 
+    <em>Navigate to the app folder and double-click to open.</em>
   </p>
 - Open the server.R file
 - Click Run App
   <p align="center">
-
-  <img src="www/readme-run-app.png" alt="Run app" width="50%"> <br>
-  <em>Click Run App to launch the app.</em>
+    <img src="www/readme-run-app.png" alt="App folder" width="50%"> 
+    <br>
+    <em>Navigate to the app folder and double-click to open.</em>
   </p>
 - The start page will appear
 - Click Begin
   <p align="center">
-
-  <img src="www/readme-welcome.png" alt="Begin button" width="80%"> <br>
-  <em>Click the Begin button.</em>
+    <img src="www/readme-welcome.png" alt="Begin button" width="50%">
+    <br>
+    <em>Click the Begin button.</em>
   </p>
 
 ### Upload the bullets (1-2 minutes)
@@ -164,17 +164,17 @@ profile, but manual adjustment is sometimes required.
     groove line and everything to the right of the right groove line
     will be discarded.
     <p align="center">
-
-    <img src="www/readme-grooves1.png" alt="Groove locations" width="50%">
-    <br> <em>The vertical red lines on the crosscut profile plot
+      <img src="www/readme-grooves1.png" alt="Groove locations" width="50%">
+      <br>
+      <em>The vertical red lines on the crosscut profile plot
     indicate the left and right groove locations.</em>
     </p>
   - Adjust the groove locations using the slider bars to keep as much of
     the land as possible.  
     <p align="center">
-
-    <img src="www/readme-grooves2.png" alt="Adjust groove locations" width="50%">
-    <br> <em>Adjust the left and right groove locations if needed.</em>
+      <img src="www/readme-grooves2.png" alt="Adjust groove locations" width="50%">
+      <br>
+      <em>Adjust the left and right groove locations if needed.</em>
     </p>
   - Click Save Grooves when satisfied.
 - Repeat for all lands on both bullets.
