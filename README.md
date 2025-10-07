@@ -4,83 +4,130 @@
 # bulletAnalyzr
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-[pdf of Flier](bulletAnalyzr-flier.pdf)
+BulletAnalyzr is an innovative tool that integrates advanced 3D imaging
+technology with sophisticated algorithms to revolutionize bullet
+analysis in forensics.
 
-## Start the Analyzr
+## Installation
 
-Click on the link to start the app:
-[bulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
+**Install R** from <https://cran.r-project.org/>
+
+**Install RStudio** from <https://posit.co/download/rstudio-desktop/>
+
+**Download bulletAnalyzr**
+
+- Go to <https://github.com/CSAFE-ISU/bulletAnalyzr>
+- Click the green Code button and select Download Zip
+  ![](www/readme-download-bulletanalyzr.png)
+- Double-click on the downloaded file to unzip it. You may save the
+  unzipped folder anywhere on your computer
+
+**Install R packages**
+
+- Open RStudio
+- Install packages from the Comprehensive R Archive Network (CRAN) and
+  GitHub by copying and pasting the following lines of code into the
+  console.
+
+``` r
+# Install packages from CRAN
+cran_packages <- c("bsicons", "bslib", "curl", "devtools", "dplyr", "DT", "ggplot2", "pagedown", 
+                   "randomForest", "rgl", "sessioninfo", "shiny","shinyBS", 
+                   "shinycssloaders", "shinyjs")
+for (pkg in cran_packages) {
+  install.packages(pkg)
+}
+
+# Install packages from GitHub
+github_packages <- c("heike/bulletxtrctr", "heike/x3ptools")
+for (pkg in github_packages) {
+  devtools::install_github(pkg)
+}
+```
 
 ## Walkthrough
 
-1.  Download the zip file for the two [Known Bullets 1 and 2 from Barrel
-    1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip),
-    and unzip the file. This should result in a structure like this:
+The app includes 3d scans from the Hamby-Brundage bullet set \#44
+provided by CSAFE so you can practice the workflow. Here’s a
+step-by-step example:
 
-<!-- -->
+### Launch the app
 
-    -- barrel 1
-    |   |-- Bullet 1
-    |   |   |-- Barrel_1-Bullet_1-Land_1.x3p
-    ... 
-    |   |   |-- Barrel_1-Bullet_1-Land_6.x3p
-    |   |-- Bullet 2
-    |   |   |-- Barrel_1-Bullet_2-Land_1.x3p
-    ... 
-    |   |   |-- Barrel_1-Bullet_2-Land_6.x3p
+- Open RStudio
 
-2.  Click the
-    [bulletAnalyzr](https://labs.omnianalytics.org/bullet-analyzer/)
-    link and `Begin` to start.
+- Open the BulletAnalyzr R project
 
-3.  Click `Browse` and select all 6 scans (you can select multiple files
-    simultaneously) in the `Bullet 1` folder. Click `open` to upload.
+  - Click Open Project in the top-right corner
+  - Select the bulletAnalyzer-main folder that you unzipped during
+    installation
+  - Select the RStudio project File named rstudio.Rproj
 
-4.  Put `Bullet 1` in the `Bullet Name` text box. Select
-    `Add Bullet to Comparison List`.
+- In the bottom-right panel of RStudio, navigate to the app folder
+  ![](www/readme-app-folder.png)
 
-5.  Repeat steps 3 and 4 for `Bullet 2`.
+- Open the server.R file
 
-6.  Click `Compare Bullets` and wait for the result.
+- Click Run App ![](www/readme-run-app.png)
 
-7.  Which Land-To-Land comparison is the best? - Scroll down, click on
-    report lines, and read through.
+- The start page will appear
 
-## Interesting Questions
+- Click Begin
 
-1.  Do the scans from bullets B1 from barrel 1 and [Questioned bullet
-    E](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20E.zip)
-    support an identification?
+  ![](www/readme-welcome.png)
 
-2.  Do the scans from bullets B1 and any of the questioned bullets
-    support an identification?
+### Upload the bullets
 
-## Example Files
+- Upload the first bullet.
+  - Click Browse and navigate to:
+    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 1
+  - Select all 6 files in this folder. Each x3p file is an image of a
+    bullet land engraved area.
+  - Give the bullet a name (e.g., Bullet 1).
+  - Add it to the Comparison List.
+- Upload the second bullet.
+  - Repeat the same process for the Bullet 2 images:
+    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 2.
 
-[Hamby
-44](https://tsapps.nist.gov/NRBTD/Studies/Studies/Details/fc1f7807-f6e2-41c2-abd1-6173d5a99157)
-are publicly available 3d scans of the Hamby-Brundage bullet set \#44
-provided by CSAFE.
+### Adjust the crosscut location
 
-Download:
+BulletAnalyzr attempts to identify suitable crosscut locations. The
+crosscuts are displayed as light grey lines on the lands.
 
-- [Known Bullets 1 and 2 from Barrel
-  1](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/barrel%201.zip)
-- Questioned bullets:
-  [E](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20E.zip),
-  [F](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20F.zip),
-  [G](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20G.zip),
-  [H](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20H.zip),
-  [I](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20I.zip),
-  [J](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20J.zip),
-  [K](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20K.zip),
-  [L](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20L.zip),
-  [O](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20O.zip),
-  [P](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20P.zip),
-  [S](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20S.zip),
-  [T](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20T.zip),
-  [U](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20U.zip),
-  [X](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20X.zip),
-  [Y](https://github.com/CSAFE-ISU/bulletAnalyzr/raw/main/examples/Hamby-44/Questioned//Bullet%20Y.zip)
+- Adjust the crosscuts for Bullet 1
+  - Select Bullet 1 from the drop-down menu if it isn’t already selected
+  - Use the sliders to adjust the crosscuts if needed.
+  - Click Finalize Crosscut when satisfied.
+- Adjust the crosscuts for Bullet 2
+  - Select Bullet 2 from the drop-down menu.
+  - Use the sliders to adjust the crosscuts if needed.
+  - Click Finalize Crosscut when satisfied.
+- When both bullets are ready, click Compare Bullets.
+
+### Adjust the groove placements
+
+In order to capture the full land, the scans also contain parts of the
+grooves. BulletAnalyzr needs to remove the grooves before further
+processing. The app attempts to locate the grooves on the crosscut
+profile, but manual adjustment is sometimes required.
+
+- Adjust the groove on land 1 of Bullet 1.
+  - Select Bullet 1 and Land 1 from the drop-down menus.
+  - The vertical red lines on the crosscut profile plot indicate the
+    left and right groove locations. Everything to the left of the left
+    groove line and everything to the right of the right groove line
+    will be discarded. ![](www/readme-grooves1.png)
+  - Adjust the groove locations using the slider bars to keep as much of
+    the land as possible. ![](www/readme-grooves2.png)
+  - Click Save Grooves when satisfied.
+- Repeat for all lands on both bullets.
+- Once grooves are defined, click Next Step.
+
+### Comparison results report
+
+- The output page will display the comparison results.
+- Each section at the bottom can be expanded to show more detailed
+  information.
+- Click Download Report to download a copy of the report.
