@@ -1,210 +1,121 @@
+# BulletAnalyzr Quick Start Guide
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+## What is BulletAnalyzr?
 
-# bulletAnalyzr
+BulletAnalyzr is a forensic tool that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun. It's **free, open-source**, and currently in **alpha testing** (research and lab testing only - not yet validated for casework).
 
-<!-- badges: start -->
+### Key Features
 
-<!-- badges: end -->
+- Interactive 3D visualization of bullet scans
+- Automated crosscut and groove detection
+- Manual refinement controls with intuitive sliders
+- Comprehensive comparison reports
+- Works with x3p format 3D scans
 
-## Overview
+## Installation (60-80 minutes total)
 
-BulletAnalyzr is an innovative tool that integrates advanced 3D imaging
-technology with sophisticated algorithms to revolutionize bullet
-analysis in forensics. The application streamlines the process of
-comparing fired bullets to determine whether they were fired from the
-same firearm. Using high-resolution surface scans, the application
-automates key steps in bullet comparison while providing forensic
-examiners with intuitive controls to review and adjust the analysis.
+### 1. Install Required Software (20-30 minutes)
 
-## Key Features
+1. Install **R** from https://cran.r-project.org/
+2. Install **RStudio** from https://posit.co/download/rstudio-desktop/
+3. Download **BulletAnalyzr** from https://github.com/CSAFE-ISU/bulletAnalyzr
+   - Click the green "Code" button then "Download ZIP"
+   - Unzip the downloaded file anywhere on your computer
 
-- **Interactive Visualization** - View 3D renderings of bullet surfaces
-  (x3p format) and examine crosscut profiles with adjustable parameters
-- **Automated 3D Analysis** - Processes bullet surface scans,
-  automatically identifies crosscut locations, and detects groove
-  boundaries
-- **Manual Refinement Controls** - Fine-tune automated decisions using
-  intuitive sliders at each step of the analysis
-- **Comprehensive Reporting** - Generate and export detailed comparison
-  reports in a professional, shareable format
-- **Free and Open-Source** - BulletAnalyzr is open-source and free to use.
+### 2. Install R Packages (45-50 minutes)
 
-BulletAnalyzr bridges the gap between sophisticated algorithmic analysis
-and practical forensic workflows, making advanced bullet comparison
-techniques easily accessible to examiners.
+1. Open RStudio
+2. In the Console (after the `>` symbol), paste and run:
 
-## Installation
-
-***Total estimated time:** 1-2 hours*
-
-**Install R** from <https://cran.r-project.org/>.
-
-**Install RStudio** from <https://posit.co/download/rstudio-desktop/>.
-
-**Download bulletAnalyzr**.
-
-- Go to the GitHub page for BulletAnalyzr: <https://github.com/CSAFE-ISU/bulletAnalyzr>.
-- Click the green Code button and select Download Zip.
-  <p align="center">
-    <img src="www/readme-download-bulletanalyzr.png" alt="Green code button" width="50%">
-    <br>
-    <em>Fig. 1. Click the green Code button and select Download Zip.</em>
-  </p>
-- Double-click on the downloaded file to unzip it. You may save the
-  unzipped folder anywhere on your computer. By default, the unzipped folder will be named "bulletAnalyzr-main". You may rename the folder.
-
-**Install R packages**
-
-- Open RStudio.
-- Install packages from the Comprehensive R Archive Network (CRAN) and
-  GitHub by copying and pasting the following lines of code into the
-  console.
-
-``` r
+```r
 # Install packages from CRAN
-cran_packages <- c("bsicons", "bslib", "curl", "devtools", "dplyr", "DT", "ggplot2", "pagedown", 
-                   "randomForest", "rgl", "sessioninfo", "shiny","shinyBS", 
-                   "shinycssloaders", "shinyjs")
+cran_packages <- c("bsicons", "bslib", "curl", "devtools", "dplyr", "DT", 
+                   "ggplot2", "pagedown", "randomForest", "rgl", "sessioninfo", 
+                   "shiny", "shinyBS", "shinycssloaders", "shinyjs")
+
 for (pkg in cran_packages) {
   install.packages(pkg)
 }
 
 # Install packages from GitHub
 github_packages <- c("heike/bulletxtrctr", "heike/x3ptools")
+
 for (pkg in github_packages) {
   devtools::install_github(pkg)
 }
 ```
 
-## Walkthrough
+## Launch BulletAnalyzr
 
-***Total estimated time:** 15-20 minutes*
+1. Navigate to your unzipped `bulletAnalyzr-main` folder
+2. Double-click `rstudio.Rproj` to open the project in RStudio
+3. In RStudio's Files tab, open the `app` folder
+4. Click `server.R` to open it
+5. Click **Run App** in the top-right of the editor
+6. Click **Begin** on the home screen
 
-| Step             | Estimated Time |
-|------------------|----------------|
-| Launch app       | ~1 minute      |
-| Upload bullets   | 1-2 minutes    |
-| Adjust crosscuts | 3-5 minutes    |
-| Adjust grooves   | 3-5 minutes    |
-| View results     | 5-10 minutes   |
+## Basic Workflow (15-20 minutes with example data)
 
-The app includes 3d scans from the Hamby-Brundage bullet set \#44
-provided by CSAFE so you can practice the workflow. Here’s a
-step-by-step example:
+### Step 1: Upload Bullets
 
-### Launch the app (~1 minute)
+1. Click **Browse** and navigate to `bulletAnalyzr-main/examples/Hamby-44/Barrel 1/Bullet 1`
+2. Select all 6 `.x3p` files (each is one land engraved area)
+3. Give the bullet a name (e.g., "Bullet 1")
+4. Click **Add Bullet to Comparison List**
+5. Repeat for Bullet 2 (`bulletAnalyzr-main/examples/Hamby-44/Barrel 1/Bullet 2`)
 
-- Open RStudio.
-- Open the BulletAnalyzr R project.
-  - Click Open Project in the top-right corner.
-  - Select the bulletAnalyzer folder that you unzipped during
-    installation.
-  - Select the RStudio project File named rstudio.Rproj.
-- In the bottom-right panel of RStudio, navigate to the Files tab and
-  double-click the app folder to open it.
-  <p align="center">
-    <img src="www/readme-app-folder.png" alt="App folder" width="50%">
-    <br> 
-    <em>Open the app folder on the Files tab in RStudio.</em>
-  </p>
-- Click the server.R file to open it in RStudio's main window.
-- Click Run App in the main window to launch the app.
-  <p align="center">
-    <img src="www/readme-run-app.png" alt="App folder" width="50%"> 
-    <br>
-    <em>Click Run App to launch the app.</em>
-  </p>
-- Alternatively, you can launch the app by typing `r shiny::runApp("app")` in the console. The server.R file does not need to be opened first in this case.
-- The start page will appear.
-- Click Begin.
-  <p align="center">
-    <img src="www/readme-welcome.png" alt="Begin button" width="50%">
-    <br>
-    <em>Click the Begin button.</em>
-  </p>
+### Step 2: Adjust Crosscut Locations
 
-### Upload the bullets (1-2 minutes)
+Crosscuts appear as light grey lines on the 3D bullet renderings.
 
-- Upload the first bullet.
-  - Click Browse and navigate to:
-    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 1.
-  - Select all 6 files in this folder. Each x3p file is an image of a
-    bullet land engraved area.
-  - Give the bullet a name (e.g., Bullet 1).
-  - Add it to the Comparison List.
-- Upload the second bullet.
-  - Repeat the same process for the Bullet 2 images:
-    bulletAnalyzr-main/examples/Hamby-44/barrel 1/Bullet 2.
+1. Select Bullet 1 from the drop-down
+2. Use sliders to adjust crosscut positions if needed
+3. Click **Finalize Crosscut**
+4. Repeat for Bullet 2
+5. Click **Compare Bullets**
 
-### Adjust the crosscut location (3-5 minutes)
+### Step 3: Adjust Groove Placements
 
-BulletAnalyzr attempts to identify suitable crosscut locations. The
-crosscuts are displayed as light grey lines on the lands.
+Grooves need to be removed before analysis.
 
-- Adjust the crosscuts for Bullet 1.
-  - Select Bullet 1 from the drop-down menu if it isn’t already selected.
-  - Use the sliders to adjust the crosscuts if needed.
-  - Click Finalize Crosscut when satisfied.
-- Adjust the crosscuts for Bullet 2.
-  - Select Bullet 2 from the drop-down menu.
-  - Use the sliders to adjust the crosscuts if needed.
-  - Click Finalize Crosscut when satisfied.
-- When both bullets are ready, click Compare Bullets.
+1. Select Bullet 1 and Land 1 from the drop-downs
+2. Red vertical lines show groove locations on the crosscut profile plot
+3. Adjust sliders to keep as much land as possible while removing grooves
+4. Click **Save Grooves**
+5. Repeat for all lands on both bullets (12 total)
+6. Click **Next Step**
 
-### Adjust the groove placements (3-5 minutes)
+### Step 4: Review Results
 
-In order to capture the full land, the scans also contain parts of the
-grooves. BulletAnalyzr needs to remove the grooves before further
-processing. The app attempts to locate the grooves on the crosscut
-profile, but manual adjustment is sometimes required.
+The report shows:
 
-- Adjust the groove on land 1 of Bullet 1.
-  - Select Bullet 1 and Land 1 from the drop-down menus.
-  - The vertical red lines on the crosscut profile plot indicate the
-    left and right groove locations. Everything to the left of the left
-    groove line and everything to the right of the right groove line
-    will be discarded.
-    <p align="center">
-      <img src="www/readme-grooves1.png" alt="Groove locations" width="50%">
-      <br>
-      <em>The vertical red lines on the crosscut profile plot
-    indicate the left and right groove locations.</em>
-    </p>
-  - Adjust the groove locations using the slider bars to keep as much of
-    the land as possible.  
-    <p align="center">
-      <img src="www/readme-grooves2.png" alt="Adjust groove locations" width="50%">
-      <br>
-      <em>Adjust the left and right groove locations if needed.</em>
-    </p>
-  - Click Save Grooves when satisfied.
-- Repeat for all lands on both bullets.
-- Once grooves are defined, click Next Step.
+- **Phase test score** and **probability of false identification** (top)
+- **Bullet-to-bullet score matrix** (0 = no similarity, 1 = perfect match)
+- **Land-to-land score matrix** showing individual land comparisons
+- Profile plots and signal plots for each land
+- Detailed feature comparisons for top matches
 
-### Comparison results report (5-10 minutes)
+Click **Download Report** to save a copy.
 
-- The output page will display the comparison results.
-- Each section at the bottom can be expanded to show more detailed
-  information.
-- Click Download Report to download a copy of the report.
+## Important Usage Notes
 
-## License
+⚠️ **Not for casework**: BulletAnalyzr is in alpha testing and has not been validated for use in casework or court testimony. Use only for:
 
-BulletAnalyzr is released under the GPL-3 license, allowing free use,
-modification, and distribution of the software.
+- Research purposes
+- Internal lab testing and evaluation
 
 ## Citation
 
-If you use BulletAnalyzr in your work, please cite the following
-publications:
+If you use BulletAnalyzr in research, please cite:
 
-Eric Hare, Heike Hofmann, Alicia Carriquiry. Algorithmic approaches to
-match degraded land impressions, *Law, Probability and Risk*, Volume 16,
-Issue 4, December 2017, Pages 203–221,
-<https://doi.org/10.1093/lpr/mgx018>
+> Eric Hare, Heike Hofmann, Alicia Carriquiry. "Algorithmic approaches to match degraded land impressions." *Law, Probability and Risk*, Volume 16, Issue 4, December 2017, Pages 203-221. https://doi.org/10.1093/lpr/mgx018
 
-Eric Hare, Heike Hofmann and Alicia Carriquiry. Automatic Matching of
-Bullet Land Impressions, *The Annals of Applied Statistics*, Volume 11,
-Number 4, 2017, pp. 2332–56. JSTOR,
-<http://www.jstor.org/stable/26362188>.
+> Eric Hare, Heike Hofmann, and Alicia Carriquiry. "Automatic Matching of Bullet Land Impressions." *The Annals of Applied Statistics*, Volume 11, Number 4, 2017, pp. 2332-56. http://www.jstor.org/stable/26362188
+
+## License
+
+GPL-3 (free use, modification, and distribution)
+
+## Support
+
+For more detailed instructions, see the full [user guide](https://github.com/CSAFE-ISU/bulletAnalyzr/docs/bulletAnalyzr-user-guide.pdf)
