@@ -114,8 +114,8 @@ If you use BulletAnalyzr in research, please cite:
 
 ## License
 
-GPL-3 (free use, modification, and distribution)
+[GNU GPL version 3](https://github.com/CSAFE-ISU/bulletAnalyzr/blob/main/LICENSE.md)
 
 ## Support
 
-For more detailed instructions, see the full [user guide](docs/bulletAnalyzr-user-guide.pdf)
+For more detailed instructions, see the full [user guide](https://github.com/CSAFE-ISU/bulletAnalyzr/blob/main/docs/bulletAnalyzr-user-guide.pdf).
