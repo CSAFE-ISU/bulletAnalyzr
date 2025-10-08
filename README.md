@@ -118,4 +118,4 @@ GPL-3 (free use, modification, and distribution)
 
 ## Support
 
-For more detailed instructions, see the full [user guide](https://github.com/CSAFE-ISU/bulletAnalyzr/docs/bulletAnalyzr-user-guide.pdf)
+For more detailed instructions, see the full [user guide](docs/bulletAnalyzr-user-guide.pdf)
