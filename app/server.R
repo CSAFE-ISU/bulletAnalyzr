@@ -33,6 +33,7 @@ sample_m = 10
 
 # Helper Functions
 source("R/bullet-lists.R")
+source("R/download-data-module.R")
 source("R/helper.R")
 source("R/plot.R")
 source("R/preprocess.R")

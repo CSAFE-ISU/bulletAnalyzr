@@ -188,8 +188,14 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       req(bullet_data$comparison)
       
       # BUTTON - Download Report ----
-      fluidRow(column(12, screenshotButton(label = "Download Report", id = session$ns("report"), filename="Bullet Comparison Report", scale = 2), align="center"))
+      htmltools::tagList(
+        fluidRow(column(12, screenshotButton(label = "Download Report", id = session$ns("report"), filename="Bullet Comparison Report", scale = 2), align="center")),
+        br(),
+        fluidRow(column(12, downloadDataUI(session$ns("data1"))), align = "center")
+      )
     })
+    
+    downloadDataServer("data1", bullet_data = bullet_data, drop_x3p = TRUE)
     
     # OUTPUT - Phase test score ----
     output$bull_comp_score <- renderText({
