@@ -59,7 +59,7 @@ make_temptable <- function(BullCompBulls, selected1, selected2, bsldata, odridx,
   temptable <- data.frame(
     Feature = c("Left Land File", "Left Land MD5", "Left Land Instrument (resolution [µm/px])", 
                 "Right Land File", "Right Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                "Cross Correlation Function", "Mean Distance btw Signals [Âµm]",
+                "Cross Correlation Function", "Mean Distance btw Signals [µm]",
                 "Signal Length [mm]", "# Matching Striae Per Millimeter",
                 "# Mis-Matching Striae Per Millimeter", "CMS Per Millimeter",
                 "Non-CMS Per Millimeter", "Peak Sum"),
