@@ -18,6 +18,9 @@ filter_preview_bullet <- function(allbull, preview_bull_name) {
 }
 
 get_bsldata <- function(bullet_scores) {
+  # Prevent no visible binding for global variable note
+  samesource <- rfscore <- NULL
+  
   # Collect land-wise data ----
   bsldata <- bullet_scores$data[[1]]
   # Sort in descending order ----

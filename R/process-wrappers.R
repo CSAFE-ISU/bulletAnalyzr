@@ -17,6 +17,9 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
 }
 
 get_bullet_scores_wrapper <- function(features, progress) {
+  # Prevent no visible binding for global variable note
+  bulletA <- bulletB <- NULL
+  
   progress$set(message = "Preparing Report Data", value = .5)
   bullet_scores <- features %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
   bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(bulletxtrctr::compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
@@ -68,6 +71,9 @@ get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)
 }
 
 get_features_wrapper <- function(comparisons, resolution, progress) {
+  # Prevent no visible binding for global variable note
+  cms_per_mm <- matches_per_mm <- mismatches_per_mm <- non_cms_per_mm <- NULL
+  
   # Calculate CCF0 ----
   progress$set(message = "Evaluating Features", value = .2)
   comparisons$ccf0 <- sapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands))
@@ -97,7 +103,12 @@ get_features_wrapper <- function(comparisons, resolution, progress) {
     cols = features
   )
   features <- features %>% 
-    dplyr::mutate(cms = cms_per_mm,matches = matches_per_mm, mismatches = mismatches_per_mm, non_cms = non_cms_per_mm)
+    dplyr::mutate(
+      cms = cms_per_mm,
+      matches = matches_per_mm, 
+      mismatches = mismatches_per_mm, 
+      non_cms = non_cms_per_mm
+    )
   
   return(list(comparisons = comparisons, features = features))
 }

@@ -325,19 +325,8 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       
       bullets <- bullet_data$comparison$bullets
       bullets <- bullets[bullets$bullet %in% c(comp_bul1(), comp_bul2()),]
-      signatures <- bullets %>% dplyr::select(source, bullet, land, sigs) %>% tidyr::unnest(sigs)
-      signatures$x <- signatures$x / 1000
-      Sigplot <- signatures %>% 
-        dplyr::filter(!is.na(sig), !is.na(raw_sig)) %>%
-        ggplot2::ggplot(ggplot2::aes(x = x)) + 
-        ggplot2::geom_line(ggplot2::aes(y = raw_sig), colour = "grey70", show.legend = T) +
-        ggplot2::geom_line(ggplot2::aes(y = sig), colour = "grey30", show.legend = T) +
-        ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
-        ggplot2::ylim(c(-5, 5)) +
-        ggplot2::xlab("Position along width of Land [mm]") +
-        ggplot2::ylab("Signal [µm]") +
-        ggplot2::ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
-      return(Sigplot)
+      
+      plot_all_signals(bullets = bullets)
     })
     
   })

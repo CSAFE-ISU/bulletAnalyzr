@@ -776,7 +776,7 @@ bulletAnalyzrApp <- function(...){
       
       # Predict random forest scores
       progress$set(message = "Predicting RandomForest Scores", value = .45)
-      features$rfscore <- predict(rtrees, newdata = features, type = "prob")[,2]
+      features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
       
       # Calculate bullet scores
       bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)

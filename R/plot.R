@@ -1,4 +1,7 @@
 groove_plot <- function(ccdata, grooves) {
+  # Prevent no visible binding for global variable note
+  x <- value <- NULL
+  
   ccdata %>% 
     ggplot2::ggplot(ggplot2::aes(x = x, y = value)) + 
     ggplot2::geom_vline(xintercept = 0, colour = "grey50") + 
@@ -15,7 +18,29 @@ groove_plot <- function(ccdata, grooves) {
     ggplot2::ylab("Surface Height [µm]") 
 }
 
+plot_all_signals <- function(bullets) {
+  # Prevent no visible binding for global variable note
+  source <- bullet <- land <- sigs <- x <- raw_sig <- NULL
+  
+  signatures <- bullets %>% dplyr::select(source, bullet, land, sigs) %>% tidyr::unnest(sigs)
+  signatures$x <- signatures$x / 1000
+  Sigplot <- signatures %>% 
+    dplyr::filter(!is.na(sig), !is.na(raw_sig)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = x)) + 
+    ggplot2::geom_line(ggplot2::aes(y = raw_sig), colour = "grey70", show.legend = T) +
+    ggplot2::geom_line(ggplot2::aes(y = sig), colour = "grey30", show.legend = T) +
+    ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
+    ggplot2::ylim(c(-5, 5)) +
+    ggplot2::xlab("Position along width of Land [mm]") +
+    ggplot2::ylab("Signal [µm]") +
+    ggplot2::ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
+  return(Sigplot)
+}
+
 plot_signal <- function(sig_plot_data, scale) {
+  # Prevent no visible binding for global variable note
+  x <- value <- Signal <- NULL
+  
   ggplot2::ggplot(sig_plot_data, ggplot2::aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
     ggplot2::geom_line(na.rm = TRUE, alpha = 0.9, linewidth = 1) +
     ggplot2::scale_color_manual(values = c("darkorange", "purple4")) + 

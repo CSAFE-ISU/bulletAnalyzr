@@ -26,12 +26,18 @@ filter_selected_bullets <- function(bullet_scores, selected1, selected2) {
 }
 
 filter_selected_bullet_land <- function(bullets, sel_bullet, sel_land) {
+  # Prevent no visible binding for global variable note
+  bullet <- land <- NULL
+  
   bullets <- bullets %>%
     dplyr::filter(bullet == sel_bullet, land == sel_land)
   return(bullets)
 }
 
 filter_sig_plot_data <- function(BullCompComps, selected1, selected2, bsldata, odridx, cidx) {
+  # Prevent no visible binding for global variable note
+  Signal <- value <- sig1 <- sig2 <- NULL
+  
   sig_plot_data <- BullCompComps$aligned[
     (BullCompComps$bulletA == selected1) &
       (BullCompComps$bulletB == selected2) &
