@@ -80,7 +80,7 @@ make_temptable <- function(BullCompBulls, selected1, selected2, bsldata, odridx,
       round(bsldata$sum_peaks[odridx[idx]],3)
     )
   )
-  temptable_dt <- datatable(
+  temptable_dt <- DT::datatable(
     temptable, 
     rownames = FALSE, 
     options = list(paging = FALSE, ordering = FALSE, searching = FALSE, bLengthChange = FALSE, bInfo = FALSE)

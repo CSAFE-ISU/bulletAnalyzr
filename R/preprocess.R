@@ -23,7 +23,7 @@ downsample_bullet <- function(allbull, cbull, show_alert, session) {
       show_alert <- FALSE
       m <- round(reference_resolution / current_resolution)
       
-      cbull$x3p <- lapply(cbull$x3p, x3p_sample, m = m)
+      cbull$x3p <- lapply(cbull$x3p, x3ptools::x3p_sample, m = m)
     } else if (reference_resolution < current_resolution) {
       show_modal(
         title = "Lower Resolution Bullet",
@@ -36,7 +36,7 @@ downsample_bullet <- function(allbull, cbull, show_alert, session) {
       show_alert <- FALSE
       
       m <- round(current_resolution / reference_resolution)
-      allbull$x3p <- lapply(allbull$x3p, x3p_sample, m = m)
+      allbull$x3p <- lapply(allbull$x3p, x3ptools::x3p_sample, m = m)
     }
   }
   
@@ -93,7 +93,7 @@ rotate_bullet <- function(bullet, show_alert, session = NULL) {
       )
     }
     show_alert <- FALSE
-    bullet$x3p <- lapply(bullet$x3p, x3p_rotate, angle = 90)
+    bullet$x3p <- lapply(bullet$x3p, x3ptools::x3p_rotate, angle = 90)
   }
   
   return(list(bullet = bullet, show_alert = show_alert))

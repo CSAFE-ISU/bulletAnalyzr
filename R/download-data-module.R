@@ -1,15 +1,15 @@
 downloadDataUI <- function(id) {
   ns <- shiny::NS(id)
-  downloadButton(ns("download_data_button"), "Download Data")
+  shiny::downloadButton(ns("download_data_button"), "Download Data")
 }
 
 downloadDataServer <- function(id, bullet_data = NULL, drop_x3p = TRUE) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
     
     # Prep data for download
-    download_data <- reactive({
-      req(bullet_data)
-      data <- reactiveValuesToList(bullet_data)
+    download_data <- shiny::reactive({
+      shiny::req(bullet_data)
+      data <- shiny::reactiveValuesToList(bullet_data)
       
       if (drop_x3p) {
         data$allbull <- NULL
@@ -29,7 +29,7 @@ downloadDataServer <- function(id, bullet_data = NULL, drop_x3p = TRUE) {
     })
     
     # Data download handler
-    output$download_data_button <- downloadHandler(
+    output$download_data_button <- shiny::downloadHandler(
       filename = function() {
         paste0("bullet-comparison-data-", Sys.Date(), ".rds")
       },

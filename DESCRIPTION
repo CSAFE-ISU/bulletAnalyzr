@@ -7,24 +7,26 @@ Authors@R:
 Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
 License: GPL (>= 3)
 Imports:
-    shiny (>= 1.8.1.1),
-    shinyjs (>= 2.1.0),
-    shinyBS (>= 0.61.1),
-    ggplot2 (>= 3.5.1),
-    bslib (>= 0.7.0),
     bsicons (>= 0.1.2),
-    shinycssloaders (>= 1.0.0),
-    randomForest (>= 4.7-1.1),
+    bslib (>= 0.7.0),
     dplyr (>= 1.1.4),
     DT (>= 0.33),
-    webshot2,
-    pandoc,
-    x3ptools,
-    bulletxtrctr,
+    ggplot2 (>= 3.5.1),
     htmltools,
+    magrittr,
+    pandoc,
     purrr,
+    randomForest (>= 4.7-1.1),
+    rgl,
     sessioninfo,
-    tidyr
+    shiny (>= 1.8.1.1),
+    shinyBS (>= 0.61.1),
+    shinycssloaders (>= 1.0.0),
+    shinyjs (>= 2.1.0),
+    shinyscreenshot,
+    tidyr,
+    webshot2,
+    x3ptools
 Remotes: 
     heike/x3ptools,
     heike/bulletxtrctr,

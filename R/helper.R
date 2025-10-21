@@ -23,9 +23,9 @@ get_bsldata <- function(bullet_scores) {
   # Sort in descending order ----
   # just re-order the data - that will be safer and quicker
   bsldata <- bsldata %>% 
-    mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
-    group_by(samesource) %>% 
-    arrange(desc(rfscore), .by_group = TRUE)
+    dplyr::mutate(samesource = factor(samesource, levels = c(TRUE, FALSE))) %>%
+    dplyr::group_by(samesource) %>% 
+    dplyr::arrange(dplyr::desc(rfscore), .by_group = TRUE)
   return(bsldata)
 }
 
@@ -124,11 +124,11 @@ make_export_df <- function(df) {
 
 show_modal <- function(title, message, show_alert, session) {
   if (show_alert) {
-    showModal(modalDialog(
+    shiny::showModal(shiny::modalDialog(
       title = title,
       message,
       easyClose = TRUE,
-      footer = modalButton("OK")
+      footer = shiny::modalButton("OK")
     ), session = session)
   }
 }

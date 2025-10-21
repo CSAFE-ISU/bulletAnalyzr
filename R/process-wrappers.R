@@ -7,7 +7,7 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
   lands <- unique(bullets$bulletland)
   comparisons <- data.frame(expand.grid(land1 = lands, land2 = lands), stringsAsFactors = FALSE)
   comparisons$aligned <- mapply(
-    function(x, y, bullets) sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),
+    function(x, y, bullets) bulletxtrctr::sig_align(bullets$sigs[bullets$bulletland == x][[1]]$sig, bullets$sigs[bullets$bulletland == y][[1]]$sig),
     comparisons$land1,
     comparisons$land2,
     MoreArgs = list(bullets = bullets),
@@ -18,16 +18,16 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
 
 get_bullet_scores_wrapper <- function(features, progress) {
   progress$set(message = "Preparing Report Data", value = .5)
-  bullet_scores <- features %>% group_by(bulletA, bulletB) %>% tidyr::nest()
-  bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+  bullet_scores <- features %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
+  bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(bulletxtrctr::compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
   return(bullet_scores)
 }
 
 get_ccdata_wrapper <- function(postCC, progress = NULL) {
   try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
-    res <- x3p_crosscut(x3p=x3p, y = y, range = range)
+    res <- bulletxtrctr::x3p_crosscut(x3p=x3p, y = y, range = range)
     if (nrow(res) == 0) {
-      res <- x3p_crosscut(x3p=x3p, y = NULL, range = range)
+      res <- bulletxtrctr::x3p_crosscut(x3p=x3p, y = NULL, range = range)
     }
     return(res)
   }
@@ -43,7 +43,7 @@ get_ccdata_wrapper <- function(postCC, progress = NULL) {
 
 get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)) {
   
-  bullets$crosscut <- sapply(bullets$x3p, x3p_crosscut_optimize, ylimits = ylimits)
+  bullets$crosscut <- sapply(bullets$x3p, bulletxtrctr::x3p_crosscut_optimize, ylimits = ylimits)
   
   # Check for NA values
   na_idx <- is.na(bullets$crosscut)
@@ -70,11 +70,11 @@ get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)
 get_features_wrapper <- function(comparisons, resolution, progress) {
   # Calculate CCF0 ----
   progress$set(message = "Evaluating Features", value = .2)
-  comparisons$ccf0 <- sapply(comparisons$aligned, function(x) extract_feature_ccf(x$lands))
+  comparisons$ccf0 <- sapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands))
   
   # Evaluate striation marks ----
   progress$set(message = "Evaluating Striation Marks", value = .25)
-  comparisons$striae <- lapply(comparisons$aligned, sig_cms_max, span = 75)
+  comparisons$striae <- lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75)
   
   # Extract features ----
   progress$set(message = "Extracting Features", value = .35)
@@ -83,7 +83,7 @@ get_features_wrapper <- function(comparisons, resolution, progress) {
   comparisons$landA <- sapply(strsplit(as.character(comparisons$land1),"-"),"[[",2)
   comparisons$landB <- sapply(strsplit(as.character(comparisons$land2),"-"),"[[",2)
   comparisons$features <- mapply(
-    extract_features_all,
+    bulletxtrctr::extract_features_all,
     comparisons$aligned,
     comparisons$striae,
     MoreArgs = list(resolution = resolution),
@@ -97,7 +97,7 @@ get_features_wrapper <- function(comparisons, resolution, progress) {
     cols = features
   )
   features <- features %>% 
-    mutate(cms = cms_per_mm,matches = matches_per_mm, mismatches = mismatches_per_mm, non_cms = non_cms_per_mm)
+    dplyr::mutate(cms = cms_per_mm,matches = matches_per_mm, mismatches = mismatches_per_mm, non_cms = non_cms_per_mm)
   
   return(list(comparisons = comparisons, features = features))
 }
@@ -109,7 +109,7 @@ get_grooves_wrapper <- function(bullets, progress = NULL) {
   
   bullets$grooves <- lapply(
     bullets$ccdata, 
-    function(x) cc_locate_grooves(x, method = "middle", adjust = 30, return_plot = FALSE)
+    function(x) bulletxtrctr::cc_locate_grooves(x, method = "middle", adjust = 30, return_plot = FALSE)
   )
   return(bullets)
 }
@@ -137,7 +137,7 @@ get_signals_wrapper <- function(bullets, progress = NULL) {
   }
   
   bullets$sigs <- mapply(
-    function(ccdata, grooves) cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03),
+    function(ccdata, grooves) bulletxtrctr::cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03),
     bullets$ccdata,
     bullets$grooves,
     SIMPLIFY = FALSE
