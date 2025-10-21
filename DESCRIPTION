@@ -7,7 +7,7 @@ Authors@R:
 Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
 License: GPL (>= 3)
 Imports:
-    shiny   (>= 1.8.1.1),
+    shiny (>= 1.8.1.1),
     shinyjs (>= 2.1.0),
     shinyBS (>= 0.61.1),
     ggplot2 (>= 3.5.1),
@@ -20,7 +20,11 @@ Imports:
     webshot2,
     pandoc,
     x3ptools,
-    bulletxtrctr
+    bulletxtrctr,
+    htmltools,
+    purrr,
+    sessioninfo,
+    tidyr
 Remotes: 
     heike/x3ptools,
     heike/bulletxtrctr,
