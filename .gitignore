@@ -6,3 +6,5 @@
 inst/.DS_Store
 *.RData
 scratch.R
+# {shinytest2}: Ignore new debug snapshots for `$expect_values()`
+*_.new.png

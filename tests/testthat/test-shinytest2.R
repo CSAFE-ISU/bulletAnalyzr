@@ -1,8 +1,13 @@
 library(shinytest2)
 
+test_that("Initial Shiny values are consistent", {
+  
+  options(rgl.useNULL = TRUE)
+  
+  shiny_app <- bulletAnalyzrApp()
 
-test_that("{shinytest2} recording: pipeline", {
   app <- AppDriver$new(
+    shiny_app,
     name = "pipeline", 
     height = 674, 
     width = 1139,
@@ -33,11 +38,11 @@ test_that("{shinytest2} recording: pipeline", {
   app$expect_values(export = TRUE, input = inputs)  # 4
   
   # Select Bullet 2 Land x3p Files button ----
-  files2 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
+  files2 <- list.files(testthat::test_path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files2)
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 5
-
+  
   # Name Bullet 2 ----
   app$set_inputs(bul_x3p_name = "Bullet 2")
   app$click("add_to_list_button")
@@ -64,12 +69,12 @@ test_that("{shinytest2} recording: pipeline", {
   app$click("saveCC")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 9
-
+  
   # Click Compare Bullets ----
   app$click("doprocessCC")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 10
-
+  
   # Adjust left and right grooves of Bullet 1 Land 1 ----
   app$set_inputs(grooveL = 278)
   app$wait_for_value(output = "grooveSlidersUI")
@@ -114,5 +119,4 @@ test_that("{shinytest2} recording: pipeline", {
   app$click("grooves_next_button")
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 15
-  
 })
