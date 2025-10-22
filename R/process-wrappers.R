@@ -125,6 +125,18 @@ get_grooves_wrapper <- function(bullets, progress = NULL) {
   return(bullets)
 }
 
+get_phase_scores_wrapper <- function(phase_test_results) {
+  # Prevent no visible binding for global variable note
+  samesource <- scores <- NULL
+  
+  scores <- phase_test_results %>%
+    dplyr::group_by(samesource) %>% 
+    dplyr::summarize(avg = mean(scores, na.rm = TRUE)) %>%
+    purrr::pluck("avg") %>%
+    unlist()
+  return(scores)
+}
+
 get_report_data_wrapper <- function(bullets, comparisons, features, bullet_scores, progress) {
   progress$set(message = "Preparing Report", value = .9)
   comparison <- list(

@@ -204,11 +204,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       shiny::req(phase_test_results)
       
       if (is.data.frame(phase_test_results)) {
-        scores <- phase_test_results %>%
-          dplyr::group_by(samesource) %>% 
-          dplyr::summarize(avg = mean(scores, na.rm = TRUE)) %>%
-          purrr::pluck("avg") %>%
-          unlist()
+        scores <- get_phase_scores_wrapper(phase_test_results = phase_test_results)
         return(sprintf("Phase Test Score: %.4f", abs(diff(scores))))
       } else if (inherits(phase_test_results, "phase.test")) {
         return(sprintf("Phase Test Score: %.4f", phase_test_results$estimate))
