@@ -20,7 +20,7 @@ groove_plot <- function(ccdata, grooves) {
 
 plot_all_signals <- function(bullets) {
   # Prevent no visible binding for global variable note
-  source <- bullet <- land <- sigs <- x <- raw_sig <- NULL
+  source <- bullet <- land <- sigs <- x <- sig <- raw_sig <- NULL
   
   signatures <- bullets %>% dplyr::select(source, bullet, land, sigs) %>% tidyr::unnest(sigs)
   signatures$x <- signatures$x / 1000
