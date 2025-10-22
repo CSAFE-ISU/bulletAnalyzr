@@ -21,7 +21,7 @@ test_that("{shinytest2} recording: pipeline", {
   app$expect_values(export = TRUE, input = inputs)  # 2
   
   # Select Bullet 1 Land x3p Files button ----
-  files1 <- list.files(testthat::test_path("fixtures", "Hamby-44", "Barrel 1", "Bullet 1"), full.names = TRUE, pattern = ".x3p")
+  files1 <- list.files(file.path("fixtures", "Hamby-44", "Barrel 1", "Bullet 2"), full.names = TRUE, pattern = ".x3p")
   app$upload_file(upload_button = files1)
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 3
