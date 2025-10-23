@@ -44,7 +44,7 @@ get_ccdata_wrapper <- function(postCC, progress = NULL) {
   return(bullets)
 }
 
-get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)) {
+get_default_cc_wrapper <- function(bullets, ylimits = c(150, NA)) {
   
   bullets$crosscut <- sapply(bullets$x3p, bulletxtrctr::x3p_crosscut_optimize, ylimits = ylimits)
   
@@ -57,17 +57,7 @@ get_default_cc_wrapper <- function(bullets, interactive_cc, ylimits = c(150, NA)
             paste(bullet_land[na_idx], collapse = ", ")))
   }
   
-  # Store bullets as preCC or postCC ----
-  if(interactive_cc) {
-    preCC <- bullets
-    postCC <- NULL
-  }
-  if(!interactive_cc) {
-    postCC <- bullets
-    preCC <- NULL
-  }
-  
-  return(list(preCC = preCC, postCC = postCC))
+  return(bullets)
 }
 
 get_features_wrapper <- function(comparisons, resolution, progress) {

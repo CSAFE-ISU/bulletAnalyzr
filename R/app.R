@@ -33,7 +33,6 @@ bulletAnalyzrApp <- function(...){
     text = ggplot2::element_text(size = 22), 
     plot.title = ggplot2::element_text(size = 22, face = "bold")
   )
-  interactive_cc = TRUE
   sample_m = 10
   
   ui <- shiny::shinyUI({
@@ -384,24 +383,18 @@ bulletAnalyzrApp <- function(...){
       
       # Find optimal crosscuts
       progress$set(message = "Get suitable Cross Sections", value = 0)
-      # If interactive_cc = TRUE, crosscut results added to preCC and postCC is
-      # NULL. If interactive_cc = FALSE, crosscut results added to postCC and preCC is NULL.
-      crosscut_results <- get_default_cc_wrapper(
+      bulldata$preCC <- get_default_cc_wrapper(
         bullets = bullets,
-        interactive_cc = interactive_cc,
         ylimits = c(150, NA)
       )
-      bulldata$preCC <- crosscut_results$preCC
       bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
-      bulldata$postCC <- crosscut_results$postCC
-      bulldata$postCC_export <- make_export_df(df = bulldata$postCC)
       
       # Switch to Comparison Report tab panel
       bulldata$stage <- c("upload", "crosscut")
       shiny::updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
     })
     
-    
+  
     # SECTION: PREVIEW BULLET TAB----------------------------------------
     
     # OUTPUT UI - Preview Bullet sidebar
