@@ -4,9 +4,13 @@
 \alias{bulletAnalyzrApp}
 \title{BulletAnalyzr Application}
 \usage{
-bulletAnalyzrApp(...)
+bulletAnalyzrApp(run_interactive = TRUE, ...)
 }
 \arguments{
+\item{run_interactive}{TRUE allows the user to adjust the crosscut and groove
+locations. FALSE uses the crosscut and grooves automatically chosen by the
+app.}
+
 \item{...}{Optional arguments passed to shiny::shinyApp}
 }
 \value{
