@@ -1,10 +1,20 @@
-# UI for sidebar
+#' UI for the Report Sidebar
+#'
+#' @param id The module id
+#'
+#' @returns A Shiny UI element
+#' @export
 reportSidebarUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("reportDownUI"))
 }
 
-# UI that displays phase test, score matrices, plots, and panels in main tab panel
+#' UI for the Report in the Main Panel
+#'
+#' @param id The module id
+#'
+#' @returns A Shiny UI element
+#' @export
 reportMainUI <- function(id) {
   ns <- shiny::NS(id)
   htmltools::tagList(
@@ -13,6 +23,16 @@ reportMainUI <- function(id) {
   )
 }
 
+#' Server for the Report Module
+#'
+#' @param id The module id
+#' @param bullet_data A data frame
+#' @param comp_bul1 The name of the first selected bullet
+#' @param comp_bul2 The name of the second selected bullet
+#' @param phase_test_results The results of the phase test
+#'
+#' @returns NULL
+#' @export
 reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = NULL, phase_test_results = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
     
