@@ -1,9 +1,9 @@
 #' BulletAnalyzr Application
-#' 
+#'
 #' Lauch a 'shiny' application for forensic bullet comparisons.
 #'
-#' @param ... Other arguments passed on to 'onStart', 'options',
-#'   'uiPattern', or 'enableBookmarking' of 'shiny::shinyApp'
+#' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
+#'   'enableBookmarking' of 'shiny::shinyApp'
 #'
 #' @return No return value, called to launch 'shiny' app
 #'
@@ -11,14 +11,17 @@
 #' @rdname bulletAnalyzrApp
 #' @keywords Shiny
 #' @export
+#' @param run_interactive TRUE allows the user to adjust the crosscut and groove
+#'   locations. FALSE uses the crosscut and grooves automatically chosen by the
+#'   app.
 #' @param ... Optional arguments passed to shiny::shinyApp
 #' @examples
 #' \dontrun{
 #' bulletAnalyzrApp()
 #' }
-#' 
+#'
 #' @return A Shiny app
-bulletAnalyzrApp <- function(...){
+bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
   
   ## Config
   version <- "0.5.0-beta.1"
@@ -383,15 +386,80 @@ bulletAnalyzrApp <- function(...){
       
       # Find optimal crosscuts
       progress$set(message = "Get suitable Cross Sections", value = 0)
-      bulldata$preCC <- get_default_cc_wrapper(
+      bullets <- get_default_cc_wrapper(
         bullets = bullets,
         ylimits = c(150, NA)
       )
-      bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
       
-      # Switch to Comparison Report tab panel
-      bulldata$stage <- c("upload", "crosscut")
-      shiny::updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
+      if (run_interactive) {
+        # Interactive mode: Store in preCC and switch to Comparison Report tab
+        # where user can adjust crosscuts and grooves
+        bulldata$preCC <- bullets
+        bulldata$preCC_export <- make_export_df(df = bulldata$preCC)
+        bulldata$stage <- c("upload", "crosscut")
+        shiny::updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
+      } else {
+        # Non-interactive mode: Run all processing automatically
+        
+        # Extract crosscut data
+        bullets <- get_ccdata_wrapper(postCC = bullets, progress = progress)
+        
+        # Find the optimal groove locations
+        bullets <- get_grooves_wrapper(bullets = bullets, progress = progress)
+        
+        # Update postCC with groove data
+        bulldata$postCC <- bullets
+        bulldata$postCC_export <- make_export_df(bullets)
+        
+        # Extract the signals
+        bullets <- get_signals_wrapper(bullets = bulldata$postCC, progress = progress)
+        
+        # Align the signals
+        signals_results <- get_aligned_signals_wrapper(bullets = bullets, progress = progress)
+        bullets <- signals_results$bullets
+        comparisons <- signals_results$comparisons
+        
+        # Get Resolution
+        resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
+        
+        # Get Features
+        features_results <- get_features_wrapper(comparisons = comparisons, resolution = resolution, progress = progress)
+        comparisons <- features_results$comparisons
+        features <- features_results$features
+        
+        # Predict random forest scores
+        progress$set(message = "Predicting RandomForest Scores", value = .45)
+        features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
+        
+        # Calculate bullet scores
+        bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
+        
+        # Denote same source
+        bullet_scores$data <- lapply(
+          bullet_scores$data,
+          function(d) cbind(d, samesource = bulletxtrctr::bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference = 0.01))
+        )
+        
+        # Render lands with crosscuts snapshot
+        bullets$x3pimg <- NA
+        
+        # Store comparison report data
+        report_results <- get_report_data_wrapper(
+          bullets = bullets,
+          comparisons = comparisons,
+          features = features,
+          bullet_scores = bullet_scores,
+          progress = progress
+        )
+        bulldata$comparison <- report_results$comparison
+        bulldata$comparison_export <- report_results$comparison_export
+        
+        # Set stage to report
+        bulldata$stage <- c("upload", "crosscut", "groove", "report")
+        
+        # Switch to Comparison Report tab panel
+        shiny::updateTabsetPanel(session, "prevreport", selected = "Comparison Report")
+      }
     })
     
   
