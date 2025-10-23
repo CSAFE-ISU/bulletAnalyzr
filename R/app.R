@@ -599,12 +599,12 @@ bulletAnalyzrApp <- function(...){
       shiny::req(input$groove_bulsel)
       shiny::req(input$groove_landsel)
       
-      land <- filter_selected_bullet_land(
+      land <- filter_bullet_land_cols(
         bullets = bulldata$postCC, 
         sel_bullet = input$groove_bulsel,
-        sel_land = input$groove_landsel
-      ) %>% 
-        tidyr::unnest(ccdata)
+        sel_land = input$groove_landsel,
+        unnest_data = "ccdata"
+      ) 
     })
     
     # REACTIVE VALUES - Store unique bullet and land names for drop-down menus
@@ -803,6 +803,26 @@ bulletAnalyzrApp <- function(...){
       bulldata$comparison_export <- report_results$comparison_export
     })
     
+    # SECTION: PHASE TEST-----------------------------------------------
+    
+    shiny::observe({
+      shiny::req(is_report(bulldata$stage))
+      shiny::req(bulldata$comparison)
+      shiny::req(bulldata$comparison$bullet_scores)
+      shiny::req(input$comp_bul1)
+      shiny::req(input$comp_bul2)
+      
+      bullet_scores <- bulldata$comparison$bullet_scores
+      bullet_scores$selsource <- FALSE
+      bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
+      d <- bullet_scores %>% dplyr::filter(selsource) %>% tidyr::unnest(data)
+      
+      tryCatch({
+        phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
+      }, error = function(e) {
+        return(d)
+      })
+    })
     
     # SECTION: GENERATE REPORT------------------------------------------
     
@@ -830,28 +850,7 @@ bulletAnalyzrApp <- function(...){
       comp_bul2 = shiny::reactive(input$comp_bul2),
       phase_test_results = phase$test_results
     )
-    
-    # SECTION: PHASE TEST-----------------------------------------------
-    
-    shiny::observe({
-      shiny::req(is_report(bulldata$stage))
-      shiny::req(bulldata$comparison)
-      shiny::req(bulldata$comparison$bullet_scores)
-      shiny::req(input$comp_bul1)
-      shiny::req(input$comp_bul2)
-      
-      bullet_scores <- bulldata$comparison$bullet_scores
-      bullet_scores$selsource <- FALSE
-      bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
-      d <- bullet_scores %>% dplyr::filter(selsource) %>% tidyr::unnest(data)
-      
-      tryCatch({
-        phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
-      }, error = function(e) {
-        return(d)
-      })
-    })
-    
+
   }
   
   shiny::shinyApp(ui, server, ...)

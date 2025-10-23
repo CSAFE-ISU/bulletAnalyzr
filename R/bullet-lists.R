@@ -25,12 +25,17 @@ filter_selected_bullets <- function(bullet_scores, selected1, selected2) {
   return(bullet_scores)
 }
 
-filter_selected_bullet_land <- function(bullets, sel_bullet, sel_land) {
+filter_bullet_land_cols <- function(bullets, sel_bullet, sel_land, unnest_data = NULL) {
   # Prevent no visible binding for global variable note
   bullet <- land <- NULL
   
   bullets <- bullets %>%
     dplyr::filter(bullet == sel_bullet, land == sel_land)
+  
+  if (!is.null(unnest_data)) {
+    bullets <- bullets %>% 
+      tidyr::unnest(unnest_data)
+  }
   return(bullets)
 }
 

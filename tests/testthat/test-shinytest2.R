@@ -115,8 +115,4 @@ test_that("Initial Shiny values are consistent", {
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 14
   
-  # Click Next Step on grooves page ----
-  app$click("grooves_next_button")
-  # app$wait_for_value(output = "report1-bull_comp_score", timeout = 600000)
-  # app$expect_values(export = TRUE, input = inputs)  # 15
 })

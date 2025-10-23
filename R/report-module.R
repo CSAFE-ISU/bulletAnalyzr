@@ -15,6 +15,7 @@ reportMainUI <- function(id) {
 
 reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = NULL, phase_test_results = NULL) {
   shiny::moduleServer(id, function(input, output, session) {
+    
     # OUTPUT UI - Report comparison top ----
     output$report <- shiny::renderUI({
       shiny::req(bullet_data)
@@ -148,7 +149,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       # Collapsible UI Panels ---------------------------------------------------
       LandComp <- do.call(shinyBS::bsCollapse, args = c(id = "collapseExample", multiple = TRUE, bsCollapsePanelList))
       
-      htmltools::tagList(
+      report_parts <- htmltools::tagList(
         # Phase test results ----
         shiny::fluidRow(
           shiny::column(12, "SUMMARY OF RESULTS", align = "left", class = "h3"), 
@@ -178,6 +179,8 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
         shiny::br(),
         LandComp$children
       )
+  
+      return(report_parts)
     })
     
     # OUTPUT UI - Report Download sidebar ----
@@ -284,7 +287,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
         ggplot2::xlab(sprintf("Lands on %s", features$bulletA[1])) +
         ggplot2::ylab(sprintf("Lands on %s", features$bulletB[1])) + 
         ggplot2::ggtitle("Land-to-Land Score Matrix",
-                subtitle = sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
+                         subtitle = sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
         ggplot2::guides(colour = "none") +
         ggplot2::coord_equal() 
     })
