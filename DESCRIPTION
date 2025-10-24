@@ -7,14 +7,12 @@ Authors@R:
 Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
 License: GPL (>= 3)
 Imports:
-    bsicons (>= 0.1.2),
     bslib (>= 0.7.0),
     dplyr (>= 1.1.4),
     DT (>= 0.33),
     ggplot2 (>= 3.5.1),
     htmltools,
     magrittr,
-    pandoc,
     purrr,
     randomForest (>= 4.7-1.1),
     rgl,
@@ -26,7 +24,6 @@ Imports:
     shinyscreenshot,
     tidyr,
     tidyselect,
-    webshot2,
     x3ptools
 Remotes: 
     heike/x3ptools,
@@ -44,5 +41,6 @@ Suggests:
     jsonlite,
     shinytest2,
     stringr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    webshot2
 Config/testthat/edition: 3

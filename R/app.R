@@ -2,22 +2,24 @@
 #'
 #' Lauch a 'shiny' application for forensic bullet comparisons.
 #'
-#' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
-#'   'enableBookmarking' of 'shiny::shinyApp'
-#'
-#' @return No return value, called to launch 'shiny' app
-#'
 #' @name bulletAnalyzrApp
 #' @rdname bulletAnalyzrApp
 #' @keywords Shiny
-#' @export
+#' 
 #' @param run_interactive TRUE allows the user to adjust the crosscut and groove
 #'   locations. FALSE uses the crosscut and grooves automatically chosen by the
 #'   app.
-#' @param ... Optional arguments passed to shiny::shinyApp
+#' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
+#'   'enableBookmarking' of 'shiny::shinyApp'
+#' 
+#' @return No return value, called to launch 'shiny' app
+#' 
+#' @export
+#' @importFrom stats predict
+#' 
 #' @examples
 #' \dontrun{
-#' bulletAnalyzrApp()
+#'   bulletAnalyzrApp()
 #' }
 #'
 #' @return A Shiny app

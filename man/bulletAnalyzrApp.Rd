@@ -11,7 +11,8 @@ bulletAnalyzrApp(run_interactive = TRUE, ...)
 locations. FALSE uses the crosscut and grooves automatically chosen by the
 app.}
 
-\item{...}{Optional arguments passed to shiny::shinyApp}
+\item{...}{Other arguments passed on to 'onStart', 'options', 'uiPattern', or
+'enableBookmarking' of 'shiny::shinyApp'}
 }
 \value{
 No return value, called to launch 'shiny' app
@@ -23,7 +24,7 @@ Lauch a 'shiny' application for forensic bullet comparisons.
 }
 \examples{
 \dontrun{
-bulletAnalyzrApp()
+  bulletAnalyzrApp()
 }
 
 }
