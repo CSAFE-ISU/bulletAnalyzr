@@ -295,7 +295,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
         cbull <- bulldata$cbull
       } else if (!is.null(bulldata$cbull_name) & (nrow(bulldata$allbull) > 0)) {
         cbull <- filter_bullet_col(
-          bullets = bulldata$allbull,
+          df = bulldata$allbull,
           selected = bulldata$cbull_name
         )
       } else {
@@ -551,7 +551,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$cc_bulsel)
       
       # Filter selected bullet
-      bullets <- filter_bullet_col(bullets = bulldata$preCC, selected = input$cc_bulsel)
+      bullets <- filter_bullet_col(df = bulldata$preCC, selected = input$cc_bulsel)
       
       # Calculate Y coordinate ranges for each bullet land in microns
       bullet_y_ranges <- get_max_microns(bullets = bullets)
@@ -575,7 +575,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$cc_bulsel)
       
       # Filter selected bullet
-      bullets <- filter_bullet_col(bullets = bulldata$preCC, selected = input$cc_bulsel)
+      bullets <- filter_bullet_col(df = bulldata$preCC, selected = input$cc_bulsel)
       
       # Refresh tab on change
       temp_refresh <- input$prevreport
@@ -667,7 +667,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$groove_landsel)
       
       land <- filter_bullet_land_cols(
-        bullets = bulldata$postCC, 
+        df = bulldata$postCC, 
         sel_bullet = input$groove_bulsel,
         sel_land = input$groove_landsel,
         unnest_data = "ccdata"
@@ -871,7 +871,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$comp_bul2)
       
       d <- filter_bulletA_bulletB_cols(
-        bullet_scores = bulldata$comparison$bullet_scores,
+        df = bulldata$comparison$bullet_scores,
         selected1 = input$comp_bul1,
         selected2 = input$comp_bul2,
         unnest_data = "data"

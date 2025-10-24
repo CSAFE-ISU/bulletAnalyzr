@@ -15,12 +15,14 @@ filter_grooves_ccdata <- function(BullCompBulls, selected1, selected2, bsldata, 
   return(list(CCDataL = CCDataL, CCDataR = CCDataR, GroovesL = GroovesL, GroovesR = GroovesR))
 }
 
-filter_bullet_col <- function(df, selected, unnest_data) {
+filter_bullet_col <- function(df, selected, unnest_data = NULL) {
+  # Prevent no visible binding for global variable note
+  bullet <- NULL
   
   df <- df %>%
     dplyr::filter(bullet %in% selected)
   
-  if (!is_null(unnest_data)) {
+  if (!is.null(unnest_data)) {
     df <- df %>%
       tidyr::unnest(tidyselect::all_of(unnest_data))
   }
@@ -28,29 +30,29 @@ filter_bullet_col <- function(df, selected, unnest_data) {
   return(df)
 }
 
-filter_bulletA_bulletB_cols <- function(bullet_scores, selected1, selected2, unnest_data = NULL) {
-  bullet_scores <- bullet_scores[bullet_scores$bulletA == selected1 & bullet_scores$bulletB == selected2,]
+filter_bulletA_bulletB_cols <- function(df, selected1, selected2, unnest_data = NULL) {
+  df <- df[df$bulletA == selected1 & df$bulletB == selected2,]
   
   if (!is.null(unnest_data)) {
-    bullet_scores <- bullet_scores %>%
+    df <- df %>%
       tidyr::unnest(tidyselect::all_of(unnest_data))
   }
   
-  return(bullet_scores)
+  return(df)
 }
 
-filter_bullet_land_cols <- function(bullets, sel_bullet, sel_land, unnest_data = NULL) {
+filter_bullet_land_cols <- function(df, sel_bullet, sel_land, unnest_data = NULL) {
   # Prevent no visible binding for global variable note
   bullet <- land <- NULL
   
-  bullets <- bullets %>%
+  df <- df %>%
     dplyr::filter(bullet == sel_bullet, land == sel_land)
   
   if (!is.null(unnest_data)) {
-    bullets <- bullets %>% 
+    df <- df %>% 
       tidyr::unnest(unnest_data)
   }
-  return(bullets)
+  return(df)
 }
 
 filter_sig_plot_data <- function(BullCompComps, selected1, selected2, bsldata, odridx, cidx) {

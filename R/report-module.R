@@ -55,7 +55,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       
       # Filter selected bullets ----
       bullet_scores <- filter_bulletA_bulletB_cols(
-        bullet_scores = bullet_data$comparison$bullet_scores,
+        df = bullet_data$comparison$bullet_scores,
         selected1 = comp_bul1(),
         selected2 = comp_bul2()
       )
@@ -282,7 +282,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       shiny::req(comp_bul1())
       
       features <- filter_bulletA_bulletB_cols(
-        bullet_scores = bullet_data$comparison$bullet_scores,
+        df = bullet_data$comparison$bullet_scores,
         selected1 = comp_bul1(),
         selected2 = comp_bul2(),
         unnest_data = "data"

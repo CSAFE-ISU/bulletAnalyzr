@@ -2,7 +2,7 @@ testthat::test_that("filter bulletA and bulletB columns works", {
 
   df <- readRDS(testthat::test_path("fixtures", "bulA_bulB_df.rds"))
   actual <- filter_bulletA_bulletB_cols(
-    bullet_scores = df,
+    df = df,
     selected1 = "b1",
     selected2 = "b2",
     unnest_data = NULL
@@ -20,7 +20,7 @@ testthat::test_that("filter bulletA and bulletB columns works on nested data", {
   
   # Run function without unnesting
   actual1 <- filter_bulletA_bulletB_cols(
-    bullet_scores = df,
+    df = df,
     selected1 = "b1",
     selected2 = "b2",
     unnest_data = NULL
@@ -28,7 +28,7 @@ testthat::test_that("filter bulletA and bulletB columns works on nested data", {
   
   # Run function with unnesting
   actual2 <- filter_bulletA_bulletB_cols(
-    bullet_scores = df,
+    df = df,
     selected1 = "b1",
     selected2 = "b2",
     unnest_data = "data"
