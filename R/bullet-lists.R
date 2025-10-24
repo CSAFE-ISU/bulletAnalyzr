@@ -25,7 +25,7 @@ filter_bulletA_bulletB_cols <- function(bullet_scores, selected1, selected2, unn
   
   if (!is.null(unnest_data)) {
     bullet_scores <- bullet_scores %>%
-      tidyr::unnest(all_of(unnest_data))
+      tidyr::unnest(tidyselect::all_of(unnest_data))
   }
   
   return(bullet_scores)

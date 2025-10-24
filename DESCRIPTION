@@ -25,6 +25,7 @@ Imports:
     shinyjs (>= 2.1.0),
     shinyscreenshot,
     tidyr,
+    tidyselect,
     webshot2,
     x3ptools
 Remotes: 
