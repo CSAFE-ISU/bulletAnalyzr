@@ -870,10 +870,12 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$comp_bul1)
       shiny::req(input$comp_bul2)
       
-      bullet_scores <- bulldata$comparison$bullet_scores
-      bullet_scores$selsource <- FALSE
-      bullet_scores$selsource[bullet_scores$bulletA == input$comp_bul1 & bullet_scores$bulletB == input$comp_bul2] <- TRUE
-      d <- bullet_scores %>% dplyr::filter(selsource) %>% tidyr::unnest(data)
+      d <- filter_bulletA_bulletB_cols(
+        bullet_scores = bulldata$comparison$bullet_scores,
+        selected1 = input$comp_bul1,
+        selected2 = input$comp_bul2,
+        unnest_data = "data"
+      )
       
       tryCatch({
         phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)

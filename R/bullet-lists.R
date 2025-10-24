@@ -20,8 +20,14 @@ filter_selected_bullet <- function(bullets, selected) {
   return(bullets)
 }
 
-filter_selected_bullets <- function(bullet_scores, selected1, selected2) {
+filter_bulletA_bulletB_cols <- function(bullet_scores, selected1, selected2, unnest_data = NULL) {
   bullet_scores <- bullet_scores[bullet_scores$bulletA == selected1 & bullet_scores$bulletB == selected2,]
+  
+  if (!is.null(unnest_data)) {
+    bullet_scores <- bullet_scores %>%
+      tidyr::unnest(all_of(unnest_data))
+  }
+  
   return(bullet_scores)
 }
 
