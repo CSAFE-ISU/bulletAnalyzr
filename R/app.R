@@ -787,15 +787,12 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$groove_bulsel)
       shiny::req(input$groove_landsel)
       
-      df <- profile_df()
-      
-      df %>%
-        ggplot2::ggplot(ggplot2::aes(x = x, y = value)) + 
-        ggplot2::geom_line() +
-        ggplot2::geom_vline(xintercept = input$grooveL, color = "red") +
-        ggplot2::geom_vline(xintercept = input$grooveR, color = "red") +
-        ggplot2::facet_grid(bullet~land, labeller="label_both") +
-        ggplot2::theme_bw()
+      plot_profile(
+        df = profile_df(),
+        left_groove = input$grooveL,
+        right_groove = input$grooveR
+      )
+
     })
     
     # OUTPUT UI - Display Crosscut (Profiles) with Grooves

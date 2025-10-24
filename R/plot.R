@@ -37,6 +37,20 @@ plot_all_signals <- function(bullets) {
   return(Sigplot)
 }
 
+plot_profile <- function(df, left_groove, right_groove) {
+  # Prevent no visible binding for global variable note
+  x <- value <- NULL
+  
+  p <- df %>%
+    ggplot2::ggplot(ggplot2::aes(x = x, y = value)) + 
+    ggplot2::geom_line() +
+    ggplot2::geom_vline(xintercept = left_groove, color = "red") +
+    ggplot2::geom_vline(xintercept = right_groove, color = "red") +
+    ggplot2::facet_grid(bullet~land, labeller="label_both") +
+    ggplot2::theme_bw()
+  return(p)
+}
+
 plot_signal <- function(sig_plot_data, scale) {
   # Prevent no visible binding for global variable note
   x <- value <- Signal <- NULL
