@@ -294,7 +294,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       if (!is.null(bulldata$cbull)) {
         cbull <- bulldata$cbull
       } else if (!is.null(bulldata$cbull_name) & (nrow(bulldata$allbull) > 0)) {
-        cbull <- filter_selected_bullet(
+        cbull <- filter_bullet_col(
           bullets = bulldata$allbull,
           selected = bulldata$cbull_name
         )
@@ -551,7 +551,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$cc_bulsel)
       
       # Filter selected bullet
-      bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
+      bullets <- filter_bullet_col(bullets = bulldata$preCC, selected = input$cc_bulsel)
       
       # Calculate Y coordinate ranges for each bullet land in microns
       bullet_y_ranges <- get_max_microns(bullets = bullets)
@@ -575,7 +575,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       shiny::req(input$cc_bulsel)
       
       # Filter selected bullet
-      bullets <- filter_selected_bullet(bullets = bulldata$preCC, selected = input$cc_bulsel)
+      bullets <- filter_bullet_col(bullets = bulldata$preCC, selected = input$cc_bulsel)
       
       # Refresh tab on change
       temp_refresh <- input$prevreport

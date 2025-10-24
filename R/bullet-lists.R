@@ -15,9 +15,17 @@ filter_grooves_ccdata <- function(BullCompBulls, selected1, selected2, bsldata, 
   return(list(CCDataL = CCDataL, CCDataR = CCDataR, GroovesL = GroovesL, GroovesR = GroovesR))
 }
 
-filter_selected_bullet <- function(bullets, selected) {
-  bullets <- bullets[bullets$bullet == selected,]
-  return(bullets)
+filter_bullet_col <- function(df, selected, unnest_data) {
+  
+  df <- df %>%
+    dplyr::filter(bullet %in% selected)
+  
+  if (!is_null(unnest_data)) {
+    df <- df %>%
+      tidyr::unnest(tidyselect::all_of(unnest_data))
+  }
+  
+  return(df)
 }
 
 filter_bulletA_bulletB_cols <- function(bullet_scores, selected1, selected2, unnest_data = NULL) {

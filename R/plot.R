@@ -18,6 +18,40 @@ groove_plot <- function(ccdata, grooves) {
     ggplot2::ylab("Surface Height [µm]") 
 }
 
+plot_all_crosscuts <- function(crosscuts) {
+  # Prevent no visible binding for global variable note
+  x <- value <- bullet <- land <- NULL
+  
+  crosscuts$x <- crosscuts$x / 1000
+  CCplot <- crosscuts %>% 
+    ggplot2::ggplot(ggplot2::aes(x = x, y = value)) + 
+    ggplot2::geom_line() +
+    ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
+    ggplot2::xlab("Position along width of Land [mm]") +
+    ggplot2::ylab("Surface Height [µm]") + 
+    ggplot2::ggtitle("Cross-section of the bullet land at a suitable cross-section location") 
+  return(CCplot)
+}
+
+plot_all_signals <- function(bullets) {
+  # Prevent no visible binding for global variable note
+  source <- bullet <- land <- sigs <- x <- sig <- raw_sig <- NULL
+  
+  signatures <- bullets %>% dplyr::select(source, bullet, land, sigs) %>% tidyr::unnest(sigs)
+  signatures$x <- signatures$x / 1000
+  Sigplot <- signatures %>% 
+    dplyr::filter(!is.na(sig), !is.na(raw_sig)) %>%
+    ggplot2::ggplot(ggplot2::aes(x = x)) + 
+    ggplot2::geom_line(ggplot2::aes(y = raw_sig), colour = "grey70", show.legend = T) +
+    ggplot2::geom_line(ggplot2::aes(y = sig), colour = "grey30", show.legend = T) +
+    ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
+    ggplot2::ylim(c(-5, 5)) +
+    ggplot2::xlab("Position along width of Land [mm]") +
+    ggplot2::ylab("Signal [µm]") +
+    ggplot2::ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
+  return(Sigplot)
+}
+
 plot_bullet_score_matrix <- function(bullet_scores) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- bullet_score <- selsource <- NULL
@@ -38,23 +72,25 @@ plot_bullet_score_matrix <- function(bullet_scores) {
   return(p)
 }
 
-plot_all_signals <- function(bullets) {
+plot_land_score_matrix <- function(features) {
   # Prevent no visible binding for global variable note
-  source <- bullet <- land <- sigs <- x <- sig <- raw_sig <- NULL
+  landA <- landB <- rfscore <- samesource <- NULL
   
-  signatures <- bullets %>% dplyr::select(source, bullet, land, sigs) %>% tidyr::unnest(sigs)
-  signatures$x <- signatures$x / 1000
-  Sigplot <- signatures %>% 
-    dplyr::filter(!is.na(sig), !is.na(raw_sig)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = x)) + 
-    ggplot2::geom_line(ggplot2::aes(y = raw_sig), colour = "grey70", show.legend = T) +
-    ggplot2::geom_line(ggplot2::aes(y = sig), colour = "grey30", show.legend = T) +
-    ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
-    ggplot2::ylim(c(-5, 5)) +
-    ggplot2::xlab("Position along width of Land [mm]") +
-    ggplot2::ylab("Signal [µm]") +
-    ggplot2::ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
-  return(Sigplot)
+  p <- features %>% 
+    ggplot2::ggplot(ggplot2::aes(x = landA, y = landB, fill = rfscore, colour = samesource)) +
+    ggplot2::geom_tile() +
+    ggplot2::labs(fill = "Land Score") +
+    ggplot2::scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
+    ggplot2::scale_colour_manual(values = c("black", "black")) +
+    ggplot2::geom_tile(linewidth = 1, data = features %>% dplyr::filter(samesource == TRUE)) +
+    ggplot2::geom_text(ggplot2::aes(label = round(rfscore, 2)), size = 6) +
+    ggplot2::xlab(sprintf("Lands on %s", features$bulletA[1])) +
+    ggplot2::ylab(sprintf("Lands on %s", features$bulletB[1])) + 
+    ggplot2::ggtitle("Land-to-Land Score Matrix",
+                     subtitle = sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
+    ggplot2::guides(colour = "none") +
+    ggplot2::coord_equal()
+  return(p)
 }
 
 plot_profile <- function(df, left_groove, right_groove) {

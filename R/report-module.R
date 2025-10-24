@@ -281,23 +281,15 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       shiny::req(comp_bul1())
       shiny::req(comp_bul1())
       
-      bullet_scores <- bullet_data$comparison$bullet_scores
-      bullet_scores <- bullet_scores[bullet_scores$bulletA == comp_bul1() & bullet_scores$bulletB == comp_bul2(),]
-      features <- bullet_scores %>% tidyr::unnest(data)
-      features %>% 
-        ggplot2::ggplot(ggplot2::aes(x = landA, y = landB, fill = rfscore, colour = samesource)) +
-        ggplot2::geom_tile() +
-        ggplot2::labs(fill = "Land Score") +
-        ggplot2::scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
-        ggplot2::scale_colour_manual(values = c("black", "black")) +
-        ggplot2::geom_tile(linewidth = 1, data = features %>% dplyr::filter(samesource == TRUE)) +
-        ggplot2::geom_text(ggplot2::aes(label = round(rfscore, 2)), size = 6) +
-        ggplot2::xlab(sprintf("Lands on %s", features$bulletA[1])) +
-        ggplot2::ylab(sprintf("Lands on %s", features$bulletB[1])) + 
-        ggplot2::ggtitle("Land-to-Land Score Matrix",
-                         subtitle = sprintf("Bullet: %s vs %s", features$bulletA[1], features$bulletB[1])) + 
-        ggplot2::guides(colour = "none") +
-        ggplot2::coord_equal() 
+      features <- filter_bulletA_bulletB_cols(
+        bullet_scores = bullet_data$comparison$bullet_scores,
+        selected1 = comp_bul1(),
+        selected2 = comp_bul2(),
+        unnest_data = "data"
+      )
+      
+      plot_land_score_matrix(features = features)
+      
     })
     
     # OUTPUT - Crosscut plots ----
@@ -308,18 +300,14 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       shiny::req(comp_bul1())
       shiny::req(comp_bul2())
       
-      bullets <- bullet_data$comparison$bullets
-      bullets <- bullets[bullets$bullet %in% c(comp_bul1(), comp_bul2()), ]
-      crosscuts <- bullets %>% tidyr::unnest(ccdata)
-      crosscuts$x <- crosscuts$x / 1000
-      CCplot <- crosscuts %>% 
-        ggplot2::ggplot(ggplot2::aes(x = x, y = value)) + 
-        ggplot2::geom_line() +
-        ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
-        ggplot2::xlab("Position along width of Land [mm]") +
-        ggplot2::ylab("Surface Height [µm]") + 
-        ggplot2::ggtitle("Cross-section of the bullet land at a suitable cross-section location") 
-      return(CCplot)
+      crosscuts <- filter_bullet_col(
+        df = bullet_data$comparison$bullets,
+        selected = c(comp_bul1(), comp_bul2()),
+        unnest_data = "ccdata"
+      )
+      
+      plot_all_crosscuts(crosscuts = crosscuts)
+    
     })
     
     # OUTPUT - Signal plots ----
