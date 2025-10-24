@@ -199,6 +199,12 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       comparison_export = NULL
     )
     
+    # REACTIVE VALUES - Store unique bullet and land names for drop-down menus
+    grooves <- shiny::reactiveValues(
+      bullets = NULL,
+      lands = NULL
+    )
+    
     # REACTIVE VALUES - Phase test results
     phase <- shiny::reactiveValues(
       test_results = NULL
@@ -667,12 +673,6 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
         unnest_data = "ccdata"
       ) 
     })
-    
-    # REACTIVE VALUES - Store unique bullet and land names for drop-down menus
-    grooves <- shiny::reactiveValues(
-      bullets = NULL,
-      lands = NULL
-    )
     
     # OBSERVE EVENT - Save Grooves
     shiny::observeEvent(input$save_grooves_button, {
