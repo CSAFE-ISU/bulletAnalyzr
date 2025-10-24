@@ -18,6 +18,26 @@ groove_plot <- function(ccdata, grooves) {
     ggplot2::ylab("Surface Height [µm]") 
 }
 
+plot_bullet_score_matrix <- function(bullet_scores) {
+  # Prevent no visible binding for global variable note
+  bulletA <- bulletB <- bullet_score <- selsource <- NULL
+  
+  p <- bullet_scores %>% 
+    ggplot2::ggplot(ggplot2::aes(x = bulletA, y = bulletB, fill = bullet_score, colour = selsource)) +
+    ggplot2::geom_tile() +
+    ggplot2::labs(fill = "Bullet Score") +
+    ggplot2::scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
+    ggplot2::scale_colour_manual(values = c("black", "black")) +
+    ggplot2::geom_tile(linewidth = 1, data = bullet_scores %>% dplyr::filter(selsource)) +
+    ggplot2::geom_text(ggplot2::aes(label = round(bullet_score, 2)), size = 6) +
+    ggplot2::ggtitle("Bullet-to-Bullet Score Matrix") +
+    ggplot2::xlab("") +
+    ggplot2::ylab("") +
+    ggplot2::guides(colour = "none") +
+    ggplot2::coord_equal() 
+  return(p)
+}
+
 plot_all_signals <- function(bullets) {
   # Prevent no visible binding for global variable note
   source <- bullet <- land <- sigs <- x <- sig <- raw_sig <- NULL

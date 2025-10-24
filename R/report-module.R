@@ -270,19 +270,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       bullet_scores$selsource <- FALSE
       bullet_scores$selsource[bullet_scores$bulletA == comp_bul1() & bullet_scores$bulletB == comp_bul2()] <- TRUE
       bullet_scores$selsource[bullet_scores$bulletB == comp_bul1() & bullet_scores$bulletA == comp_bul2()] <- TRUE
-      bullet_scores %>% 
-        ggplot2::ggplot(ggplot2::aes(x = bulletA, y = bulletB, fill = bullet_score, colour = selsource)) +
-        ggplot2::geom_tile() +
-        ggplot2::labs(fill = "Bullet Score") +
-        ggplot2::scale_fill_gradient2(low = "grey80", high = "darkorange", midpoint = .5, limits = c(0,1)) +
-        ggplot2::scale_colour_manual(values = c("black", "black")) +
-        ggplot2::geom_tile(linewidth = 1, data = bullet_scores %>% dplyr::filter(selsource)) +
-        ggplot2::geom_text(ggplot2::aes(label = round(bullet_score, 2)), size = 6) +
-        ggplot2::ggtitle("Bullet-to-Bullet Score Matrix") +
-        ggplot2::xlab("") +
-        ggplot2::ylab("") +
-        ggplot2::guides(colour = "none") +
-        ggplot2::coord_equal() 
+      plot_bullet_score_matrix(bullet_scores = bullet_scores)
     })
     
     # OUTPUT - Land score matrix ----
