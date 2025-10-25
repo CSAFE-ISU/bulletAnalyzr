@@ -1,5 +1,5 @@
 accept_new_snap <- function(snapshot = "pipeline-001") {
-  snapshot_dir = "app/tests/testthat/_snaps/shinytest2"
+  snapshot_dir = "tests/testthat/_snaps/shinytest2"
   
   new <- file.path(snapshot_dir, paste0(snapshot, ".new.json"))
   old <- file.path(snapshot_dir, paste0(snapshot, ".json"))
@@ -10,7 +10,7 @@ accept_new_snap <- function(snapshot = "pipeline-001") {
 # Load a json snapshot
 load_snap <- function(
     snapshot,
-    snapshot_dir = "app/tests/testthat/_snaps/shinytest2") {
+    snapshot_dir = "tests/testthat/_snaps/shinytest2") {
   
   if (!file.exists(file.path(snapshot_dir, snapshot))) {
     stop("Snapshot does not exist")
