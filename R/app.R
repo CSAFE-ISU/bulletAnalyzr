@@ -501,9 +501,10 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
       temp_refresh <- input$prevreport
       
       # Get selected bullet
-      bull <- filter_preview_bullet(
-        allbull = bulldata$allbull,
-        preview_bull_name = input$prev_bul
+      bull <- filter_bullet_col(
+        df = bulldata$allbull,
+        selected = input$prev_bul,
+        unnest_data = FALSE
       )
       
       # Render selected bullet
