@@ -1,3 +1,13 @@
+#' Plot Crosscut Profile with Groove Locations
+#'
+#' Creates a ggplot showing the crosscut profile with groove locations marked
+#' and excluded areas shaded.
+#'
+#' @param ccdata A data frame containing crosscut data with x and value columns
+#' @param grooves A numeric vector of length 2 containing left and right groove positions
+#'
+#' @returns A ggplot object
+#' @noRd
 groove_plot <- function(ccdata, grooves) {
   # Prevent no visible binding for global variable note
   x <- value <- NULL
@@ -18,6 +28,15 @@ groove_plot <- function(ccdata, grooves) {
     ggplot2::ylab("Surface Height [µm]") 
 }
 
+
+#' Plot All Crosscuts
+#'
+#' Creates a faceted plot showing crosscut profiles for all bullet lands.
+#'
+#' @param crosscuts A data frame containing crosscut data for multiple bullets and lands
+#'
+#' @returns A ggplot object with faceted crosscut profiles
+#' @noRd
 plot_all_crosscuts <- function(crosscuts) {
   # Prevent no visible binding for global variable note
   x <- value <- bullet <- land <- NULL
@@ -33,6 +52,14 @@ plot_all_crosscuts <- function(crosscuts) {
   return(CCplot)
 }
 
+#' Plot All Bullet Signals
+#'
+#' Creates a faceted plot showing raw and smoothed signals for all bullet lands.
+#'
+#' @param bullets A data frame containing bullet data with nested signal information
+#'
+#' @returns A ggplot object with faceted signal plots
+#' @noRd
 plot_all_signals <- function(bullets) {
   # Prevent no visible binding for global variable note
   source <- bullet <- land <- sigs <- x <- sig <- raw_sig <- NULL
@@ -52,6 +79,14 @@ plot_all_signals <- function(bullets) {
   return(Sigplot)
 }
 
+#' Plot Bullet-to-Bullet Score Matrix
+#'
+#' Creates a heatmap showing bullet-to-bullet comparison scores.
+#'
+#' @param bullet_scores A data frame containing bullet comparison scores
+#'
+#' @returns A ggplot object showing the score matrix
+#' @noRd
 plot_bullet_score_matrix <- function(bullet_scores) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- bullet_score <- selsource <- NULL
@@ -72,6 +107,14 @@ plot_bullet_score_matrix <- function(bullet_scores) {
   return(p)
 }
 
+#' Plot Land-to-Land Score Matrix
+#'
+#' Creates a heatmap showing land-to-land comparison scores for two bullets.
+#'
+#' @param features A data frame containing land comparison features and scores
+#'
+#' @returns A ggplot object showing the land score matrix
+#' @noRd
 plot_land_score_matrix <- function(features) {
   # Prevent no visible binding for global variable note
   landA <- landB <- rfscore <- samesource <- NULL
@@ -93,6 +136,17 @@ plot_land_score_matrix <- function(features) {
   return(p)
 }
 
+#' Plot Crosscut Profile with Groove Lines
+#'
+#' Creates a faceted plot of crosscut profiles with vertical lines marking groove
+#' locations.
+#'
+#' @param df A data frame containing profile data with x and value columns
+#' @param left_groove A numeric value for the left groove position
+#' @param right_groove A numeric value for the right groove position
+#'
+#' @returns A ggplot object showing the profile with groove markers
+#' @noRd
 plot_profile <- function(df, left_groove, right_groove) {
   # Prevent no visible binding for global variable note
   x <- value <- NULL
@@ -107,6 +161,15 @@ plot_profile <- function(df, left_groove, right_groove) {
   return(p)
 }
 
+#' Plot Aligned Signals
+#'
+#' Creates a plot showing two aligned land engraved area (LEA) signals.
+#'
+#' @param sig_plot_data A data frame containing signal data for two lands
+#' @param scale A numeric value for the x-axis scale
+#'
+#' @returns A ggplot object showing aligned signals
+#' @noRd
 plot_signal <- function(sig_plot_data, scale) {
   # Prevent no visible binding for global variable note
   x <- value <- Signal <- NULL
