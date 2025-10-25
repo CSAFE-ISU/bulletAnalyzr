@@ -1,8 +1,26 @@
+#' Download Data Module UI
+#'
+#' Creates the UI for downloading bullet comparison data.
+#'
+#' @param id The module namespace ID
+#'
+#' @returns A Shiny download button
+#' @noRd
 downloadDataUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::downloadButton(ns("download_data_button"), "Download Data")
 }
 
+#' Download Data Module Server
+#'
+#' Server logic for downloading bullet comparison data as an RDS file.
+#'
+#' @param id The module namespace ID
+#' @param bullet_data A reactive values object containing bullet comparison data for download
+#' @param drop_x3p Logical; if TRUE, drops x3p objects to reduce file size
+#'
+#' @returns NULL
+#' @noRd
 downloadDataServer <- function(id, bullet_data = NULL, drop_x3p = TRUE) {
   shiny::moduleServer(id, function(input, output, session) {
     
@@ -24,7 +42,7 @@ downloadDataServer <- function(id, bullet_data = NULL, drop_x3p = TRUE) {
         data$postCC_export <- NULL
         data$comparison_export <- NULL
       }
-
+      
       return(data)
     })
     
