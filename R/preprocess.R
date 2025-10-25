@@ -1,11 +1,28 @@
+#' Conditionally Convert x3p from Meters to Micrometers
+#'
+#' Converts x3p scale from meters to micrometers if scale is less than 0.1.
+#'
+#' @param x3p An x3p object
+#'
+#' @returns An x3p object with scale in micrometers
+#' @noRd
 cond_x3p_m_to_mum <- function(x3p) {
   scale <- x3p %>% x3ptools::x3p_get_scale()
   if (scale < .1) x3p <-  x3p %>% x3ptools::x3p_m_to_mum() # only scale conditionally
   x3p
 }
 
-# Check if we need to down-sample the bullet. Calculate the closest integer
-# `n` that samples reference resolution to match incrementX
+#' Downsample Bullet to Match Resolution
+#'
+#' Downsamples the current bullet or all previous bullets to match resolutions.
+#'
+#' @param allbull A data frame containing all previously added bullets
+#' @param cbull A data frame containing the current bullet data
+#' @param show_alert Logical; if TRUE, shows modal alerts
+#' @param session The Shiny session object
+#'
+#' @returns A list containing updated allbull, cbull, and show_alert
+#' @noRd
 downsample_bullet <- function(allbull, cbull, show_alert, session) {
   if (nrow(allbull) > 0) {
     reference_resolution <- x3ptools::x3p_get_scale(allbull$x3p[[1]]) / 1e6
@@ -43,6 +60,19 @@ downsample_bullet <- function(allbull, cbull, show_alert, session) {
   return(list(allbull = allbull, cbull = cbull, show_alert = show_alert))
 }
 
+#' Preprocess Bullet Data
+#'
+#' Performs all preprocessing steps on a bullet including rotation, downsampling,
+#' unit conversion, and metadata extraction.
+#'
+#' @param allbull A data frame containing all previously added bullets
+#' @param cbull A data frame containing the current bullet data
+#' @param show_alert Logical; if TRUE, shows modal alerts
+#' @param progress A Shiny progress object
+#' @param session The Shiny session object
+#'
+#' @returns A list containing updated allbull and cbull
+#' @noRd
 preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   
   # Rotate bullet (optional)
@@ -79,6 +109,16 @@ preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   return(list(allbull = allbull, cbull = cbull))
 }
 
+#' Rotate Bullet if Needed
+#'
+#' Rotates bullet 90 degrees if sizeX is less than sizeY (incorrectly oriented).
+#'
+#' @param bullet A data frame containing bullet data with x3p objects
+#' @param show_alert Logical; if TRUE, shows modal alerts
+#' @param session The Shiny session object (optional)
+#'
+#' @returns A list containing updated bullet and show_alert
+#' @noRd
 rotate_bullet <- function(bullet, show_alert, session = NULL) {
   
   hinfo <- bullet$x3p[[1]]$header.info
