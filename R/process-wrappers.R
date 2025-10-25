@@ -1,3 +1,12 @@
+#' Align Signals Wrapper
+#'
+#' Aligns signals between all pairs of bullet lands for comparison.
+#'
+#' @param bullets A data frame containing bullet data with extracted signals
+#' @param progress A Shiny progress object (optional)
+#'
+#' @returns A list containing updated bullets and comparisons data frames
+#' @noRd
 get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
   if (!is.null(progress)) {
     progress$set(message = "Align Signals", value = .15)
@@ -16,6 +25,15 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
   return(list(bullets = bullets, comparisons = comparisons))
 }
 
+#' Calculate Bullet Scores Wrapper
+#'
+#' Computes bullet-level scores from land-level comparison features.
+#'
+#' @param features A data frame containing land comparison features and RF scores
+#' @param progress A Shiny progress object
+#'
+#' @returns A data frame containing bullet scores
+#' @noRd
 get_bullet_scores_wrapper <- function(features, progress) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- NULL
@@ -26,6 +44,15 @@ get_bullet_scores_wrapper <- function(features, progress) {
   return(bullet_scores)
 }
 
+#' Extract Crosscut Data Wrapper
+#'
+#' Extracts crosscut profile data from x3p objects at specified crosscut locations.
+#'
+#' @param postCC A data frame containing bullet data with x3p objects and crosscut locations
+#' @param progress A Shiny progress object (optional)
+#'
+#' @returns A data frame with added ccdata column containing crosscut profiles
+#' @noRd
 get_ccdata_wrapper <- function(postCC, progress = NULL) {
   try_x3p_crosscut <- function(x3p, y = NULL, range = 1e-5) {
     res <- bulletxtrctr::x3p_crosscut(x3p=x3p, y = y, range = range)
@@ -44,6 +71,15 @@ get_ccdata_wrapper <- function(postCC, progress = NULL) {
   return(bullets)
 }
 
+#' Get Default Crosscut Locations Wrapper
+#'
+#' Automatically determines optimal crosscut locations for all bullet lands.
+#'
+#' @param bullets A data frame containing bullet data with x3p objects
+#' @param ylimits A numeric vector of length 2 specifying Y-axis limits for optimization
+#'
+#' @returns A data frame with added crosscut column containing optimal locations
+#' @noRd
 get_default_cc_wrapper <- function(bullets, ylimits = c(150, NA)) {
   
   bullets$crosscut <- sapply(bullets$x3p, bulletxtrctr::x3p_crosscut_optimize, ylimits = ylimits)
@@ -54,12 +90,22 @@ get_default_cc_wrapper <- function(bullets, ylimits = c(150, NA)) {
     bullet_land <- paste("Bullet", bullets$bullet, "Land", bullets$land)
     
     stop(paste("x3p_crosscut_optimize could not find a stable region in land:", 
-            paste(bullet_land[na_idx], collapse = ", ")))
+               paste(bullet_land[na_idx], collapse = ", ")))
   }
   
   return(bullets)
 }
 
+#' Extract Features Wrapper
+#'
+#' Extracts all comparison features including CCF, striation marks, and derived metrics.
+#'
+#' @param comparisons A data frame containing aligned signal comparisons
+#' @param resolution A numeric value for the scan resolution
+#' @param progress A Shiny progress object
+#'
+#' @returns A list containing updated comparisons and a features data frame
+#' @noRd
 get_features_wrapper <- function(comparisons, resolution, progress) {
   # Prevent no visible binding for global variable note
   cms_per_mm <- matches_per_mm <- mismatches_per_mm <- non_cms_per_mm <- NULL
@@ -103,6 +149,15 @@ get_features_wrapper <- function(comparisons, resolution, progress) {
   return(list(comparisons = comparisons, features = features))
 }
 
+#' Locate Grooves Wrapper
+#'
+#' Automatically locates groove positions for all bullet lands.
+#'
+#' @param bullets A data frame containing bullet data with crosscut profiles
+#' @param progress A Shiny progress object (optional)
+#'
+#' @returns A data frame with added grooves column containing groove locations
+#' @noRd
 get_grooves_wrapper <- function(bullets, progress = NULL) {
   if (!is.null(progress)) {
     progress$set(message = "Get the Groove Locations", value = .05)
@@ -115,6 +170,14 @@ get_grooves_wrapper <- function(bullets, progress = NULL) {
   return(bullets)
 }
 
+#' Calculate Phase Scores Wrapper
+#'
+#' Computes average phase test scores grouped by same-source status.
+#'
+#' @param phase_test_results A data frame containing phase test results
+#'
+#' @returns A numeric vector of average scores
+#' @noRd
 get_phase_scores_wrapper <- function(phase_test_results) {
   # Prevent no visible binding for global variable note
   samesource <- scores <- NULL
@@ -127,6 +190,18 @@ get_phase_scores_wrapper <- function(phase_test_results) {
   return(scores)
 }
 
+#' Prepare Report Data Wrapper
+#'
+#' Organizes all comparison data into a structured format for report generation.
+#'
+#' @param bullets A data frame containing bullet data
+#' @param comparisons A data frame containing aligned signal comparisons
+#' @param features A data frame containing comparison features
+#' @param bullet_scores A data frame containing bullet-level scores
+#' @param progress A Shiny progress object
+#'
+#' @returns A list containing comparison and comparison_export data
+#' @noRd
 get_report_data_wrapper <- function(bullets, comparisons, features, bullet_scores, progress) {
   progress$set(message = "Preparing Report", value = .9)
   comparison <- list(
@@ -144,6 +219,15 @@ get_report_data_wrapper <- function(bullets, comparisons, features, bullet_score
   return(list(comparison = comparison, comparison_export = comparison_export))
 }
 
+#' Extract Signals Wrapper
+#'
+#' Extracts signature signals from crosscut data using groove locations.
+#'
+#' @param bullets A data frame containing bullet data with crosscut profiles and grooves
+#' @param progress A Shiny progress object (optional)
+#'
+#' @returns A data frame with added sigs column containing extracted signals
+#' @noRd
 get_signals_wrapper <- function(bullets, progress = NULL) {
   if (!is.null(progress)) {
     progress$set(message = "Extracting Signal", value = .1)
@@ -159,6 +243,16 @@ get_signals_wrapper <- function(bullets, progress = NULL) {
   return(bullets)
 }
 
+#' Update Crosscut from Sliders Wrapper
+#'
+#' Updates crosscut locations in the bullets data frame from Shiny slider inputs.
+#'
+#' @param bullets A data frame containing bullet data
+#' @param selected A string containing the name of the selected bullet
+#' @param all_inputs A list of all Shiny input values
+#'
+#' @returns A data frame with updated crosscut values
+#' @noRd
 update_cc_from_slider_wrapper <- function(bullets, selected, all_inputs) {
   # Get current crosscut slider names and values as list ----
   cc_sliders <- unlist(all_inputs[grepl("^CCsl", names(all_inputs))])
@@ -167,4 +261,3 @@ update_cc_from_slider_wrapper <- function(bullets, selected, all_inputs) {
   bullets[bullets$bullet == selected,]$crosscut <- cc_sliders
   return(bullets)
 }
-
