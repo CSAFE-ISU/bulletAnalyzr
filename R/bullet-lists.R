@@ -113,7 +113,7 @@ filter_bullet_land_cols <- function(df, sel_bullet, sel_land, unnest_data = NULL
   
   if (!is.null(unnest_data)) {
     df <- df %>% 
-      tidyr::unnest(unnest_data)
+      tidyr::unnest(tidyselect::all_of(unnest_data))
   }
   return(df)
 }
