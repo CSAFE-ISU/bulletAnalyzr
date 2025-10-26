@@ -1,5 +1,7 @@
 library(shinytest2)
 
+shinytest2::load_app_env()
+
 options(rgl.useNULL = TRUE)
 
 test_that("Test app", {
@@ -117,18 +119,14 @@ test_that("Test app", {
   
   # Click Next Step on grooves page ----
   message("Starting heavy computation - may take 1-2 minutes...")
-  app$click("grooves_next_button")
+  app$click("grooves_next_button", wait_ = FALSE)
+  log <- app$get_logs()
+  print(log)
+  saveRDS(log, testthat::test_path("logs", "app_log.rds"))
   
-  # Wait a bit
-  Sys.sleep(30)
-  
-  # Wait for report stage to complete
-  app$wait_for_value(input = "comp_bul1", timeout = 120000)  # 2 min
-  app$wait_for_value(output = "report1-report", timeout = 60000)  # 1 min
-  
-  # Buffer for all plots to render
-  Sys.sleep(5)
-  app$wait_for_idle(duration = 5000, timeout = 30000)
+  # Then manually wait for what you need
+  app$wait_for_value(input = "comp_bul1")
+  app$wait_for_idle()
   
   app$expect_values(export = TRUE, input = inputs)  # 15
   
