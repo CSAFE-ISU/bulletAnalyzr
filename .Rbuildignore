@@ -1,2 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+
+^app$
+^docs$
+^examples$
+^scratch.R$
+^LICENSE\.md$
+_\.new\.png$

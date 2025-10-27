@@ -27,8 +27,6 @@ compare_new_old_snaps <- function(snapshot = "pipeline-001") {
   testthat::expect_identical(actual, expected)
 }
 
-
-
 get_inputs_for_tests <- function(app) {
   inputs <- names(app$get_values(input = TRUE)$input)
   inputs <- inputs[!stringr::str_detect(inputs, "shinyscreenshot")]

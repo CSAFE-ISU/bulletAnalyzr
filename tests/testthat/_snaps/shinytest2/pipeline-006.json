@@ -1,0 +1,133 @@
+{
+  "input": {
+    "add_to_list_button": 2,
+    "begin_button": 1,
+    "bul_x3p_name": "Bullet 2",
+    "doprocess": 0,
+    "prevreport": "Upload Bullet"
+  },
+  "export": {
+    "allbull_export": {
+      "source": [
+        "Barrel_1-Bullet_2-Land_1.x3p",
+        "Barrel_1-Bullet_2-Land_2.x3p",
+        "Barrel_1-Bullet_2-Land_3.x3p",
+        "Barrel_1-Bullet_2-Land_4.x3p",
+        "Barrel_1-Bullet_2-Land_5.x3p",
+        "Barrel_1-Bullet_2-Land_6.x3p",
+        "Barrel_1-Bullet_2-Land_1.x3p",
+        "Barrel_1-Bullet_2-Land_2.x3p",
+        "Barrel_1-Bullet_2-Land_3.x3p",
+        "Barrel_1-Bullet_2-Land_4.x3p",
+        "Barrel_1-Bullet_2-Land_5.x3p",
+        "Barrel_1-Bullet_2-Land_6.x3p"
+      ],
+      "x3p": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "md5sum": [
+        "ca0d4e87feb09b5d76f15be2edc0cce0",
+        "bf5d73df16b1f085f815a31e8c314e57",
+        "c88128f4e7f39d3cf1917396bbfeac5f",
+        "ef4db6d34539f336001397eaa874083c",
+        "562541fd2d3febb794762019b360d256",
+        "7bc57f9feceb6ce64f66d8eb14b01962",
+        "ca0d4e87feb09b5d76f15be2edc0cce0",
+        "bf5d73df16b1f085f815a31e8c314e57",
+        "c88128f4e7f39d3cf1917396bbfeac5f",
+        "ef4db6d34539f336001397eaa874083c",
+        "562541fd2d3febb794762019b360d256",
+        "7bc57f9feceb6ce64f66d8eb14b01962"
+      ],
+      "filename": [
+        "Barrel_1-Bullet_2-Land_1.x3p",
+        "Barrel_1-Bullet_2-Land_2.x3p",
+        "Barrel_1-Bullet_2-Land_3.x3p",
+        "Barrel_1-Bullet_2-Land_4.x3p",
+        "Barrel_1-Bullet_2-Land_5.x3p",
+        "Barrel_1-Bullet_2-Land_6.x3p",
+        "Barrel_1-Bullet_2-Land_1.x3p",
+        "Barrel_1-Bullet_2-Land_2.x3p",
+        "Barrel_1-Bullet_2-Land_3.x3p",
+        "Barrel_1-Bullet_2-Land_4.x3p",
+        "Barrel_1-Bullet_2-Land_5.x3p",
+        "Barrel_1-Bullet_2-Land_6.x3p"
+      ],
+      "land_names": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "bullet_name": [
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p",
+        "Barrel_1.Bullet_2.Land_.x3p"
+      ],
+      "bullet": [
+        "Bullet 1",
+        "Bullet 1",
+        "Bullet 1",
+        "Bullet 1",
+        "Bullet 1",
+        "Bullet 1",
+        "Bullet 2",
+        "Bullet 2",
+        "Bullet 2",
+        "Bullet 2",
+        "Bullet 2",
+        "Bullet 2"
+      ],
+      "land": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "cbull_export": null,
+    "cbull_name_export": "Bullet 2",
+    "comparison_export": null,
+    "phase_test_export": null,
+    "postCC_export": null,
+    "preCC_export": null,
+    "show_alert_export": true,
+    "stage_export": "upload"
+  }
+}

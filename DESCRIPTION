@@ -7,20 +7,24 @@ Authors@R:
 Description: not a package, just to make sure that we can install and update all the needed packages with a single call to `devtools::install()`.
 License: GPL (>= 3)
 Imports:
-    shiny   (>= 1.8.1.1),
-    shinyjs (>= 2.1.0),
-    shinyBS (>= 0.61.1),
-    ggplot2 (>= 3.5.1),
     bslib (>= 0.7.0),
-    bsicons (>= 0.1.2),
-    shinycssloaders (>= 1.0.0),
-    randomForest (>= 4.7-1.1),
     dplyr (>= 1.1.4),
     DT (>= 0.33),
-    webshot2,
-    pandoc,
-    x3ptools,
-    bulletxtrctr
+    ggplot2 (>= 3.5.1),
+    htmltools,
+    magrittr,
+    purrr,
+    randomForest (>= 4.7-1.1),
+    rgl,
+    sessioninfo,
+    shiny (>= 1.8.1.1),
+    shinyBS (>= 0.61.1),
+    shinycssloaders (>= 1.0.0),
+    shinyjs (>= 2.1.0),
+    shinyscreenshot,
+    tidyr,
+    tidyselect,
+    x3ptools
 Remotes: 
     heike/x3ptools,
     heike/bulletxtrctr,
@@ -28,10 +32,15 @@ Remotes:
 URL: https://CSAFE-ISU.github.io/bulletAnalyzr/
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
+    bulletxtrctr,
     R (>= 3.9)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests: 
-    testthat (>= 3.0.0)
+    jsonlite,
+    shinytest2,
+    stringr,
+    testthat (>= 3.0.0),
+    webshot2
 Config/testthat/edition: 3
