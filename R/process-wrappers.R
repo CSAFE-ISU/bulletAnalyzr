@@ -84,13 +84,40 @@ get_default_cc_wrapper <- function(bullets, ylimits = c(150, NA)) {
   
   bullets$crosscut <- sapply(bullets$x3p, bulletxtrctr::x3p_crosscut_optimize, ylimits = ylimits)
   
-  # Check for NA values
-  na_idx <- is.na(bullets$crosscut)
-  if (any(na_idx)) {
-    bullet_land <- paste("Bullet", bullets$bullet, "Land", bullets$land)
+  # If any of the crosscut values are NA, this means that bulletxtrctr could not
+  # find a stable region, where the minimum ccf allowed is 0.9. Try
+  # incrementally lowering the permitted minimum ccf by 0.05 each time. If a
+  # minimum ccf of 0.6 still does not yield a stable region, throw an error.
+  if (any(is.na(bullets$crosscut))) {
+    # Get indices of any lands where the crosscut location is NA
+    missing_cc_indx <- which(is.na(bullets$crosscut))
     
-    stop(paste("x3p_crosscut_optimize could not find a stable region in land:", 
-               paste(bullet_land[na_idx], collapse = ", ")))
+    for (i in missing_cc_indx) {
+      current_cc <- bullets$crosscut[i]
+      current_minccf <- 0.85
+      
+      while (current_minccf >= 0.6) {
+        current_cc <- bulletxtrctr::x3p_crosscut_optimize(
+          x3p = bullets$x3p[[i]],
+          ylimits = ylimits,
+          minccf = current_minccf
+        )
+        if (is.na(current_cc) && current_minccf == 0.6) {
+          # Error if a stable region still can't be found
+          bullet_land <- paste("Bullet", bullets$bullet[i], "Land", bullets$land[i])
+          stop(paste("x3p_crosscut_optimize could not find a stable region in land:", 
+                     paste(bullet_land, collapse = ", ")))
+        } else if (is.na(current_cc)) {
+          current_minccf <- current_minccf - 0.05
+          next
+        } else {
+          break
+        }
+      }
+      
+      # Update crosscut in bullets data frame
+      bullets$crosscut[i] <- current_cc
+    }
   }
   
   return(bullets)

@@ -5,25 +5,32 @@
 #' @name bulletAnalyzrApp
 #' @rdname bulletAnalyzrApp
 #' @keywords Shiny
-#' 
+#'
 #' @param run_interactive TRUE allows the user to adjust the crosscut and groove
 #'   locations. FALSE uses the crosscut and grooves automatically chosen by the
 #'   app.
+#' @param sample_m An integer value by which to downsample the x3p scan for
+#'   display. High-resolution scans that are 15+ MB require more memory and
+#'   might crash the app unless down-sampled. On the other hand,
+#'   lower-resolution scans can appear too smooth if too much down-sampling is
+#'   performed. The default of sample_m = 10 was optimized for 15+ MB scans.
+#'   Downsampling is only performed on the displayed scans. All computations use
+#'   the original resolution.
 #' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 #'   'enableBookmarking' of 'shiny::shinyApp'
-#' 
+#'
 #' @returns No return value, called to launch 'shiny' app
-#' 
+#'
 #' @export
 #' @importFrom stats predict
-#' 
+#'
 #' @examples
 #' \dontrun{
 #'   bulletAnalyzrApp()
 #' }
 #'
 #' @returns A Shiny app
-bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
+bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
   
   ## Config
   options(rgl.useNULL = TRUE)
@@ -38,7 +45,6 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
     text = ggplot2::element_text(size = 22), 
     plot.title = ggplot2::element_text(size = 22, face = "bold")
   )
-  sample_m = 10
   
   ui <- shiny::shinyUI({
     shiny::fluidPage(title = "BulletAnalyzr",
