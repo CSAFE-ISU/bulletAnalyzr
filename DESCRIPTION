@@ -30,7 +30,7 @@ Remotes:
     heike/x3ptools,
     heike/bulletxtrctr,
     rstudio/webshot2
-URL: https://CSAFE-ISU.github.io/bulletAnalyzr/
+URL: https://CSAFE-ISU.github.io/bulletAnalyzr/, https://github.com/CSAFE-ISU/bulletAnalyzr
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
     bulletxtrctr,
