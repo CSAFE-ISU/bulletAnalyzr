@@ -4,12 +4,20 @@
 \alias{bulletAnalyzrApp}
 \title{BulletAnalyzr Application}
 \usage{
-bulletAnalyzrApp(run_interactive = TRUE, ...)
+bulletAnalyzrApp(run_interactive = TRUE, sample_m = 10, ...)
 }
 \arguments{
 \item{run_interactive}{TRUE allows the user to adjust the crosscut and groove
 locations. FALSE uses the crosscut and grooves automatically chosen by the
 app.}
+
+\item{sample_m}{An integer value by which to downsample the x3p scan for
+display. High-resolution scans that are 15+ MB require more memory and
+might crash the app unless down-sampled. On the other hand,
+lower-resolution scans can appear too smooth if too much down-sampling is
+performed. The default of sample_m = 10 was optimized for 15+ MB scans.
+Downsampling is only performed on the displayed scans. All computations use
+the original resolution.}
 
 \item{...}{Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 'enableBookmarking' of 'shiny::shinyApp'}

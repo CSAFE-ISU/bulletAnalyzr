@@ -11,6 +11,7 @@
   - Bullet-to-bullet similarity scores
   - Land-to-land score matrices
   - Aligned signal comparisons and other diagnostic metrics
+* **Display settings**: Users can adjust the down-sampling performed on display images.
 
 ## Current Requirements
 

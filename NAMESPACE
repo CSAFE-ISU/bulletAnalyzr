@@ -2,8 +2,6 @@
 
 export("%>%")
 export(bulletAnalyzrApp)
-export(reportMainUI)
 export(reportServer)
-export(reportSidebarUI)
 importFrom(magrittr,"%>%")
 importFrom(stats,predict)
