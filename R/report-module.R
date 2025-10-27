@@ -3,7 +3,7 @@
 #' @param id The module id
 #'
 #' @returns A Shiny UI element
-#' @export
+#' @noRd
 reportSidebarUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::uiOutput(ns("reportDownUI"))
@@ -14,7 +14,7 @@ reportSidebarUI <- function(id) {
 #' @param id The module id
 #'
 #' @returns A Shiny UI element
-#' @export
+#' @noRd
 reportMainUI <- function(id) {
   ns <- shiny::NS(id)
   htmltools::tagList(

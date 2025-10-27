@@ -12,7 +12,7 @@
 #' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 #'   'enableBookmarking' of 'shiny::shinyApp'
 #' 
-#' @return No return value, called to launch 'shiny' app
+#' @returns No return value, called to launch 'shiny' app
 #' 
 #' @export
 #' @importFrom stats predict
@@ -22,7 +22,7 @@
 #'   bulletAnalyzrApp()
 #' }
 #'
-#' @return A Shiny app
+#' @returns A Shiny app
 bulletAnalyzrApp <- function(run_interactive = TRUE, ...){
   
   ## Config
