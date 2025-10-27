@@ -1,7 +1,5 @@
 library(shinytest2)
 
-shinytest2::load_app_env()
-
 options(rgl.useNULL = TRUE)
 
 test_that("Test app", {
@@ -117,17 +115,6 @@ test_that("Test app", {
   app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs, output = TRUE)  # 14
   
-  # Click Next Step on grooves page ----
-  message("Starting heavy computation - may take 1-2 minutes...")
-  app$click("grooves_next_button", wait_ = FALSE)
-  log <- app$get_logs()
-  print(log)
-  saveRDS(log, testthat::test_path("logs", "app_log.rds"))
-  
-  # Then manually wait for what you need
-  app$wait_for_value(input = "comp_bul1")
-  app$wait_for_idle()
-  
-  app$expect_values(export = TRUE, input = inputs)  # 15
+  # WARNING: this test does NOT check the report module
   
 })

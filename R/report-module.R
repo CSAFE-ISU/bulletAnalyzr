@@ -218,7 +218,7 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       )
     })
     
-    downloadDataServer("data1", bullet_data = bullet_data, drop_x3p = TRUE)
+    downloadDataServer("data1", bullet_data = bullet_data, phase_test_results = phase_test_results, drop_x3p = FALSE)
     
     # OUTPUT - Phase test score ----
     output$bull_comp_score <- shiny::renderText({
