@@ -11,7 +11,7 @@ test_that("Test app", {
     name = "pipeline", 
     height = 674, 
     width = 1139,
-    timeout = 240000,
+    timeout = 200000,
     expect_values_screenshot_args = FALSE  # don't take debug snapshots with expect_values()
   )
   
