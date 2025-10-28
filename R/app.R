@@ -136,25 +136,25 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
                                                                                                                                                 ))),
                                                                                                             shiny::mainPanel(
                                                                                                               shiny::tabsetPanel(id="prevreport",
-                                                                                                                          
-                                                                                                                          ## Welcome
-                                                                                                                          shiny::tabPanel("Welcome",
-                                                                                                                                          shiny::h3("WELCOME TO BULLETANALYZR!"),
-                                                                                                                                          shiny::p("Our innovation combines 3D imagery and sophisticated algorithms to revolutionize bullet analysis. This prototype demonstrates how our methods can calculate the likelihood of the observed similarity if two bullets originated from the same firearm versus different firearms. It's a work in progress, evolving through feedback from diverse communities."),
-                                                                                                                          ),
-                                                                                                                          
-                                                                                                                          ## Upload Bullet RGL Windows
-                                                                                                                          shiny::tabPanel("Upload Bullet", shiny::uiOutput("lpupload")),
-                                                                                                                          
-                                                                                                                          ## Upload Bullet RGL Windows
-                                                                                                                          shiny::tabPanel("Preview Bullet",shiny::uiOutput("lpreview")),
-                                                                                                                          
-                                                                                                                          ## Comparison Report
-                                                                                                                          shiny::tabPanel("Comparison Report", 
-                                                                                                                                          shinycssloaders::withSpinner(shiny::uiOutput("CCBullLand")),
-                                                                                                                                          shinycssloaders::withSpinner(shiny::uiOutput("groovePlotsUI")),
-                                                                                                                                          shinycssloaders::withSpinner(reportMainUI("report1"))
-                                                                                                                          )  
+                                                                                                                                 
+                                                                                                                                 ## Welcome
+                                                                                                                                 shiny::tabPanel("Welcome",
+                                                                                                                                                 shiny::h3("WELCOME TO BULLETANALYZR!"),
+                                                                                                                                                 shiny::p("Our innovation combines 3D imagery and sophisticated algorithms to revolutionize bullet analysis. This prototype demonstrates how our methods can calculate the likelihood of the observed similarity if two bullets originated from the same firearm versus different firearms. It's a work in progress, evolving through feedback from diverse communities."),
+                                                                                                                                 ),
+                                                                                                                                 
+                                                                                                                                 ## Upload Bullet RGL Windows
+                                                                                                                                 shiny::tabPanel("Upload Bullet", shiny::uiOutput("lpupload")),
+                                                                                                                                 
+                                                                                                                                 ## Upload Bullet RGL Windows
+                                                                                                                                 shiny::tabPanel("Preview Bullet",shiny::uiOutput("lpreview")),
+                                                                                                                                 
+                                                                                                                                 ## Comparison Report
+                                                                                                                                 shiny::tabPanel("Comparison Report", 
+                                                                                                                                                 shinycssloaders::withSpinner(shiny::uiOutput("CCBullLand")),
+                                                                                                                                                 shinycssloaders::withSpinner(shiny::uiOutput("groovePlotsUI")),
+                                                                                                                                                 shinycssloaders::withSpinner(reportMainUI("report1"))
+                                                                                                                                 )  
                                                                                                               )
                                                                                                             )
                                                                                        )
@@ -184,6 +184,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
   
   # Server--------------------------------------------------------------
   server <- function(input, output, session) {
+    
+    # Skip rendering during tests
+    is_testing <- isTRUE(getOption("shiny.testmode"))
     
     # OUTPUT - Session Info - Report versions of packages used
     output$sessionInfo <- render_session_info(session)
@@ -311,23 +314,25 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       }
       
       # Render bullet
-      progress$set(message = "Rendering Previews", value = .75)
-      for(idx in 1:nrow(cbull)) {
-        local({
-          cidx <- idx
-          # OUTPUT RGL - Bullet
-          output[[paste0("x3prgl",idx)]] <- rgl::renderRglwidget({
-            render_land(
-              x3p = cbull$x3p[[cidx]], 
-              ccut = NULL,
-              sample_m = sample_m,
-              rotate = TRUE,
-              img_size = 500,
-              img_zoom = 0.4
-            )
-            rgl::rglwidget()
+      if (!is_testing) {
+        progress$set(message = "Rendering Previews", value = .75)
+        for(idx in 1:nrow(cbull)) {
+          local({
+            cidx <- idx
+            # OUTPUT RGL - Bullet
+            output[[paste0("x3prgl",idx)]] <- rgl::renderRglwidget({
+              render_land(
+                x3p = cbull$x3p[[cidx]], 
+                ccut = NULL,
+                sample_m = sample_m,
+                rotate = TRUE,
+                img_size = 500,
+                img_zoom = 0.4
+              )
+              rgl::rglwidget()
+            })
           })
-        })
+        }
       }
       
       # Enable upload button
@@ -476,7 +481,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       }
     })
     
-  
+    
     # SECTION: PREVIEW BULLET TAB----------------------------------------
     
     # OUTPUT UI - Preview Bullet sidebar
@@ -514,23 +519,25 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       )
       
       # Render selected bullet
-      progress$set(message = "Rendering Previews", value = .75)
-      for(idx in 1:nrow(bull)) {
-        local({
-          cidx <- idx
-          # OUTPUT RGL - Bullet
-          output[[paste0("x3prglprev",idx)]] <- rgl::renderRglwidget({
-            render_land(
-              x3p = bull$x3p[[cidx]], 
-              ccut = NULL,
-              sample_m = sample_m,
-              rotate = TRUE,
-              img_size = 500,
-              img_zoom = 0.4
-            )
-            rgl::rglwidget()
+      if (!is_testing) {
+        progress$set(message = "Rendering Previews", value = .75)
+        for(idx in 1:nrow(bull)) {
+          local({
+            cidx <- idx
+            # OUTPUT RGL - Bullet
+            output[[paste0("x3prglprev",idx)]] <- rgl::renderRglwidget({
+              render_land(
+                x3p = bull$x3p[[cidx]], 
+                ccut = NULL,
+                sample_m = sample_m,
+                rotate = TRUE,
+                img_size = 500,
+                img_zoom = 0.4
+              )
+              rgl::rglwidget()
+            })
           })
-        })
+        }
       }
       
       # Display selected bullet
@@ -590,22 +597,24 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       temp_refresh <- input$prevreport
       
       # Render lands with crosscuts 
-      for(idx in 1:nrow(bullets)) {
-        local({
-          cidx <- idx
-          # OUTPUT RGL - Render lands with crosscuts
-          output[[paste0("CC_Sel_",idx)]] <- rgl::renderRglwidget({
-            render_land(
-              x3p = bullets$x3p[[cidx]],
-              ccut = input[[paste0("CCsl", cidx)]],
-              rotate = TRUE,
-              sample_m = sample_m,
-              img_size = 500,
-              img_zoom = 0.4
-            )
-            rgl::rglwidget()
+      if (!is_testing) {
+        for(idx in 1:nrow(bullets)) {
+          local({
+            cidx <- idx
+            # OUTPUT RGL - Render lands with crosscuts
+            output[[paste0("CC_Sel_",idx)]] <- rgl::renderRglwidget({
+              render_land(
+                x3p = bullets$x3p[[cidx]],
+                ccut = input[[paste0("CCsl", cidx)]],
+                rotate = TRUE,
+                sample_m = sample_m,
+                img_size = 500,
+                img_zoom = 0.4
+              )
+              rgl::rglwidget()
+            })
           })
-        })
+        }
       }
       
       # Display lands with crosscuts 
@@ -801,7 +810,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         left_groove = input$grooveL,
         right_groove = input$grooveR
       )
-
+      
     })
     
     # OUTPUT UI - Display Crosscut (Profiles) with Grooves
@@ -919,7 +928,7 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       comp_bul2 = shiny::reactive(input$comp_bul2),
       phase_test_results = phase$test_results
     )
-
+    
   }
   
   shiny::shinyApp(ui, server, ...)
