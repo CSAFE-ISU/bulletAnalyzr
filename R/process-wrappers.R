@@ -30,17 +30,26 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
 #' Computes bullet-level scores from land-level comparison features.
 #'
 #' @param features A data frame containing land comparison features and RF scores
-#' @param progress A Shiny progress object
 #'
 #' @returns A data frame containing bullet scores
 #' @noRd
-get_bullet_scores_wrapper <- function(features, progress) {
+get_bullet_scores_wrapper <- function(features) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- NULL
-  
-  progress$set(message = "Preparing Report Data", value = .5)
-  bullet_scores <- features %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
-  bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(bulletxtrctr::compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+
+  bullet_scores <- features %>% 
+    dplyr::group_by(bulletA, bulletB) %>% 
+    tidyr::nest()
+  bullet_scores$bullet_score <- sapply(
+    bullet_scores$data, 
+    function(d) max(
+      compute_average_scores_fixed(
+        land1 = d$landA, 
+        land2 = d$landB, 
+        score = d$rfscore
+      )
+    )
+  )
   return(bullet_scores)
 }
 

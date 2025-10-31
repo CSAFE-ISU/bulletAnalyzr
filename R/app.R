@@ -451,7 +451,8 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
         
         # Calculate bullet scores
-        bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
+        progress$set(message = "Preparing Report Data", value = .5)
+        bullet_scores <- get_bullet_scores_wrapper(features = features)
         
         # Denote same source
         bullet_scores$data <- lapply(
@@ -845,6 +846,8 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       # Get Resolution
       resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
       
+      saveRDS(resolution, file.path(tempdir(), "resolution.rds"))
+      
       # Get Features
       features_results <- get_features_wrapper(comparisons = comparisons, resolution = resolution, progress = progress)
       comparisons <- features_results$comparisons
@@ -854,8 +857,11 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       progress$set(message = "Predicting RandomForest Scores", value = .45)
       features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
       
+      saveRDS(features, file.path(tempdir(), "features.rds"))
+      
       # Calculate bullet scores
-      bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
+      progress$set(message = "Preparing Report Data", value = .5)
+      bullet_scores <- get_bullet_scores_wrapper(features = features)
       
       # Denote same source
       # just get the 'best phase' not just ones that are 'matches'
@@ -863,6 +869,8 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         bullet_scores$data,
         function(d) cbind(d, samesource = bulletxtrctr::bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference = 0.01))
       )
+      
+      saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores.rds"))
       
       # Render lands with crosscuts snapshot
       bullets$x3pimg <- NA
@@ -877,6 +885,8 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       )
       bulldata$comparison <- report_results$comparison
       bulldata$comparison_export <- report_results$comparison_export
+      
+      saveRDS(bulldata, file.path(tempdir(), "bulldata.rds"))
     })
     
     # SECTION: PHASE TEST-----------------------------------------------
@@ -895,8 +905,11 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         unnest_data = "data"
       )
       
+      saveRDS(d, file.path(tempdir(), "filtered_data_for_pt.rds"))
+      
       tryCatch({
         phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
+        saveRDS(phase, file.path(tempdir(), "phase_test.rds"))
       }, error = function(e) {
         return(d)
       })

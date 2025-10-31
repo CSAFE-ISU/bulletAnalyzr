@@ -117,4 +117,6 @@ test_that("Test app", {
   
   # WARNING: this test does NOT check the report module
   
+  app$stop()
+  
 })
