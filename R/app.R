@@ -16,6 +16,9 @@
 #'   performed. The default of sample_m = 10 was optimized for 15+ MB scans.
 #'   Downsampling is only performed on the displayed scans. All computations use
 #'   the original resolution.
+#' @param save_diagnositcs TRUE saves the resolution, features, bullet scores,
+#'   and bulldata to file when they are first calculated. They are saved in RDS
+#'   files in the temporary directory. FALSE does not save these files. 
 #' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 #'   'enableBookmarking' of 'shiny::shinyApp'
 #'
@@ -30,7 +33,11 @@
 #' }
 #'
 #' @returns A Shiny app
-bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
+bulletAnalyzrApp <- function(
+    run_interactive = TRUE, 
+    sample_m = 10,
+    save_diagnostics = FALSE,
+    ...){
   
   ## Config
   options(rgl.useNULL = TRUE)
@@ -846,7 +853,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       # Get Resolution
       resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
       
-      saveRDS(resolution, file.path(tempdir(), "resolution.rds"))
+      if (save_diagnostics) {
+        saveRDS(resolution, file.path(tempdir(), "resolution.rds"))
+      }
       
       # Get Features
       features_results <- get_features_wrapper(comparisons = comparisons, resolution = resolution, progress = progress)
@@ -857,7 +866,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       progress$set(message = "Predicting RandomForest Scores", value = .45)
       features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
       
-      saveRDS(features, file.path(tempdir(), "features.rds"))
+      if (save_diagnostics) {
+        saveRDS(features, file.path(tempdir(), "features.rds"))
+      }
       
       # Calculate bullet scores
       progress$set(message = "Preparing Report Data", value = .5)
@@ -870,7 +881,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         function(d) cbind(d, samesource = bulletxtrctr::bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference = 0.01))
       )
       
-      saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores.rds"))
+      if (save_diagnostics) {
+        saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores.rds"))
+      }
       
       # Render lands with crosscuts snapshot
       bullets$x3pimg <- NA
@@ -886,7 +899,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       bulldata$comparison <- report_results$comparison
       bulldata$comparison_export <- report_results$comparison_export
       
-      saveRDS(bulldata, file.path(tempdir(), "bulldata.rds"))
+      if (save_diagnostics) {
+        saveRDS(bulldata, file.path(tempdir(), "bulldata.rds"))
+      }
     })
     
     # SECTION: PHASE TEST-----------------------------------------------

@@ -4,7 +4,12 @@
 \alias{bulletAnalyzrApp}
 \title{BulletAnalyzr Application}
 \usage{
-bulletAnalyzrApp(run_interactive = TRUE, sample_m = 10, ...)
+bulletAnalyzrApp(
+  run_interactive = TRUE,
+  sample_m = 10,
+  save_diagnostics = FALSE,
+  ...
+)
 }
 \arguments{
 \item{run_interactive}{TRUE allows the user to adjust the crosscut and groove
@@ -21,6 +26,10 @@ the original resolution.}
 
 \item{...}{Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 'enableBookmarking' of 'shiny::shinyApp'}
+
+\item{save_diagnositcs}{TRUE saves the resolution, features, bullet scores,
+and bulldata to file when they are first calculated. They are saved in RDS
+files in the temporary directory. FALSE does not save these files.}
 }
 \value{
 No return value, called to launch 'shiny' app
