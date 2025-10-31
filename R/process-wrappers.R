@@ -30,17 +30,59 @@ get_aligned_signals_wrapper <- function(bullets, progress = NULL) {
 #' Computes bullet-level scores from land-level comparison features.
 #'
 #' @param features A data frame containing land comparison features and RF scores
-#' @param progress A Shiny progress object
 #'
 #' @returns A data frame containing bullet scores
 #' @noRd
-get_bullet_scores_wrapper <- function(features, progress) {
+get_bullet_scores_wrapper <- function(features) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- NULL
-  
-  progress$set(message = "Preparing Report Data", value = .5)
-  bullet_scores <- features %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
-  bullet_scores$bullet_score <- sapply(bullet_scores$data, function(d) max(bulletxtrctr::compute_average_scores(land1 = d$landA, land2 = d$landB, d$rfscore, verbose = FALSE)))
+
+  bullet_scores <- features %>% 
+    dplyr::group_by(bulletA, bulletB) %>% 
+    tidyr::nest()
+  bullet_scores$bullet_score <- sapply(
+    bullet_scores$data, 
+    function(d) max(
+      compute_average_scores_fixed(
+        land1 = d$landA, 
+        land2 = d$landB, 
+        score = d$rfscore
+      )
+    )
+  )
+  return(bullet_scores)
+}
+
+#' Bullet to Land Predict Fixed Wrapper
+#'
+#' Runs `bullet_to_land_predict_fixed()`, which is the fixed version of
+#' `bulletxtrctr::bullet_to_land_predict()`, for all bullet-to-bullet
+#' comparisons. `bullet_to_land_predict_fixed()` adds a column samesource to the
+#' "data" data frame for each bullet-to-bullet comparison. The samesource column
+#' denotes whether each land-to-land comparison belongs to the best phase. The
+#' samesource column is primarily used to plot the thick lines around the best
+#' phase in the land-to-land score matrix.
+#'
+#' @param bullet_scores A data frame containing a bullet-to-bullet comparison in
+#'   each row. Each row contains a nested data frame in the data column of the
+#'   land-to-land comparisons for that bullet-to-bullet comparison.
+#'
+#' @returns The input data frame with a samesource column added to each nested
+#'   data frame.
+#' @noRd
+get_bullet_to_land_wrapper <- function(bullet_scores) {
+  # just get the 'best phase' not just ones that are 'matches'
+  bullet_scores$data <- lapply(
+    bullet_scores$data,
+    function(d) cbind(d, samesource = bullet_to_land_predict_fixed(
+      land1 = d$landA, 
+      land2 = d$landB, 
+      scores = d$rfscore, 
+      alpha = .9, 
+      difference = 0.01
+      )
+    )
+  )
   return(bullet_scores)
 }
 

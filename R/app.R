@@ -16,6 +16,9 @@
 #'   performed. The default of sample_m = 10 was optimized for 15+ MB scans.
 #'   Downsampling is only performed on the displayed scans. All computations use
 #'   the original resolution.
+#' @param save_diagnositcs TRUE saves the resolution, features, bullet scores,
+#'   and bulldata to file when they are first calculated. They are saved in RDS
+#'   files in the temporary directory. FALSE does not save these files. 
 #' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 #'   'enableBookmarking' of 'shiny::shinyApp'
 #'
@@ -30,7 +33,11 @@
 #' }
 #'
 #' @returns A Shiny app
-bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
+bulletAnalyzrApp <- function(
+    run_interactive = TRUE, 
+    sample_m = 10,
+    save_diagnostics = FALSE,
+    ...){
   
   ## Config
   options(rgl.useNULL = TRUE)
@@ -451,7 +458,8 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
         
         # Calculate bullet scores
-        bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
+        progress$set(message = "Preparing Report Data", value = .5)
+        bullet_scores <- get_bullet_scores_wrapper(features = features)
         
         # Denote same source
         bullet_scores$data <- lapply(
@@ -844,6 +852,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       
       # Get Resolution
       resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
+      if (save_diagnostics) {
+        saveRDS(resolution, file.path(tempdir(), "resolution.rds"))
+      }
       
       # Get Features
       features_results <- get_features_wrapper(comparisons = comparisons, resolution = resolution, progress = progress)
@@ -853,16 +864,22 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       # Predict random forest scores
       progress$set(message = "Predicting RandomForest Scores", value = .45)
       features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
+      if (save_diagnostics) {
+        saveRDS(features, file.path(tempdir(), "features.rds"))
+      }
       
       # Calculate bullet scores
-      bullet_scores <- get_bullet_scores_wrapper(features = features, progress = progress)
+      progress$set(message = "Preparing Report Data", value = .5)
+      bullet_scores <- get_bullet_scores_wrapper(features = features)
+      if (save_diagnostics) {
+        saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores_pre_ss.rds"))
+      }
       
-      # Denote same source
-      # just get the 'best phase' not just ones that are 'matches'
-      bullet_scores$data <- lapply(
-        bullet_scores$data,
-        function(d) cbind(d, samesource = bulletxtrctr::bullet_to_land_predict(land1 = d$landA, land2 = d$landB, d$rfscore, alpha = .9, difference = 0.01))
-      )
+      # Denote best phase as "same source"
+      bullet_scores <- get_bullet_to_land_wrapper(bullet_scores = bullet_scores)
+      if (save_diagnostics) {
+        saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores_post_ss.rds"))
+      }
       
       # Render lands with crosscuts snapshot
       bullets$x3pimg <- NA
@@ -877,6 +894,9 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
       )
       bulldata$comparison <- report_results$comparison
       bulldata$comparison_export <- report_results$comparison_export
+      if (save_diagnostics) {
+        saveRDS(bulldata, file.path(tempdir(), "bulldata.rds"))
+      }
     })
     
     # SECTION: PHASE TEST-----------------------------------------------
@@ -895,8 +915,11 @@ bulletAnalyzrApp <- function(run_interactive = TRUE, sample_m = 10, ...){
         unnest_data = "data"
       )
       
+      saveRDS(d, file.path(tempdir(), "filtered_data_for_pt.rds"))
+      
       tryCatch({
         phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, d$ccf)
+        saveRDS(phase, file.path(tempdir(), "phase_test.rds"))
       }, error = function(e) {
         return(d)
       })
