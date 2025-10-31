@@ -53,6 +53,39 @@ get_bullet_scores_wrapper <- function(features) {
   return(bullet_scores)
 }
 
+#' Bullet to Land Predict Fixed Wrapper
+#'
+#' Runs `bullet_to_land_predict_fixed()`, which is the fixed version of
+#' `bulletxtrctr::bullet_to_land_predict()`, for all bullet-to-bullet
+#' comparisons. `bullet_to_land_predict_fixed()` adds a column samesource to the
+#' "data" data frame for each bullet-to-bullet comparison. The samesource column
+#' denotes whether each land-to-land comparison belongs to the best phase. The
+#' samesource column is primarily used to plot the thick lines around the best
+#' phase in the land-to-land score matrix.
+#'
+#' @param bullet_scores A data frame containing a bullet-to-bullet comparison in
+#'   each row. Each row contains a nested data frame in the data column of the
+#'   land-to-land comparisons for that bullet-to-bullet comparison.
+#'
+#' @returns The input data frame with a samesource column added to each nested
+#'   data frame.
+#' @noRd
+get_bullet_to_land_wrapper <- function(bullet_scores) {
+  # just get the 'best phase' not just ones that are 'matches'
+  bullet_scores$data <- lapply(
+    bullet_scores$data,
+    function(d) cbind(d, samesource = bullet_to_land_predict_fixed(
+      land1 = d$landA, 
+      land2 = d$landB, 
+      scores = d$rfscore, 
+      alpha = .9, 
+      difference = 0.01
+      )
+    )
+  )
+  return(bullet_scores)
+}
+
 #' Extract Crosscut Data Wrapper
 #'
 #' Extracts crosscut profile data from x3p objects at specified crosscut locations.

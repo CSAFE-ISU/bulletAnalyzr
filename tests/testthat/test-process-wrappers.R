@@ -1,15 +1,17 @@
-test_that("get bullet scores wrapper works", {
+testthat::test_that("get bullet scores wrapper works", {
   input <- readRDS(testthat::test_path("fixtures", "features.rds"))
-  input <- input %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
-  input <- input$data[[1]]
-  actual <- compute_average_scores_fixed(
-    land1 = input$landA, 
-    land2 = input$landB, 
-    score = input$rfscore
-  )
+  actual <- get_bullet_scores_wrapper(features = input)
   
-  expected <- c(0.917777777777778, 0.137222222222222, 0.292777777777778, 
-                0.186666666666667, 0.292777777777778, 0.137222222222222)
+  expected <- readRDS(testthat::test_path("fixtures", "bullet_scores_pre_ss.rds"))
   
-  expect_equal(actual, expected)
+  testthat::expect_equal(actual, expected)
+})
+
+testthat::test_that("get bullet to land wrapper works", {
+  input <- readRDS(testthat::test_path("fixtures", "bullet_scores_pre_ss.rds"))
+  actual <- get_bullet_to_land_wrapper(bullet_scores = input)
+  
+  expected <- readRDS(testthat::test_path("fixtures", "bullet_scores_post_ss.rds"))
+  
+  testthat::expect_equal(actual, expected)
 })
