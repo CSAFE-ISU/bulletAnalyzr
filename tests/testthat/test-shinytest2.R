@@ -55,7 +55,6 @@ test_that("Test app", {
   app$wait_for_value(output = "CCBull1")
   app$wait_for_value(input = "cc_bulsel")
   app$set_inputs(cc_bulsel = "Bullet 1")
-  app$wait_for_idle()
   app$expect_values(export = TRUE, input = inputs)  # 7
   
   # Change Bullet 1 Land 4 Crosscut Location ----
