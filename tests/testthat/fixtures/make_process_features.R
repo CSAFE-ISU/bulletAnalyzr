@@ -3,7 +3,7 @@
 
 # Copy rds files to fixtures folder
 files <- c("bullet_scores_pre_ss.rds", "bullet_scores_post_ss.rds", 
-           "features.rds")
+           "features.rds", "bulldata.rds", "filtered_data_for_pt.rds")
 
 for (f in files) {
   file.copy(
