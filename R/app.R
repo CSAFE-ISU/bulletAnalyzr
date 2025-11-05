@@ -918,7 +918,11 @@ bulletAnalyzrApp <- function(
       saveRDS(d, file.path(tempdir(), "filtered_data_for_pt.rds"))
       
       tryCatch({
-        phase$test_results <- bulletxtrctr::phase_test(land1 = d$landA, land2 = d$landB, score = d$ccf)
+        phase$test_results <- phase_test_fixed(
+          land1 = d$landA, 
+          land2 = d$landB, 
+          score = d$ccf
+        )
         saveRDS(phase, file.path(tempdir(), "phase_test.rds"))
       }, error = function(e) {
         return(d)
