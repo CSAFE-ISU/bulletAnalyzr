@@ -1,5 +1,5 @@
 testthat::test_that("bullet to land predict fixed works", {
-  input <- readRDS(testthat::test_path("fixtures", "bullet_scores_pre_ss.rds"))
+  input <- readRDS(testthat::test_path("fixtures", "process", "bullet_scores_pre_ss.rds"))
   input <- input$data[[2]]
   actual <- bullet_to_land_predict_fixed(
     land1 = input$landA,
@@ -15,7 +15,7 @@ testthat::test_that("bullet to land predict fixed works", {
 })
 
 testthat::test_that("compute average scores fixed works", {
-  input <- readRDS(testthat::test_path("fixtures", "features.rds"))
+  input <- readRDS(testthat::test_path("fixtures", "process", "features.rds"))
   input <- input %>% dplyr::group_by(bulletA, bulletB) %>% tidyr::nest()
   input <- input$data[[1]]
   actual <- compute_average_scores_fixed(
