@@ -29,3 +29,45 @@ testthat::test_that("compute average scores fixed works", {
   
   testthat::expect_equal(actual, expected)
 })
+
+testthat::test_that("relabel phases works", {
+
+  input <- readRDS(testthat::test_path("fixtures", "phase_test", "filtered_data_for_pt.rds"))
+  land1 <- input$landA
+  land2 <- input$landB
+  score <- input$ccf
+  input <- data.frame(land1, land2, score)
+  actual <- relabel_phases(df = input)
+  
+  avgs <- actual$avgs
+  # Check that the ordered column is 1, 2, ..., n
+  testthat::expect_identical(avgs$ordered, 1:nrow(avgs))
+  # Check that the max mean is in the last row
+  testthat::expect_equal(avgs$means[nrow(avgs)], max(avgs$means))
+  # Check that the max mean is 0.865379639
+  testthat::expect_equal(avgs$means[nrow(avgs)], 0.865379639)
+  
+  # Recalculate the means from the data frame and check that the highest
+  # numbered phase corresponds to the highest mean
+  avgs_new <- actual$df %>%
+    dplyr::group_by(phase) %>%
+    dplyr::summarize(means = mean(score))
+  testthat::expect_equal(avgs_new$means[max(avgs_new$phase)], max(avgs_new$means))
+  
+  # Check that the output is identical to the saved fixture
+  expected <- readRDS(testthat::test_path("fixtures", "phase_test", "relabeled_phases.rds"))
+  testthat::expect_identical(actual, expected)
+})
+
+testthat::test_that("phase test fixed works", {
+  input <- readRDS(testthat::test_path("fixtures", "phase_test", "filtered_data_for_pt.rds"))
+  actual <- phase_test_fixed(
+    land1 = input$landA,
+    land2 = input$landB,
+    score = input$ccf
+  )
+  
+  expected <- readRDS(testthat::test_path("fixtures", "phase_test", "phase_test.rds"))
+  
+  testthat::expect_identical(actual, expected)
+})
