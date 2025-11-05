@@ -24,12 +24,12 @@ performed. The default of sample_m = 10 was optimized for 15+ MB scans.
 Downsampling is only performed on the displayed scans. All computations use
 the original resolution.}
 
-\item{...}{Other arguments passed on to 'onStart', 'options', 'uiPattern', or
-'enableBookmarking' of 'shiny::shinyApp'}
-
-\item{save_diagnositcs}{TRUE saves the resolution, features, bullet scores,
+\item{save_diagnostics}{TRUE saves the resolution, features, bullet scores,
 and bulldata to file when they are first calculated. They are saved in RDS
 files in the temporary directory. FALSE does not save these files.}
+
+\item{...}{Other arguments passed on to 'onStart', 'options', 'uiPattern', or
+'enableBookmarking' of 'shiny::shinyApp'}
 }
 \value{
 No return value, called to launch 'shiny' app

@@ -1,0 +1,94 @@
+---
+title: "Phase Test on Example Data"
+author: "Stephanie Reinders"
+date: "2025-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(bulletxtrctr)
+library(dplyr)
+```
+
+```{r, include=FALSE}
+# getwd()
+# df <- readRDS("/Users/stephanie/Documents/bulletAnalyzr/tests/testthat/fixtures/filtered_data_for_pt.rds")
+# df <- df %>% ungroup() %>% select(landA, landB, ccf)
+# write.csv(df, file = "example_data_for_pt.csv", row.names = FALSE)
+```
+
+The file example_data_for_pt.csv contains comparison data between low-res versions of Hamby 44 Barrel 1 Bullet 1 and Bullet 2. (I added low-res versions of these bullets' lands to bulletAnalyzr for faster testing.)
+
+```{r}
+df <- read.csv("example_data_for_pt.csv")
+head(df)
+```
+
+I copied `phase_test()` from bulletxtrctr so that I could update it to save the intermediate data frame of phase averages in addition to the final results. Also, I'm not sure why, but I had to remove the quotation marks around phase and means. Otherwise `phase_test2()` throws an error, even though `bulletxtrctr::phase_test()` runs without error on my computer.
+
+```{r}
+# Update phase test function to return intermediate step as well
+phase_test2 <- function(land1, land2, score, sigma_0 = NA) {
+  
+  # data frame with structure land 1, land 2, score
+  # returns estimate 1, estimate 2, test statistic (difference), sigma (of reference distribution),
+  # and p-value
+  if (is.numeric(sigma_0)) stopifnot(sigma_0 > 0) # only positive values for sigma_0 are allowed
+
+  dframe <- data.frame(land1, land2, score)
+  dframe <- dframe %>%
+    arrange(land1, land2) %>% # provides row-first order (land2 is slower index)
+    mutate(
+      phase = get_phases(land1, land2)
+    ) %>%
+    arrange(land1, land2)
+  n <- max(dframe$phase)
+  # Return this data frame as intermed_avgs
+  avgs <- dframe %>% group_by(phase) %>%
+    summarize(
+      means = mean(score, na.rm = TRUE)
+    ) %>% ungroup() %>%
+    mutate(
+      ordered = (1:n)[order(.data$means)]
+    ) %>% arrange(means)
+  dframe <- dframe %>% mutate(
+    phase = avgs$ordered[.data$phase]
+  )
+  
+  est1 <- avgs$means[n]
+  est2 <- avgs$means[floor(n/2)]
+
+  if (is.na(sigma_0)) {
+    # use pooled variance estimator
+    sigmas <- dframe |> mutate(inphase = .data$phase==n) |>
+      group_by("inphase") |>
+      summarize(sd = sd(score, na.rm=TRUE), nu = sum(!is.na(score)) - 1) |>
+      ungroup() |>
+      summarize(
+        pooled = sum(.data$nu*.data$sd)/sum(.data$nu)
+      )
+    sigma_0 <- sigmas$pooled[1]
+
+    #sigma_0 <- sd(dframe %>% filter(phase!= n) %>% purrr::pluck("score"))/sqrt(n)
+  }
+  if (is.function(sigma_0)) { sigma_0 = sigma_0(dframe)}
+  test.statistic <- (est1-est2)
+  pvalue <- F_T(test.statistic, sigma = sigma_0, n = n, lower.tail = FALSE)
+  res <- list(estimate=est1-est2,estimate1=est1, estimate2=est2, statistic=test.statistic,
+              p.value=pvalue, parameter=sigma_0, n = n, data = dframe, 
+              intermed_avgs = avgs)
+  class(res) <- c("phase.test", "list")
+  res
+}
+
+pt <- phase_test2(land1 = df$landA, land2 = df$landB, score = df$ccf)
+```
+
+
+
+```{r}
+pt$intermed_avgs
+```
+
+The averages data frame shows that the means column is correctly sorted from smallest to largest. However, the ordered column is not in numerical order and the highest mean is labeled 1 in the ordered column. The estimate 1 and estimate 2 are calculated correctly, because they reference the last row in the averages data frame, but the pooled variance is calculated incorrectly because it references the phase with the 2nd lowest mean (ordered == 6 and phase == 4 in the avgs data frame) as the in-phase phase instead of the phase with the highest mean.
