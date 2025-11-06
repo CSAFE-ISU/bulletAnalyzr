@@ -48,10 +48,15 @@ downloadDataServer <- function(id, bullet_data = NULL, phase_test_results = NULL
       return(data)
     })
     
+    outfile <- shiny::reactive({
+      shiny::req(bullet_data)
+      return(unique(bullet_data$comparison$bullets$bullet))
+    })
+    
     # Data download handler
     output$download_data_button <- shiny::downloadHandler(
       filename = function() {
-        paste0("bullet-comparison-data-", Sys.Date(), ".rds")
+        paste0(bullet_names[1], "_", bullet_names[2], "_", outfile(), ".rds")
       },
       content = function(file) {
         saveRDS(download_data(), file)

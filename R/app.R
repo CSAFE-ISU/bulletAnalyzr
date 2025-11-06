@@ -16,9 +16,10 @@
 #'   performed. The default of sample_m = 10 was optimized for 15+ MB scans.
 #'   Downsampling is only performed on the displayed scans. All computations use
 #'   the original resolution.
-#' @param save_diagnostics TRUE saves the resolution, features, bullet scores,
-#'   and bulldata to file when they are first calculated. They are saved in RDS
-#'   files in the temporary directory. FALSE does not save these files. 
+#' @param save_diagnostics Optional. A filepath to a folder in which to save the
+#'   signals, resolution, features, bullet scores, and bulldata to file when
+#'   they are first calculated. They are saved in RDS format. The default NULL
+#'   does not save these files.
 #' @param ... Other arguments passed on to 'onStart', 'options', 'uiPattern', or
 #'   'enableBookmarking' of 'shiny::shinyApp'
 #'
@@ -36,7 +37,7 @@
 bulletAnalyzrApp <- function(
     run_interactive = TRUE, 
     sample_m = 10,
-    save_diagnostics = FALSE,
+    save_diagnostics = NULL,
     ...){
   
   ## Config
@@ -844,6 +845,15 @@ bulletAnalyzrApp <- function(
       
       # Extract the signals
       bullets <- get_signals_wrapper(bullets = bulldata$postCC, progress = progress)
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = bullets, 
+          outfile = "signals.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = TRUE
+        )
+      }
       
       # Align the signals
       signals_results <- get_aligned_signals_wrapper(bullets = bullets, progress = progress)
@@ -852,8 +862,14 @@ bulletAnalyzrApp <- function(
       
       # Get Resolution
       resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
-      if (save_diagnostics) {
-        saveRDS(resolution, file.path(tempdir(), "resolution.rds"))
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = resolution, 
+          outfile = "resolution.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = FALSE
+        )
       }
       
       # Get Features
@@ -864,21 +880,39 @@ bulletAnalyzrApp <- function(
       # Predict random forest scores
       progress$set(message = "Predicting RandomForest Scores", value = .45)
       features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[,2]
-      if (save_diagnostics) {
-        saveRDS(features, file.path(tempdir(), "features.rds"))
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = features, 
+          outfile = "features.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = TRUE
+        )
       }
       
       # Calculate bullet scores
       progress$set(message = "Preparing Report Data", value = .5)
       bullet_scores <- get_bullet_scores_wrapper(features = features)
-      if (save_diagnostics) {
-        saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores_pre_ss.rds"))
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = bullet_scores, 
+          outfile = "bullscores_pre_ss.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = TRUE
+        )
       }
       
       # Denote best phase as "same source"
       bullet_scores <- get_bullet_to_land_wrapper(bullet_scores = bullet_scores)
-      if (save_diagnostics) {
-        saveRDS(bullet_scores, file.path(tempdir(), "bullet_scores_post_ss.rds"))
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = bullet_scores, 
+          outfile = "bullscores_post_ss.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = TRUE
+        )
       }
       
       # Render lands with crosscuts snapshot
@@ -894,8 +928,14 @@ bulletAnalyzrApp <- function(
       )
       bulldata$comparison <- report_results$comparison
       bulldata$comparison_export <- report_results$comparison_export
-      if (save_diagnostics) {
-        saveRDS(reactiveValuesToList(bulldata), file.path(tempdir(), "bulldata.rds"))
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = reactiveValuesToList(bulldata), 
+          outfile = "bulldata.rds", 
+          bullet_names = unique(bullets$bullet), 
+          outdir = save_diagnostics,
+          drop_x3p = FALSE
+        )
       }
     })
     
@@ -914,16 +954,31 @@ bulletAnalyzrApp <- function(
         selected2 = input$comp_bul2,
         unnest_data = "data"
       )
-      
-      saveRDS(d, file.path(tempdir(), "filtered_data_for_pt.rds"))
-      
+      if (!is.null(save_diagnostics)) {
+        save_to_file(
+          item = d, 
+          outfile = "filtered_data_for_pt.rds", 
+          bullet_names = c(unique(d$bulletA), unique(d$bulletB)), 
+          outdir = save_diagnostics,
+          drop_x3p = TRUE
+        )
+      }
+    
       tryCatch({
         phase$test_results <- phase_test_fixed(
           land1 = d$landA, 
           land2 = d$landB, 
           score = d$ccf
         )
-        saveRDS(phase, file.path(tempdir(), "phase_test.rds"))
+        if (!is.null(save_diagnostics)) {
+          save_to_file(
+            item = phase, 
+            outfile = "phase_test.rds", 
+            bullet_names = c(unique(d$bulletA), unique(d$bulletB)), 
+            outdir = save_diagnostics,
+            drop_x3p = TRUE
+          )
+        }
       }, error = function(e) {
         return(d)
       })
