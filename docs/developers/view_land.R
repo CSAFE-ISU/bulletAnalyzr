@@ -12,6 +12,6 @@ cts <- read_bullet("/Users/stephanie/Documents/cts_set/scans/test_19-527_sample_
 image_x3p(cts$x3p[[1]])
 snapshot3d(filename ="~/Documents/CTS19.1.A.png")
 
-hamby <- read_bullet("/Users/stephanie/Documents/hamby44_high_res/Barrel 1/Bullet 1")
-image_x3p(hamby$x3p[[2]])
+hamby <- read_bullet("/Users/stephanie/Documents/Hamby Set 44 Rescan Preprocessed/Barrel 1/Bullet 1")
+image_x3p(hamby$x3p[[1]])
 snapshot3d(filename ="~/Documents/hamby44.1.2.png")
