@@ -56,7 +56,7 @@ downloadDataServer <- function(id, bullet_data = NULL, phase_test_results = NULL
     # Data download handler
     output$download_data_button <- shiny::downloadHandler(
       filename = function() {
-        paste0(bullet_names[1], "_", bullet_names[2], "_", outfile(), ".rds")
+        paste0(outfile()[1], "_", outfile()[2], "_report.rds")
       },
       content = function(file) {
         saveRDS(download_data(), file)
