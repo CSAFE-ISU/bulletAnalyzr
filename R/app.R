@@ -930,7 +930,7 @@ bulletAnalyzrApp <- function(
       bulldata$comparison_export <- report_results$comparison_export
       if (!is.null(save_diagnostics)) {
         save_to_file(
-          item = reactiveValuesToList(bulldata), 
+          item = shiny::reactiveValuesToList(bulldata), 
           outfile = "bulldata.rds", 
           bullet_names = unique(bullets$bullet), 
           outdir = save_diagnostics,
