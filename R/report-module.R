@@ -216,7 +216,6 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
         LandComp$children
       )
       
-      
       return(report_parts)
     })
     
@@ -227,9 +226,15 @@ reportServer <- function(id, bullet_data = NULL, comp_bul1 = NULL, comp_bul2 = N
       shiny::req(is.null(bullet_data$preCC))
       shiny::req(bullet_data$comparison)
       
+      bullet_names <- unique(bullet_data$comparison$bullets$bullet)
+      
       # BUTTON - Download Report ----
       htmltools::tagList(
-        shiny::fluidRow(shiny::column(12, shinyscreenshot::screenshotButton(label = "Download Report", id = session$ns("report"), filename="Bullet Comparison Report", scale = 2), align="center")),
+        shiny::fluidRow(shiny::column(12, shinyscreenshot::screenshotButton(
+          label = "Download Report", 
+          id = session$ns("report"), 
+          filename=paste(bullet_names[1], bullet_names[2], "report", sep = "_"), 
+          scale = 2), align="center")),
         shiny::br(),
         shiny::fluidRow(shiny::column(12, downloadDataUI(session$ns("data1"))), align = "center")
       )
