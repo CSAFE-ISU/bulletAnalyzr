@@ -29,12 +29,18 @@ load_from_dat <- function(main_dir) {
   return(df)
 }
 
-main_dir <- "/Users/stephanie/Downloads/phoenix_example"
-
+# main_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Hamby Set 44 Rescan/Barrel 1/Bullet 2"
+# main_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/cts/test_22-5261_sample_F1/Item 1/Bullet B"
+main_dir <- testthat::test_path("fixtures", "hamby44", "barrel1", "bullet1")
 # Load dat and convert to x3p to view
-b1 <- load_from_dat(main_dir)
-x3p_image(b1$x3p[[1]])
+d1 <- load_from_dat(main_dir)
+x3p_image(d1$x3p[[3]])
 
 # Load from x3p to view
 b1 <- read_bullet(main_dir)
 x3p_image(b1$x3p[[1]])
+x3p_get_scale(b1$x3p[[6]])
+
+b2 <- read_bullet(main_dir)
+x3p_image(b2$x3p[[1]])
+x3p_get_scale(b2$x3p[[6]])
