@@ -25,7 +25,7 @@ cond_x3p_m_to_mum <- function(x3p) {
 #' @noRd
 downsample_bullet <- function(allbull, cbull, show_alert, session) {
   if (nrow(allbull) > 0) {
-    reference_resolution <- x3ptools::x3p_get_scale(allbull$x3p[[1]]) / 1e6
+    reference_resolution <- x3ptools::x3p_get_scale(allbull$x3p[[1]])
     current_resolution <- x3ptools::x3p_get_scale(cbull$x3p[[1]])
     
     # Down-sample if necessary
@@ -84,6 +84,9 @@ preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   cbull <- rotate_results$bullet
   show_alert <- rotate_results$show_alert
   
+  # Convert to microns (optional)
+  cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
+  
   # Down-sample bullet (optional)
   downsample_results <- downsample_bullet(
     allbull = allbull,
@@ -94,9 +97,6 @@ preprocess_bullet <- function(allbull, cbull, show_alert, progress, session) {
   allbull <- downsample_results$allbull
   cbull <- downsample_results$cbull
   show_alert <- downsample_results$show_alert
-  
-  # Convert to microns (optional)
-  cbull$x3p <- lapply(cbull$x3p, cond_x3p_m_to_mum)
   
   # Get hash
   cbull$md5sum <- tools::md5sum(cbull$source)
