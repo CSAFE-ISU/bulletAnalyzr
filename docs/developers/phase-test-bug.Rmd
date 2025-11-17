@@ -1,5 +1,5 @@
 ---
-title: "Phase Test on Example Data"
+title: "Demonstrating the Bug in bulletxtrctr's Phase Test on Example Data"
 author: "Stephanie Reinders"
 date: "2025-11-04"
 output: html_document
