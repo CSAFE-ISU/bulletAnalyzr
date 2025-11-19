@@ -40,8 +40,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
     jsonlite,
+    knitr,
+    rmarkdown,
     shinytest2,
     stringr,
     testthat (>= 3.0.0),
     webshot2
 Config/testthat/edition: 3
+VignetteBuilder: knitr
