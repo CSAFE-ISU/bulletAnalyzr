@@ -5,7 +5,7 @@ Authors@R:
     c(person("Iowa State University of Science and Technology on behalf of its Center for Statistics and Applications in Forensic Evidence", role = c("aut", "cph", "fnd")),
     person("Eric", "Hare", role = "aut"),
     person("Stephanie", "Reinders", role = c("aut", "cre"), email = "srein@iastate.edu"))
-Description: BulletAnalyzr is a 'shiny' application that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun.
+Description: A 'shiny' application that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun.
 License: GPL (>= 3)
 Imports:
     bslib (>= 0.7.0),
@@ -26,10 +26,6 @@ Imports:
     tidyr,
     tidyselect,
     x3ptools
-Remotes: 
-    heike/x3ptools,
-    heike/bulletxtrctr,
-    rstudio/webshot2
 URL: https://CSAFE-ISU.github.io/bulletAnalyzr/, https://github.com/CSAFE-ISU/bulletAnalyzr
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
