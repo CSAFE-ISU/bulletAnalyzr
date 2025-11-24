@@ -2,7 +2,7 @@
 
 BulletAnalyzr is a forensic tool that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun. The application scans bullet surfaces at high resolution, identifying unique patterns left by the gun barrel to establish whether two bullets share a common source.
 
-**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
+**[View the full User Guide](docs/bulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
 
 ## TABLE OF CONTENTS
 
@@ -50,7 +50,7 @@ BulletAnalyzr version 1.0.0 has the following requirements. **Failure to meet th
 
 **Total Estimated Time: 90-110 minutes**
 
-**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
+**[View the full User Guide](docs/bulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
 
 ### Install R and RStudio
 
@@ -98,7 +98,7 @@ bulletAnalyzrApp()
 
 ## COMPARE BULLETS
 
-**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
+**[View the full User Guide](docs/bulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
 
 1. **Upload bullets:** Select the 6 x3p files (land engraved areas) for each bullet to compare
 2. **Adjust crosscut locations:** Review and refine the automatically identified crosscut locations
