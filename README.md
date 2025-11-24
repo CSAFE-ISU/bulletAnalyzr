@@ -1,121 +1,126 @@
-# BulletAnalyzr Quick Start Guide
+# BulletAnalyzr
 
-## What is BulletAnalyzr?
+BulletAnalyzr is a forensic tool that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun. The application scans bullet surfaces at high resolution, identifying unique patterns left by the gun barrel to establish whether two bullets share a common source.
 
-BulletAnalyzr is a forensic tool that uses 3D imaging and advanced algorithms to compare bullets and determine if they were fired from the same gun. It's **free, open-source**, and currently in **alpha testing** (research and lab testing only - not yet validated for casework).
+**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
 
-### Key Features
+## TABLE OF CONTENTS
 
-- Interactive 3D visualization of bullet scans
-- Automated crosscut and groove detection
-- Manual refinement controls with intuitive sliders
-- Comprehensive comparison reports
-- Works with x3p format 3D scans
+- [Requirements](#requirements)
+- [Disclaimer and Permitted Use](#disclaimer-and-permitted-use)
+- [Key Features](#key-features)
+- [Installation](#installation)
+- [Launch BulletAnalyzr](#launch-bulletanalyzr)
+- [Compare Bullets](#compare-bullets)
+- [Citing BulletAnalyzr](#citing-bulletanalyzr)
+- [License](#license)
+- [Contact](#contact)
 
-## Installation (60-80 minutes total)
+## REQUIREMENTS
 
-### 1. Install Required Software (20-30 minutes)
+BulletAnalyzr version 1.0.0 has the following requirements. **Failure to meet these requirements makes any potential results unreliable.**
 
-1. Install **R** from https://cran.r-project.org/
-2. Install **RStudio** from https://posit.co/download/rstudio-desktop/
-3. Download **BulletAnalyzr** from https://github.com/CSAFE-ISU/bulletAnalyzr
-   - Click the green "Code" button then "Download ZIP"
-   - Unzip the downloaded file anywhere on your computer
+- Bullets must be **9 mm** in caliber
+- Bullets must display **right-twist** rifling
+- Bullets must have exactly **6 land engraved areas**
+- Bullets **cannot** have missing land engraved areas
 
-### 2. Install R Packages (45-50 minutes)
+## DISCLAIMER AND PERMITTED USE
 
-1. Open RStudio
-2. In the Console (after the `>` symbol), paste and run:
+> **Disclaimer:** The software is in testing and has not yet been fully validated. CSAFE is not liable for its accuracy or reliability.
+
+### Permitted Uses
+- ✅ **Research:** Use the software for academic or scientific research related to forensic bullet comparison
+- ✅ **Testing:** Use the software for internal testing within forensic labs to evaluate its performance
+
+### Discouraged Uses
+- ❌ **Casework and Court Testimony:** The statistical model implemented by this software has not yet been applied to the full range of bullets that could be encountered in casework or investigations. Therefore, it is not ready for use in casework or court testimony at this time.
+
+> **Note:** Users should follow the permitted use guidelines and treat findings as preliminary and unsuitable for formal conclusions.
+
+## KEY FEATURES
+
+- **Interactive Visualization:** Upload and view 3D renderings of your bullet scans (x3p format) and examine crosscut profiles with adjustable parameters
+- **Automated Analysis:** The software automatically processes your bullet scans, identifying crosscut locations, removing grooves, extracting signals, and measuring similarities between signals
+- **Manual Refinement Controls:** Fine-tune automated decisions using intuitive sliders at each step of the analysis
+- **Comprehensive Reporting:** Generate and export detailed comparison reports in a professional, shareable format
+- **Free and Open-Source:** BulletAnalyzr is an open-source and free-to-use tool
+
+## INSTALLATION
+
+**Total Estimated Time: 90-110 minutes**
+
+**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
+
+### Install R and RStudio
+
+1. Install R from https://cran.r-project.org/
+2. Install RStudio from https://posit.co/download/rstudio-desktop/
+3. **(Windows only)** Install Rtools from https://cran.rstudio.com/bin/windows/Rtools/ (select the version corresponding to your version of R)
+
+### Download Required Packages from GitHub
+
+1. Go to https://github.com/heike/grooveFinder.
+2. Click the green Code button and select Download Zip.
+3. Unzip the downloaded file. The unzipped package can be saved anywhere on your computer. 
+4. Repeat steps 1-3 for `x3ptools` (https://github.com/heike/x3ptools), `bulletxtrctr` (https://github.com/heike/bulletxtrctr), and `BulletAnalyzr` (https://github.com/CSAFE-ISU/bulletAnalyzr).
+
+### Install Packages in RStudio
+
+**Install CRAN packages** by running the following code in the RStudio Console:
 
 ```r
 # Install packages from CRAN
-cran_packages <- c("bsicons", "bslib", "curl", "devtools", "dplyr", "DT", 
-                   "ggplot2", "pagedown", "randomForest", "rgl", "sessioninfo", 
-                   "shiny", "shinyBS", "shinycssloaders", "shinyjs")
-
+cran_packages <- c("bsicons", "bslib", "curl", "devtools", "dplyr", "DT", "ggplot2", 
+                   "pagedown", "randomForest", "rgl", "sessioninfo", "shiny", "shinyBS", 
+                   "shinycssloaders", "shinyjs")
 for (pkg in cran_packages) {
   install.packages(pkg)
 }
-
-# Install packages from GitHub
-github_packages <- c("heike/bulletxtrctr", "heike/x3ptools")
-
-for (pkg in github_packages) {
-  devtools::install_github(pkg)
-}
 ```
 
-## Launch BulletAnalyzr
+**Install GitHub packages**
 
-1. Navigate to your unzipped `bulletAnalyzr-main` folder
-2. Double-click `rstudio.Rproj` to open the project in RStudio
-3. In RStudio's Files tab, open the `app` folder
-4. Click `server.R` to open it
-5. Click **Run App** in the top-right of the editor
-6. Click **Begin** on the home screen
+1. Double-click on the `.Rproj` file in downloaded folder for `grooveFinder`. This will open the package in RStudio. 
+2. Click **Build > Install** in RStudio. 
+3. Repeat steps 1-2 for `x3ptools`, `bulletxtrctr`, and `BulletAnalyzr`.
 
-## Basic Workflow (15-20 minutes with example data)
+## LAUNCH BULLETANALYZR
 
-### Step 1: Upload Bullets
+Launch BulletAnalyzr by running the following code in RStudio:
 
-1. Click **Browse** and navigate to `bulletAnalyzr-main/examples/Hamby-44/Barrel 1/Bullet 1`
-2. Select all 6 `.x3p` files (each is one land engraved area)
-3. Give the bullet a name (e.g., "Bullet 1")
-4. Click **Add Bullet to Comparison List**
-5. Repeat for Bullet 2 (`bulletAnalyzr-main/examples/Hamby-44/Barrel 1/Bullet 2`)
+```r
+library(bulletAnalyzr)
+bulletAnalyzrApp()
+```
 
-### Step 2: Adjust Crosscut Locations
+> **Tip:** The application includes sample 3D scans from the Hamby-Brundage bullet set #44 for practice (located in `examples/Hamby-44`).
 
-Crosscuts appear as light grey lines on the 3D bullet renderings.
+## COMPARE BULLETS
 
-1. Select Bullet 1 from the drop-down
-2. Use sliders to adjust crosscut positions if needed
-3. Click **Finalize Crosscut**
-4. Repeat for Bullet 2
-5. Click **Compare Bullets**
+**[View the full User Guide](docs/BulletAnalyzr-user-guide.pdf)** for detailed instructions and screenshots.
 
-### Step 3: Adjust Groove Placements
+1. **Upload bullets:** Select the 6 x3p files (land engraved areas) for each bullet to compare
+2. **Adjust crosscut locations:** Review and refine the automatically identified crosscut locations
+3. **Adjust groove placements:** Fine-tune groove boundaries to maximize the land area retained for analysis
+4. **Review results:** Examine the comparison report, including bullet-to-bullet scores, land-to-land score matrices, and statistical significance testing
 
-Grooves need to be removed before analysis.
-
-1. Select Bullet 1 and Land 1 from the drop-downs
-2. Red vertical lines show groove locations on the crosscut profile plot
-3. Adjust sliders to keep as much land as possible while removing grooves
-4. Click **Save Grooves**
-5. Repeat for all lands on both bullets (12 total)
-6. Click **Next Step**
-
-### Step 4: Review Results
-
-The report shows:
-
-- **Phase test score** and **probability of false identification** (top)
-- **Bullet-to-bullet score matrix** (0 = no similarity, 1 = perfect match)
-- **Land-to-land score matrix** showing individual land comparisons
-- Profile plots and signal plots for each land
-- Detailed feature comparisons for top matches
-
-Click **Download Report** to save a copy.
-
-## Important Usage Notes
-
-⚠️ **Not for casework**: BulletAnalyzr is in alpha testing and has not been validated for use in casework or court testimony. Use only for:
-
-- Research purposes
-- Internal lab testing and evaluation
-
-## Citation
+## CITING BULLETANALYZR
 
 If you use BulletAnalyzr in research, please cite:
 
 > Eric Hare, Heike Hofmann, Alicia Carriquiry. "Algorithmic approaches to match degraded land impressions." *Law, Probability and Risk*, Volume 16, Issue 4, December 2017, Pages 203-221. https://doi.org/10.1093/lpr/mgx018
 
-> Eric Hare, Heike Hofmann, and Alicia Carriquiry. "Automatic Matching of Bullet Land Impressions." *The Annals of Applied Statistics*, Volume 11, Number 4, 2017, pp. 2332-56. http://www.jstor.org/stable/26362188
+> Eric Hare, Heike Hofmann, and Alicia Carriquiry. "Automatic Matching of Bullet Land Impressions." *The Annals of Applied Statistics*, Volume 11, Number 4, 2017, pp. 2332-56. http://www.jstor.org/stable/26408049
 
-## License
+## LICENSE
 
-[GNU GPL version 3](https://github.com/CSAFE-ISU/bulletAnalyzr/blob/main/LICENSE.md)
+BulletAnalyzr is provided under the [GNU General Public License version 3](https://github.com/CSAFE-ISU/bulletAnalyzr/blob/main/LICENSE.md).
 
-## Support
+## CONTACT
 
-For more detailed instructions, see the full [user guide](https://github.com/CSAFE-ISU/bulletAnalyzr/blob/main/docs/bulletAnalyzr-user-guide.pdf).
+**Center for Statistics and Applications in Forensic Evidence**  
+195 Durham Center  
+613 Morrill Road  
+Ames, Iowa 50011  
+csafe@iastate.edu
