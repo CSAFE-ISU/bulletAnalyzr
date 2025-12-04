@@ -60,10 +60,12 @@ BulletAnalyzr version 1.0.0 has the following requirements. **Failure to meet th
 
 ### Download Required Packages from GitHub
 
-1. Go to https://github.com/heike/grooveFinder.
-2. Click the green Code button and select Download Zip.
-3. Unzip the downloaded file. The unzipped package can be saved anywhere on your computer. 
-4. Repeat steps 1-3 for `x3ptools` (https://github.com/heike/x3ptools), `bulletxtrctr` (https://github.com/heike/bulletxtrctr), and `BulletAnalyzr` (https://github.com/CSAFE-ISU/bulletAnalyzr).
+1. Click to [Download bulletAnalyzr v1.0.0](https://github.com/CSAFE-ISU/bulletAnalyzr/archive/refs/tags/v1.0.0.zip). This downloads a zip file.
+2. Unzip the downloaded file. The unzipped folder can be saved anywhere on your computer.
+3. Go to https://github.com/heike/grooveFinder.
+4. Click the green Code button and select Download Zip.
+5. Unzip the downloaded file. The unzipped folder can be saved anywhere on your computer. 
+6. Repeat steps 1-3 for `x3ptools` (https://github.com/heike/x3ptools) and  `bulletxtrctr` (https://github.com/heike/bulletxtrctr).
 
 ### Install Packages in RStudio
 
