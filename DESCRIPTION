@@ -1,6 +1,6 @@
 Package: bulletAnalyzr
 Title: A 'shiny' Application for Forensic Bullet Comparisons
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     c(person("Iowa State University of Science and Technology on behalf of its Center for Statistics and Applications in Forensic Evidence", role = c("aut", "cph", "fnd")),
     person("Eric", "Hare", role = "aut"),

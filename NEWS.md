@@ -1,4 +1,4 @@
-# bulletAnalyzr (development version)
+# bulletAnalyzr 1.0.0
 
 ## Key Features of Current Version
 
