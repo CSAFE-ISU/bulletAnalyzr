@@ -65,7 +65,7 @@ BulletAnalyzr version 1.0.0 has the following requirements. **Failure to meet th
 3. Go to https://github.com/heike/grooveFinder.
 4. Click the green Code button and select Download Zip.
 5. Unzip the downloaded file. The unzipped folder can be saved anywhere on your computer. 
-6. Repeat steps 1-3 for `x3ptools` (https://github.com/heike/x3ptools) and  `bulletxtrctr` (https://github.com/heike/bulletxtrctr).
+6. Repeat steps 3-5 for `x3ptools` (https://github.com/heike/x3ptools) and  `bulletxtrctr` (https://github.com/heike/bulletxtrctr).
 
 ### Install Packages in RStudio
 
