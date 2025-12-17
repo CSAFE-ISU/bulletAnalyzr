@@ -102,8 +102,10 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
       x = "Position (microns)",
       y = "Height (microns)"
     ) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 20)) +
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
     theme_bw() +
-    theme(text = element_text(size = 14))
+    theme(text = element_text(size = 14), axis.text.x=element_text(angle = 30, hjust = 1))
   
   print(p)
   
