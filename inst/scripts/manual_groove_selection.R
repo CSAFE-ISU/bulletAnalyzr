@@ -46,17 +46,47 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
   } else {
     cat("Orientation correct: long axis already in X direction\n")
   }
-  
+
+  # Convert from meters to micrometers if needed (same as bulletAnalyzrApp)
+  scale <- x3ptools::x3p_get_scale(x3p)
+  if (scale < 0.1) {
+    cat("Converting from meters to micrometers...\n")
+    x3p <- x3ptools::x3p_m_to_mum(x3p)
+  }
+
   # Get crosscut location if not specified
   if (is.null(crosscut_y)) {
-    # Calculate the actual Y-coordinate range from the scan dimensions
-    # The surface.matrix rows represent Y positions, columns represent X positions
-    # Values in the matrix are height measurements, NOT coordinates
-    y_min <- 0
-    y_max <- (nrow(x3p$surface.matrix) - 1) * x3p$header.info$incrementY
-    crosscut_y <- (y_min + y_max) / 2
-    
-    cat("Using crosscut at middle of scan: y =", crosscut_y, "meters (=", crosscut_y * 1e6, "microns)\n")
+    # Use x3p_crosscut_optimize to find optimal crosscut location (same as bulletAnalyzrApp)
+    cat("Finding optimal crosscut location...\n")
+    crosscut_y <- bulletxtrctr::x3p_crosscut_optimize(x3p, ylimits = c(150, NA))
+
+    # Fallback with progressively lower minccf if optimization fails
+    if (is.na(crosscut_y)) {
+      current_minccf <- 0.85
+      while (current_minccf >= 0.6) {
+        crosscut_y <- bulletxtrctr::x3p_crosscut_optimize(
+          x3p = x3p,
+          ylimits = c(150, NA),
+          minccf = current_minccf
+        )
+        if (is.na(crosscut_y) && current_minccf == 0.6) {
+          # Fall back to middle of scan if optimization fails completely
+          y_min <- 0
+          y_max <- (nrow(x3p$surface.matrix) - 1) * x3p$header.info$incrementY
+          crosscut_y <- (y_min + y_max) / 2
+          cat("Warning: Could not find optimal crosscut, falling back to middle of scan\n")
+          break
+        } else if (is.na(crosscut_y)) {
+          current_minccf <- current_minccf - 0.05
+          next
+        } else {
+          cat("Found stable region with minccf =", current_minccf, "\n")
+          break
+        }
+      }
+    }
+
+    cat("Using optimized crosscut at y =", crosscut_y, "microns\n")
   }
   
   # Extract crosscut data as a 1D profile
@@ -70,18 +100,6 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
   if (nrow(ccdata) == 0) {
     cat("Warning: Empty crosscut data, trying with larger range\n")
     ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = thin_range * 10)
-  }
-  
-  # Convert coordinates to microns if needed (x3p files may store in meters)
-  # Check if values are very small (likely in meters)
-  if (max(abs(ccdata$x), na.rm = TRUE) < 1) {
-    ccdata$x <- ccdata$x * 1e6  # Convert meters to microns
-    cat("Note: Converted x-coordinates from meters to microns\n")
-  }
-  
-  if (max(abs(ccdata$value), na.rm = TRUE) < 0.01) {
-    ccdata$value <- ccdata$value * 1e6  # Convert meters to microns
-    cat("Note: Converted surface values from meters to microns\n")
   }
   
   # Ensure x coordinates start from 0 and span the full width
