@@ -160,6 +160,14 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
       } else {
         left_groove <- as.numeric(trimws(parts[1]))
         right_groove <- as.numeric(trimws(parts[2]))
+
+        # Check that both values are valid numbers
+        if (is.na(left_groove) || is.na(right_groove)) {
+          cat("Invalid input. Both values must be numbers. Please enter values as: left,right (e.g., 500,2500)\n")
+          user_input <- readline(prompt = "Enter groove locations: ")
+          next
+        }
+
         manual_flag <- TRUE
 
         # Show updated plot with proposed manual grooves in blue
