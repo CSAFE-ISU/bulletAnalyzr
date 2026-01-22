@@ -288,7 +288,7 @@ calculate_bullet_scores <- function(features) {
 }
 
 #' Run Phase Test
-#' @param features Data frame with RF scores
+#' @param features Data frame with CCF scores
 #' @param bulletA Name of bullet A
 #' @param bulletB Name of bullet B
 #' @returns Phase test results
@@ -311,12 +311,12 @@ run_phase_test <- function(features, bulletA, bulletB) {
   comparison_data <- comparison_data %>%
     dplyr::filter(bulletA == !!bulletA & bulletB == !!bulletB)
 
-  # Run phase test
+  # Run phase test using CCF scores (same as bulletAnalyzrApp)
   result <- tryCatch({
     df <- data.frame(
       land1 = comparison_data$landA,
       land2 = comparison_data$landB,
-      score = comparison_data$rfscore
+      score = comparison_data$ccf
     )
 
     df <- df %>%
@@ -350,14 +350,19 @@ run_phase_test <- function(features, bulletA, bulletB) {
     test_statistic <- est1 - est2
     p_value <- bulletxtrctr::F_T(test_statistic, sigma = sigma_0, n = n, lower.tail = FALSE)
 
-    list(
-      same_source_estimate = est1,
-      different_source_estimate = est2,
-      test_statistic = test_statistic,
-      p_value = p_value,
-      sigma = sigma_0,
-      n_phases = n
+    # Return same structure as bulletAnalyzrApp
+    res <- list(
+      estimate = est1 - est2,
+      estimate1 = est1,
+      estimate2 = est2,
+      statistic = test_statistic,
+      p.value = p_value,
+      parameter = sigma_0,
+      n = n,
+      data = df[, c("land1", "land2", "score")]
     )
+    class(res) <- c("phase.test", "list")
+    res
   }, error = function(e) {
     warning(paste("Phase test failed:", e$message))
     return(NULL)
@@ -470,12 +475,12 @@ compare_bullets <- function(bullet1_dir, bullet2_dir,
   # Phase test results
   if (!is.null(phase_test_results)) {
     cat("\nPhase Test Results:\n")
-    cat("  Same-source estimate:", round(phase_test_results$same_source_estimate, 4), "\n")
-    cat("  Different-source estimate:", round(phase_test_results$different_source_estimate, 4), "\n")
-    cat("  Test statistic:", round(phase_test_results$test_statistic, 4), "\n")
-    cat("  P-value:", format(phase_test_results$p_value, scientific = TRUE, digits = 4), "\n")
+    cat("  Same-source estimate (estimate1):", round(phase_test_results$estimate1, 4), "\n")
+    cat("  Different-source estimate (estimate2):", round(phase_test_results$estimate2, 4), "\n")
+    cat("  Test statistic:", round(phase_test_results$statistic, 4), "\n")
+    cat("  P-value:", format(phase_test_results$p.value, scientific = TRUE, digits = 4), "\n")
 
-    if (phase_test_results$p_value < 0.05) {
+    if (phase_test_results$p.value < 0.05) {
       cat("\n  Conclusion: Evidence suggests bullets are from the SAME SOURCE (p < 0.05)\n")
     } else {
       cat("\n  Conclusion: Insufficient evidence that bullets are from the same source (p >= 0.05)\n")
