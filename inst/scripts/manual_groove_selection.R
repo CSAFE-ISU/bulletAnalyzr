@@ -154,11 +154,9 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     while (!confirmed) {
       parts <- strsplit(user_input, ",")[[1]]
       if (length(parts) != 2) {
-        cat("Invalid input format. Using automatic values.\n")
-        left_groove <- grooves_auto$groove[1]
-        right_groove <- grooves_auto$groove[2]
-        manual_flag <- FALSE
-        confirmed <- TRUE
+        cat("Invalid input format. Please enter values as: left,right (e.g., 500,2500)\n")
+        user_input <- readline(prompt = "Enter groove locations: ")
+        next
       } else {
         left_groove <- as.numeric(trimws(parts[1]))
         right_groove <- as.numeric(trimws(parts[2]))
