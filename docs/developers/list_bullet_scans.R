@@ -9,6 +9,8 @@
 #   3) Run the script interactively in R or type `Rscript
 #      docs/developers/list_bullet_scans.R` in the terminal
 
+library(dplyr)
+
 list_scans_by_study <- function(directory) {
   study <- basename(directory)
   print(paste("Listing files in ", study, "..."))
@@ -29,6 +31,17 @@ list_scans_by_bullet <- function(study, bullet_dir) {
     filename = list.files(bullet_dir, recursive = TRUE, full.names = FALSE, pattern = "\\.x3p")
   )
   return(df)
+}
+
+get_one_rec_per_bullet <- function(filepath) {
+  df <- read.csv(filepath)
+  df <- df %>% 
+    dplyr::mutate(bullet_dir = dirname(filename)) %>%
+    dplyr::group_by(bullet_dir) %>%
+    dplyr::slice_head(n=1) %>%
+    dplyr::select(study, bullet_dir, filename)
+  write.csv(df, filepath, row.names = FALSE)
+  message("File saved")
 }
 
 main_dir <- "/Volumes/research/csafe-firearms/bullet-scans"
@@ -56,7 +69,6 @@ df <- do.call(rbind, files)
 outfile <- file.path("docs", "developers", "bullet-studies", "CSAFE Persistence DCI subset scans.csv")
 write.csv(df, outfile, row.names = FALSE)
 
-
 # SW scans
 sw <- list.dirs(dirs, recursive = FALSE)[2]
 barrel <- unlist(lapply(sw, function(d) list.dirs(d, recursive = FALSE)))
@@ -75,3 +87,12 @@ files <- lapply(bullet, function(b) list_scans_by_bullet("LAPD", b))
 df <- do.call(rbind, files)
 outfile <- file.path("docs", "developers", "bullet-studies", "LAPD scans.csv")
 write.csv(df, outfile, row.names = FALSE)
+
+# Keep one file per bullet
+studies <- list.files("docs/developers/bullet-studies", pattern = "\\.csv", full.names = TRUE)
+studies <- studies[!(basename(studies) %in% c("all_studies_list.csv", "all_studies_file_examples.csv"))]
+lapply(studies, get_one_rec_per_bullet)
+
+# Make master file
+df <- lapply(studies, read.csv)
+df <- do.call(rbind, df)
