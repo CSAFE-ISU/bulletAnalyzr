@@ -1,3 +1,174 @@
+#' Extract relative path components after a study directory
+#'
+#' @param filepath Character string. Full filepath.
+#' @param study_name Character string. The study directory name to find in the path.
+#' @return Character vector of path components after the study directory.
+#' @keywords internal
+.get_path_parts <- function(filepath, study_name) {
+  idx <- regexpr(study_name, filepath, fixed = TRUE)
+  after <- substring(filepath, idx + nchar(study_name))
+  after <- sub("^/", "", after)
+  parts <- strsplit(after, "/")[[1]]
+  parts[nchar(parts) > 0]
+}
+
+#' Parse barrel/bullet directory pattern shared by multiple studies
+#'
+#' Handles paths with structure: Barrel #/Bullet # or Unknown(s)/Bullet #
+#'
+#' @param filepath Character string. Full filepath.
+#' @param study_name Character string. The study directory name.
+#' @param study_code Character string. The short study code prefix.
+#' @return A character string with the bullet code.
+#' @keywords internal
+.parse_barrel_bullet_path <- function(filepath, study_name, study_code) {
+  parts <- .get_path_parts(filepath, study_name)
+  if (grepl("^Unknown", parts[1])) {
+    barrel <- "U"
+  } else {
+    barrel <- sub("Barrel ", "", parts[1])
+  }
+  bullet <- gsub("'", "", sub("Bullet ", "", parts[2]))
+  paste(study_code, barrel, bullet, sep = ".")
+}
+
+#' Parse bullet scan filepath
+#'
+#' Detects which study a filepath belongs to and parses the directory structure
+#' to determine the bullet code. The filepath should point to a bullet directory
+#' (not a file), e.g., ".../Houston Set Final/Group 1/KA/Bullet 1".
+#'
+#' @param filepath Character string. The path to a bullet directory.
+#' @param show_format Logical. If TRUE, displays a message showing the format for the study.
+#' @return A character string with the bullet code, or NA if study cannot be detected.
+#'
+#' @examples
+#' parse_filepath(".../Barsto Broached/Barrel 1/Bullet 1")
+#' parse_filepath(".../Houston Set Final/Group 1/KA/Bullet 1", show_format = TRUE)
+parse_filepath <- function(filepath, show_format = FALSE) {
+  filepath <- gsub("\\\\", "/", filepath)
+  filepath <- sub("/$", "", filepath)
+
+  # Order matters - check more specific patterns before general ones
+
+  if (grepl("Barsto Broached", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: bar.<barrel>.<bullet>")
+    return(parse_barsto_path(filepath))
+  }
+  if (grepl("Boxes 1-6 2024", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: box1624.<box>.<bullet>")
+    return(parse_boxes1624_path(filepath))
+  }
+  if (grepl("Boxes 1-6", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: box16.<box>.<bullet>")
+    return(parse_boxes16_path(filepath))
+  }
+  if (grepl("Carney Study", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: car.<bullet>")
+    return(parse_carney_path(filepath))
+  }
+  if (grepl("Clones 224 2", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: cln2242.<set>.<barrel>.<bullet>")
+    return(parse_clones2242_path(filepath))
+  }
+  if (grepl("Clones 224", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: cln224.<set>.<barrel>.<bullet>")
+    return(parse_clones224_path(filepath))
+  }
+  if (grepl("CSAFE Persistence", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: cspsw.<barrel>.<bullet>")
+    return(parse_cspsw_path(filepath))
+  }
+  if (grepl("CTS Forensic Testing Program", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: cts.<year>.<item>.<bullet>")
+    return(parse_cts_path(filepath))
+  }
+  if (grepl("DFSC", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: dfsc.<brand>.<bullet>")
+    return(parse_dfsc_path(filepath))
+  }
+  if (grepl("Glock GMB BBL", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: glck.<material>.<bullet>")
+    return(parse_glck_path(filepath))
+  }
+  if (grepl("Hamby 224 Clone", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb224c.<testset>.<barrel>.<bullet>")
+    return(parse_hmb224c_path(filepath))
+  }
+  if (grepl("Hamby 259 Clone Set", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb259.<barrel>.<bullet>")
+    return(parse_hmb259_path(filepath))
+  }
+  if (grepl("Hamby Set 44 Final", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb44.<barrel>.<bullet>")
+    return(parse_hmb44_path(filepath))
+  }
+  if (grepl("Hamby Set 10", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb10.<barrel>.<bullet>")
+    return(parse_hmb10_path(filepath))
+  }
+  if (grepl("Hamby Set 224", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb224.<barrel>.<bullet>")
+    return(parse_hmb224_path(filepath))
+  }
+  if (grepl("Hamby Set 36", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb36.<barrel>.<bullet>")
+    return(parse_hmb36_path(filepath))
+  }
+  if (grepl("Hamby Set 5", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmb5.<testset>.<type>.<bullet>")
+    return(parse_hmb5_path(filepath))
+  }
+  if (grepl("Hamby Set X", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hmbx.<testset>.<type>.<bullet>")
+    return(parse_hmbx_path(filepath))
+  }
+  if (grepl("Houston Set 3 Redo", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hst3r.<test>.<barrel>.<bullet>")
+    return(parse_hst3r_path(filepath))
+  }
+  if (grepl("Houston Set 3", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hst3.<test>.<barrel>.<bullet>")
+    return(parse_hst3_path(filepath))
+  }
+  if (grepl("Houston Set Final", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hstfin.<group>.<barrel>.<bullet>")
+    return(parse_hstfin_path(filepath))
+  }
+  if (grepl("Houston 1", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hst1.<barrel>.<bullet>")
+    return(parse_hst1_path(filepath))
+  }
+  if (grepl("Houston NIJ", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hstnij.<barrel>.<bullet>")
+    return(parse_hstnij_path(filepath))
+  }
+  if (grepl("Houston 2023", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: hst23.<barrel>.<bullet>")
+    return(parse_hst23_path(filepath))
+  }
+  if (grepl("Phoenix Test", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: phx.<gun>.<bullet>")
+    return(parse_phx_path(filepath))
+  }
+  if (grepl("SR Scans", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: srs.<box>.<bullet>")
+    return(parse_srs_path(filepath))
+  }
+  if (grepl("St Louis", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: stl.<firearm>.<bullet>")
+    return(parse_stl_path(filepath))
+  }
+  if (grepl("Virginia", filepath, fixed = TRUE)) {
+    if (show_format) message("Format: vrg.<ammo>.<bullet>")
+    return(parse_vrg_path(filepath))
+  }
+
+  # Unknown study
+  warning(paste("Could not detect study from filepath:", filepath))
+  return(NA)
+}
+
 #' Parse bullet scan filename
 #'
 #' Detects which study a filename belongs to and calls the appropriate parse function.
@@ -573,4 +744,291 @@ parse_vrg_filename <- function(filename) {
   bullet_match <- regmatches(filename, regexpr("Bullet [0-9]+", filename))
   bullet <- gsub("Bullet ", "", bullet_match)
   return(paste(study, ammo, bullet, sep = "."))
+}
+
+# ============================================================================
+# Filepath parsers (for parse_filepath)
+# ============================================================================
+
+#' @rdname parse_filepath
+parse_barsto_path <- function(filepath) {
+  .parse_barrel_bullet_path(filepath, "Barsto Broached", "bar")
+}
+
+#' @rdname parse_filepath
+parse_boxes16_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Boxes 1-6")
+  box <- as.integer(sub("Box ", "", parts[1]))
+  bullet <- as.integer(sub("Bullet ", "", parts[2]))
+  paste("box16", box, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_boxes1624_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Boxes 1-6 2024")
+  box <- as.integer(sub("Box ", "", parts[1]))
+  bullet <- as.integer(sub("Bullet ", "", parts[2]))
+  paste("box1624", box, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_carney_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Carney Study")
+  bullet <- sub("Bullet ", "", parts[length(parts)])
+  paste("car", bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_clones224_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Clones 224")
+  set_num <- sub("Set ", "", parts[1])
+  if (grepl("^Unknown", parts[2])) {
+    barrel <- "U"
+  } else {
+    barrel <- sub("Barrel ", "", parts[2])
+  }
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("cln224", set_num, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_clones2242_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Clones 224 2")
+  set_num <- sub("Set ", "", parts[1])
+  if (grepl("^Unknown", parts[2])) {
+    barrel <- "U"
+  } else {
+    barrel <- sub("Barrel ", "", parts[2])
+  }
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("cln2242", set_num, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_cspsw_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "CSAFE Persistence")
+  # parts[1] = "SW", parts[2] = "SW #", parts[3] = "Bullet #"
+  barrel <- as.integer(sub("SW ", "", parts[2]))
+  bullet <- as.integer(sub("Bullet ", "", parts[3]))
+  paste("cspsw", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_cts_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "CTS Forensic Testing Program")
+  # parts[1] = "test_18-526_sample_F1", parts[2] = "Item #", parts[3] = "Bullet #"
+  year <- sub("test_(\\d+)-.*", "\\1", parts[1])
+  item <- as.integer(sub("Item ", "", parts[2]))
+  if (length(parts) >= 3) {
+    bullet <- sub("Bullet ", "", parts[3])
+  } else {
+    bullet <- NA
+  }
+  paste("cts", year, item, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_dfsc_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "DFSC")
+  if (grepl("^Comparison Set", parts[1])) {
+    set_num <- sub("Comparison Set ", "", parts[1])
+    brand <- paste0("c", set_num)
+    if (parts[2] == "1Q") {
+      bullet <- "IQ"
+    } else {
+      bullet <- sub("Bullet ", "", parts[3])
+    }
+  } else {
+    dir_name <- parts[1]
+    if (grepl("Ruger", dir_name)) brand <- "ru"
+    else if (grepl("Hi-Point", dir_name)) brand <- "hi"
+    else if (grepl("Springfield", dir_name)) brand <- "sp"
+    else if (grepl("Glock", dir_name)) brand <- "gl"
+    else brand <- "unknown"
+    bullet <- sub("Bullet ", "", parts[2])
+  }
+  paste("dfsc", brand, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_glck_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Glock GMB BBL")
+  if (grepl("Brass", parts[1])) material <- "b"
+  else if (grepl("Copper", parts[1])) material <- "c"
+  else material <- "unknown"
+  bullet <- as.integer(sub("Bullet ", "", parts[2]))
+  paste("glck", material, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hmb224c_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Hamby 224 Clone")
+  test_set <- sub("Test Set ", "", parts[1])
+  if (length(parts) >= 3 && grepl("^Barrel", parts[2])) {
+    barrel <- sub("Barrel ", "", parts[2])
+    bullet <- sub("Bullet ", "", parts[3])
+  } else {
+    barrel <- "U"
+    bullet <- sub("Bullet ", "", parts[2])
+  }
+  paste("hmb224c", test_set, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hmb259_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Hamby 259 Clone Set")
+  barrel_idx <- grep("^Barrel", parts)
+  bullet_idx <- grep("^Bullet", parts)
+  barrel <- sub("Barrel ", "", parts[barrel_idx[1]])
+  bullet <- sub("Bullet ", "", parts[bullet_idx[1]])
+  paste("hmb259", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hmb10_path <- function(filepath) {
+  .parse_barrel_bullet_path(filepath, "Hamby Set 10", "hmb10")
+}
+
+#' @rdname parse_filepath
+parse_hmb224_path <- function(filepath) {
+  .parse_barrel_bullet_path(filepath, "Hamby Set 224", "hmb224")
+}
+
+#' @rdname parse_filepath
+parse_hmb36_path <- function(filepath) {
+  .parse_barrel_bullet_path(filepath, "Hamby Set 36", "hmb36")
+}
+
+#' @rdname parse_filepath
+parse_hmb44_path <- function(filepath) {
+  .parse_barrel_bullet_path(filepath, "Hamby Set 44 Final", "hmb44")
+}
+
+#' @rdname parse_filepath
+parse_hmb5_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Hamby Set 5")
+  test_set <- sub("Test Set ", "", parts[1])
+  if (grepl("Known", parts[2])) type <- "K"
+  else if (grepl("Questioned", parts[2])) type <- "Q"
+  else type <- "U"
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("hmb5", test_set, type, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hmbx_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Hamby Set X")
+  test_set <- sub("Test Set ", "", parts[1])
+  if (grepl("Known", parts[2])) type <- "K"
+  else if (grepl("Questioned", parts[2])) type <- "Q"
+  else type <- "U"
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("hmbx", test_set, type, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hst1_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston 1")
+  if (grepl("^Random Barrel", parts[1])) {
+    barrel <- paste0("R", sub("Random Barrel ", "", parts[1]))
+  } else {
+    barrel <- sub("Barrel ", "", parts[1])
+  }
+  bullet <- sub("Bullet ", "", parts[2])
+  paste("hst1", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hst23_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston 2023")
+  barrel <- sub("Barrel ", "", parts[1])
+  bullet <- sub("Bullet ", "", parts[2])
+  paste("hst23", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hstnij_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston NIJ")
+  barrel <- parts[1]
+  bullet <- parts[2]
+  paste("hstnij", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hst3_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston Set 3")
+  test <- sub("Test ", "", parts[1])
+  if (grepl("^Unknown", parts[2])) {
+    barrel <- "U"
+  } else {
+    barrel <- sub("Barrel ", "", parts[2])
+  }
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("hst3", test, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hst3r_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston Set 3 Redo")
+  test <- sub("Test ", "", parts[1])
+  if (grepl("^Unknown", parts[2])) {
+    barrel <- "U"
+  } else {
+    barrel <- sub("Barrel ", "", parts[2])
+  }
+  bullet <- sub("Bullet ", "", parts[3])
+  paste("hst3r", test, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_hstfin_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Houston Set Final")
+  group <- sub("Group ?", "", parts[1])
+  if (grepl("^Unknown", parts[2])) {
+    barrel <- "U"
+    bullet <- parts[3]
+  } else {
+    barrel <- parts[2]
+    bullet <- sub("Bullet ", "", parts[3])
+  }
+  paste("hstfin", group, barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_phx_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Phoenix Test")
+  if (grepl("^Unknown", parts[1])) {
+    barrel <- "U"
+    bullet <- sub("Unknown 1-", "", parts[1])
+  } else {
+    barrel <- sub("Gun 1-", "", parts[1])
+    bullet <- sub("Bullet ", "", parts[2])
+  }
+  paste("phx", barrel, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_srs_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "SR Scans")
+  box <- sub("Box ", "", parts[1])
+  bullet <- sub("Bullet ", "", parts[2])
+  paste("srs", box, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_stl_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "St Louis")
+  firearm <- sub("Firearm ", "", parts[1])
+  bullet <- sub("Bullet ", "", parts[2])
+  paste("stl", firearm, bullet, sep = ".")
+}
+
+#' @rdname parse_filepath
+parse_vrg_path <- function(filepath) {
+  parts <- .get_path_parts(filepath, "Virginia")
+  ammo_num <- sub("^(\\d+)-.*", "\\1", parts[1])
+  ammo_map <- c("1" = "b", "2" = "f", "3" = "p", "5" = "t", "7" = "s")
+  ammo <- ammo_map[ammo_num]
+  bullet <- sub("Bullet ", "", parts[2])
+  paste("vrg", ammo, bullet, sep = ".")
 }
