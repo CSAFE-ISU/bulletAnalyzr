@@ -2,7 +2,7 @@
 # Manual Bullet Comparison Pipeline Script
 #
 # This script compares two bullets using the same workflow as bulletAnalyzrApp()
-# but reads crosscut and groove locations from grooves.csv files in each bullet
+# but reads crosscut and groove locations from groove CSV files in each bullet
 # directory (created by manual_groove_selection.R).
 #
 # Usage:
@@ -66,27 +66,33 @@ preprocess_bullet_standalone <- function(bullet, bullet_name) {
   bullet$bullet <- bullet_name
   bullet$land <- seq_len(nrow(bullet))
 
-  # Store filename for matching with grooves.csv
+  # Store filename for matching with groove CSV
   bullet$filename <- basename(bullet$source)
 
   return(bullet)
 }
 
 #' Read Groove Locations from CSV
-#' @param bullet_dir Path to bullet directory containing grooves.csv
+#' @param bullet_dir Path to bullet directory containing a groove CSV file
 #' @returns Data frame with groove locations or NULL if not found
 read_grooves_csv <- function(bullet_dir) {
-  grooves_file <- file.path(bullet_dir, "grooves.csv")
+  groove_files <- list.files(bullet_dir, pattern = "groove.*\\.csv$",
+                             ignore.case = TRUE, full.names = TRUE)
 
-  if (!file.exists(grooves_file)) {
+  if (length(groove_files) == 0) {
     return(NULL)
   }
 
-  grooves_data <- read.csv(grooves_file, stringsAsFactors = FALSE)
+  if (length(groove_files) > 1) {
+    warning(paste("Multiple groove CSV files found in", bullet_dir,
+                  "- using:", basename(groove_files[1])))
+  }
+
+  grooves_data <- read.csv(groove_files[1], stringsAsFactors = FALSE)
   return(grooves_data)
 }
 
-#' Get Crosscut Locations from grooves.csv
+#' Get Crosscut Locations from groove CSV
 #' @param bullets A data frame containing bullet data with x3p objects
 #' @param bullet1_dir Path to bullet 1 directory
 #' @param bullet2_dir Path to bullet 2 directory
@@ -94,47 +100,49 @@ read_grooves_csv <- function(bullet_dir) {
 #' @param bullet2_name Name of bullet 2
 #' @returns Data frame with crosscut column added
 get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name) {
-  cat("Reading crosscut locations from grooves.csv files...\n")
+  cat("Reading crosscut locations from groove CSV files...\n")
 
   # Read groove data from both directories
   grooves1 <- read_grooves_csv(bullet1_dir)
   grooves2 <- read_grooves_csv(bullet2_dir)
 
   if (is.null(grooves1)) {
-    stop(paste("grooves.csv not found in:", bullet1_dir))
+    stop(paste("No groove CSV file found in:", bullet1_dir))
   }
   if (is.null(grooves2)) {
-    stop(paste("grooves.csv not found in:", bullet2_dir))
+    stop(paste("No groove CSV file found in:", bullet2_dir))
   }
-
-  # Initialize crosscut column
-  bullets$crosscut <- NA_real_
-
-  # Match crosscut locations by filename
-
-  for (i in seq_len(nrow(bullets))) {
-    filename <- bullets$filename[i]
-    bullet_name <- bullets$bullet[i]
-
-    if (bullet_name == bullet1_name) {
-      match_idx <- which(grooves1$filename == filename)
-      if (length(match_idx) > 0) {
-        bullets$crosscut[i] <- grooves1$crosscut_y[match_idx[1]]
-      }
-    } else if (bullet_name == bullet2_name) {
-      match_idx <- which(grooves2$filename == filename)
-      if (length(match_idx) > 0) {
-        bullets$crosscut[i] <- grooves2$crosscut_y[match_idx[1]]
-      }
-    }
-  }
-
+  
+  grooves <- rbind(grooves1, grooves2)
+  
   # Check for missing crosscuts
-  if (any(is.na(bullets$crosscut))) {
-    missing <- bullets$filename[is.na(bullets$crosscut)]
+  if (any(is.na(grooves$crosscut_y))) {
+    missing <- grooves$filename[is.na(grooves$crosscut_y)]
+    stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
+  }
+  
+  # Check for missing grooves
+  if (any(is.na(grooves$left_groove))) {
+    missing <- grooves$filename[is.na(grooves$left_groove)]
+    stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
+  }
+  if (any(is.na(grooves$right_groove))) {
+    missing <- grooves$filename[is.na(grooves$right_groove)]
     stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
   }
 
+  # Match crosscut locations by filename
+  bullets <- bullets %>%
+    dplyr::left_join(grooves, by = dplyr::join_by(filename)) %>%
+    dplyr::rename(crosscut = `crosscut_y`)
+  
+  # Create groove column in same format as cc_locate_grooves() output
+  bullets$grooves <- NA
+  for (i in 1:nrow(bullets)) {
+    bullets$grooves[[i]] <- list(groove = c(bullets$left_groove[i], bullets$right_groove[i]))
+  }
+  bullets <- bullets %>% dplyr::select(-tidyselect::any_of(c("left_groove", "right_groove")))
+  
   for (i in seq_len(nrow(bullets))) {
     cat("  Bullet", bullets$bullet[i], "Land", bullets$land[i], ": crosscut =", bullets$crosscut[i], "\n")
   }
@@ -164,7 +172,7 @@ extract_crosscut_data <- function(bullets) {
   return(bullets)
 }
 
-#' Get Groove Locations from grooves.csv
+#' Get Groove Locations from groove CSV
 #' @param bullets Data frame with ccdata
 #' @param bullet1_dir Path to bullet 1 directory
 #' @param bullet2_dir Path to bullet 2 directory
@@ -172,7 +180,7 @@ extract_crosscut_data <- function(bullets) {
 #' @param bullet2_name Name of bullet 2
 #' @returns Data frame with grooves column added
 get_grooves_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name) {
-  cat("Reading groove locations from grooves.csv files...\n")
+  cat("Reading groove locations from groove CSV files...\n")
 
   # Read groove data from both directories
   grooves1 <- read_grooves_csv(bullet1_dir)
@@ -447,20 +455,24 @@ run_phase_test <- function(features, bulletA, bulletB) {
 
 #' Compare Two Bullets Using Manual Groove Locations
 #'
-#' @param bullet1_dir Path to directory containing bullet 1 x3p files and grooves.csv
-#' @param bullet2_dir Path to directory containing bullet 2 x3p files and grooves.csv
-#' @param bullet1_name Optional name for bullet 1 (default: "Bullet1")
-#' @param bullet2_name Optional name for bullet 2 (default: "Bullet2")
+#' @param bullet1_dir Path to directory containing bullet 1 x3p files and a groove CSV
+#' @param bullet2_dir Path to directory containing bullet 2 x3p files and a groove CSV
 #' @param outfile Optional path to save results as an RDS file (default: NULL)
 #' @returns A list containing all comparison results
-compare_bullets <- function(bullet1_dir, bullet2_dir,
-                            bullet1_name = "Bullet1",
-                            bullet2_name = "Bullet2",
-                            outfile = NULL) {
+compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL) {
+  
+  if (file.exists(outfile)) {
+    cat("Outfile already exists. Skipping comparison. \n")
+    return()
+  }
+  
+  bullet1_name <- parse_filepath(bullet1_dir)
+  bullet2_name <- parse_filepath(bullet2_dir)
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
   cat("MANUAL BULLET COMPARISON PIPELINE\n")
-  cat("(Using groove locations from grooves.csv)\n")
+  cat(paste("Comparing", bullet1_name, "and", bullet2_name, "\n"))
+  cat("(Using groove locations from groove CSV files)\n")
   cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
   # Check directories exist
@@ -471,13 +483,13 @@ compare_bullets <- function(bullet1_dir, bullet2_dir,
     stop(paste("Bullet 2 directory not found:", bullet2_dir))
   }
 
-  # Check grooves.csv files exist
-  if (!file.exists(file.path(bullet1_dir, "grooves.csv"))) {
-    stop(paste("grooves.csv not found in:", bullet1_dir,
+  # Check groove CSV files exist
+  if (length(list.files(bullet1_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
+    stop(paste("No groove CSV file found in:", bullet1_dir,
                "\nRun manual_groove_selection.R first to create groove locations."))
   }
-  if (!file.exists(file.path(bullet2_dir, "grooves.csv"))) {
-    stop(paste("grooves.csv not found in:", bullet2_dir,
+  if (length(list.files(bullet2_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
+    stop(paste("No groove CSV file found in:", bullet2_dir,
                "\nRun manual_groove_selection.R first to create groove locations."))
   }
 
@@ -500,17 +512,13 @@ compare_bullets <- function(bullet1_dir, bullet2_dir,
   resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
   cat("  Resolution:", resolution, "microns\n")
 
-  # Step 3: Get crosscut locations from grooves.csv
-  cat("\nStep 3: Reading crosscut locations from grooves.csv...\n")
+  # Step 3: Get crosscut and groove locations from groove CSV
+  cat("\nStep 3: Reading crosscut and groove locations from groove CSV...\n")
   bullets <- get_crosscuts_from_csv(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name)
-
+  
   # Step 4: Extract crosscut data
   cat("\nStep 4: Extracting crosscut profiles...\n")
   bullets <- extract_crosscut_data(bullets)
-
-  # Step 5: Get groove locations from grooves.csv
-  cat("\nStep 5: Reading groove locations from grooves.csv...\n")
-  bullets <- get_grooves_from_csv(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name)
 
   # Step 6: Extract signals
   cat("\nStep 6: Extracting signals...\n")
@@ -543,6 +551,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir,
   # Print results
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
   cat("RESULTS\n")
+  cat(paste("Comparing", bullet1_name, "and", bullet2_name, "\n"))
   cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
   # Bullet-to-bullet score
@@ -560,12 +569,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir,
     cat("  Different-source estimate (estimate2):", round(phase_test_results$estimate2, 4), "\n")
     cat("  Test statistic:", round(phase_test_results$statistic, 4), "\n")
     cat("  P-value:", format(phase_test_results$p.value, scientific = TRUE, digits = 4), "\n")
-
-    if (phase_test_results$p.value < 0.05) {
-      cat("\n  Conclusion: Evidence suggests bullets are from the SAME SOURCE (p < 0.05)\n")
-    } else {
-      cat("\n  Conclusion: Insufficient evidence that bullets are from the same source (p >= 0.05)\n")
-    }
+    cat("  The probability of a false positive is:", format(100*phase_test_results$p.value, scientific = FALSE, digits = 4), "\n")
   }
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
@@ -619,8 +623,8 @@ if (!interactive()) {
   cat("Usage: Provide bullet directories as arguments or call compare_bullets() interactively.\n")
 } else {
   cat("\n=== Manual Bullet Comparison Pipeline Loaded ===\n")
-  cat("\nThis script uses groove locations from grooves.csv files in each bullet directory.\n")
-  cat("Run manual_groove_selection.R first to create the grooves.csv files.\n")
+  cat("\nThis script uses groove locations from groove CSV files in each bullet directory.\n")
+  cat("Run manual_groove_selection.R first to create the groove CSV files.\n")
   cat("\nTo run a comparison, call:\n")
   cat('  results <- compare_bullets("path/to/bullet1", "path/to/bullet2")\n')
   cat('\nTo save results, call:\n')

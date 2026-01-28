@@ -372,7 +372,7 @@ run_phase_test <- function(features, bulletA, bulletB) {
 }
 
 # ============================================================================
-# MAIN COMPARISON FUNCTION
+# MAIN AUTOMATICE COMPARISON FUNCTION
 # ============================================================================
 
 #' Compare Two Bullets
@@ -383,7 +383,7 @@ run_phase_test <- function(features, bulletA, bulletB) {
 #' @param bullet2_name Optional name for bullet 2 (default: "Bullet2")
 #' @param outfile Optional path to save results as an RDS file (default: NULL)
 #' @returns A list containing all comparison results
-compare_bullets <- function(bullet1_dir, bullet2_dir,
+compare_bullets_auto <- function(bullet1_dir, bullet2_dir,
                             bullet1_name = "Bullet1",
                             bullet2_name = "Bullet2",
                             outfile = NULL) {
