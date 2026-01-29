@@ -1,0 +1,29 @@
+﻿Study,Bullet Code Format
+Barsto Broached,bar.<barrel>.<bullet>
+Boxes 1-6,box16.<box>.<bullet>
+Boxes 1-6 2024,box1624.<box>.<bullet>
+Carney Study,car.<bullet>
+Clones 224,cln224.<set>.<barrel>.<bullet>
+Clones 224 2,cln2242.<set>.<barrel>.<bullet>
+CSAFE Persistence SW,cspsw.<barrel>.<bullet>
+CTS Forensic Testing,cts.<year>.<item>.<bullet>
+DFSC,dfsc.<brand>.<bullet>
+Glock GMB BBL,glck.<material>.<bullet>
+Hamby 224 Clone,hmb224c.<testset>.<barrel>.<bullet>
+Hamby 259 Clone Set,hmb259.<barrel>.<bullet>
+Hamby Set 10,hmb10.<barrel>.<bullet>
+Hamby Set 224,hmb224.<barrel>.<bullet>
+Hamby Set 36,hmb36.<barrel>.<bullet>
+Hamby Set 44 Final,hmb44.<barrel>.<bullet>
+Hamby Set 5,hmb5.<testset>.<type>.<bullet>
+Hamby Set X,hmbx.<testset>.<type>.<bullet>
+Houston 1,hst1.<barrel>.<bullet>
+Houston 2023,hst23.<barrel>.<bullet>
+Houston NIJ,hstnij.<barrel>.<bullet>
+Houston Set 3,hst3.<test>.<barrel>.<bullet>
+Houston Set 3 Redo,hst3r.<test>.<barrel>.<bullet>
+Houston Set Final,hstfin.<group>.<barrel>.<bullet>
+Phoenix Test,phx.<gun>.<bullet>
+SR Scans,srs.<box>.<bullet>
+St Louis,stl.<firearm>.<bullet>
+Virginia,vrg.<ammo>.<bullet>
