@@ -20,6 +20,21 @@ library(tidyr)
 
 
 # ============================================================================
+# PARALLEL HELPERS
+# ============================================================================
+
+par_lapply <- function(X, FUN, cores = 1L, ...) {
+  if (cores > 1L) parallel::mclapply(X, FUN, mc.cores = cores, ...)
+  else lapply(X, FUN, ...)
+}
+
+par_mapply <- function(FUN, ..., cores = 1L, MoreArgs = NULL, SIMPLIFY = FALSE) {
+  if (cores > 1L) parallel::mcmapply(FUN, ..., mc.cores = cores, MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
+  else mapply(FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
+}
+
+
+# ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
 
@@ -152,11 +167,12 @@ get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_na
 
 #' Extract Crosscut Data
 #' @param bullets Data frame with x3p objects and crosscut locations
+#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns Data frame with ccdata column added
-extract_crosscut_data <- function(bullets) {
+extract_crosscut_data <- function(bullets, cores = 1L) {
   cat("Extracting crosscut data...\n")
 
-  bullets$ccdata <- mapply(
+  bullets$ccdata <- par_mapply(
     function(x3p, y) {
       res <- bulletxtrctr::x3p_crosscut(x3p = x3p, y = y, range = 1e-5)
       if (nrow(res) == 0) {
@@ -166,7 +182,7 @@ extract_crosscut_data <- function(bullets) {
     },
     bullets$x3p,
     bullets$crosscut,
-    SIMPLIFY = FALSE
+    cores = cores, SIMPLIFY = FALSE
   )
 
   return(bullets)
@@ -232,17 +248,18 @@ get_grooves_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name
 
 #' Extract Signals from Crosscut Data
 #' @param bullets Data frame with ccdata and grooves
+#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns Data frame with sigs column added
-extract_signals <- function(bullets) {
+extract_signals <- function(bullets, cores = 1L) {
   cat("Extracting signals...\n")
 
-  bullets$sigs <- mapply(
+  bullets$sigs <- par_mapply(
     function(ccdata, grooves) {
       bulletxtrctr::cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03)
     },
     bullets$ccdata,
     bullets$grooves,
-    SIMPLIFY = FALSE
+    cores = cores, SIMPLIFY = FALSE
   )
 
   return(bullets)
@@ -250,8 +267,9 @@ extract_signals <- function(bullets) {
 
 #' Align Signals Between All Land Pairs
 #' @param bullets Data frame with signals
+#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns List with bullets and comparisons data frames
-align_signals <- function(bullets) {
+align_signals <- function(bullets, cores = 1L) {
   cat("Aligning signals between all land pairs...\n")
 
   bullets$bulletland <- paste0(bullets$bullet, "-", bullets$land)
@@ -262,16 +280,20 @@ align_signals <- function(bullets) {
     stringsAsFactors = FALSE
   )
 
-  comparisons$aligned <- mapply(
-    function(x, y) {
-      bulletxtrctr::sig_align(
-        bullets$sigs[bullets$bulletland == x][[1]]$sig,
-        bullets$sigs[bullets$bulletland == y][[1]]$sig
-      )
+  # Pre-build named lookup for O(1) access instead of O(n) scan per iteration
+  sig_lookup <- setNames(
+    lapply(seq_len(nrow(bullets)), function(i) bullets$sigs[[i]]$sig),
+    bullets$bulletland
+  )
+
+  comparisons$aligned <- par_mapply(
+    function(x, y, lookup) {
+      bulletxtrctr::sig_align(lookup[[x]], lookup[[y]])
     },
     comparisons$land1,
     comparisons$land2,
-    SIMPLIFY = FALSE
+    MoreArgs = list(lookup = sig_lookup),
+    cores = cores, SIMPLIFY = FALSE
   )
 
   cat("  Created", nrow(comparisons), "land-to-land comparisons\n")
@@ -282,17 +304,18 @@ align_signals <- function(bullets) {
 #' Extract All Features
 #' @param comparisons Data frame with aligned signals
 #' @param resolution Scan resolution
+#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns List with comparisons and features data frames
-extract_features <- function(comparisons, resolution) {
+extract_features <- function(comparisons, resolution, cores = 1L) {
   cat("Extracting features...\n")
 
   # Calculate CCF
   cat("  Calculating cross-correlation...\n")
-  comparisons$ccf0 <- sapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands))
+  comparisons$ccf0 <- unlist(par_lapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands), cores = cores))
 
   # Evaluate striation marks
   cat("  Evaluating striation marks...\n")
-  comparisons$striae <- lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75)
+  comparisons$striae <- par_lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75, cores = cores)
 
   # Extract bullet/land identifiers
   comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1), "-"), "[[", 1)
@@ -302,12 +325,12 @@ extract_features <- function(comparisons, resolution) {
 
   # Extract all features
   cat("  Extracting all features...\n")
-  comparisons$features <- mapply(
+  comparisons$features <- par_mapply(
     bulletxtrctr::extract_features_all,
     comparisons$aligned,
     comparisons$striae,
     MoreArgs = list(resolution = resolution),
-    SIMPLIFY = FALSE
+    cores = cores, SIMPLIFY = FALSE
   )
 
   # Unnest and scale features
@@ -458,8 +481,10 @@ run_phase_test <- function(features, bulletA, bulletB) {
 #' @param bullet1_dir Path to directory containing bullet 1 x3p files and a groove CSV
 #' @param bullet2_dir Path to directory containing bullet 2 x3p files and a groove CSV
 #' @param outfile Optional path to save results as an RDS file (default: NULL)
+#' @param cores Number of cores for parallel processing (default: all but one)
 #' @returns A list containing all comparison results
-compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL) {
+compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
+                            cores = max(1L, parallel::detectCores() - 1L, na.rm = TRUE)) {
   
   if (file.exists(outfile)) {
     cat("Outfile already exists. Skipping comparison. \n")
@@ -516,23 +541,25 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL) {
   cat("\nStep 3: Reading crosscut and groove locations from groove CSV...\n")
   bullets <- get_crosscuts_from_csv(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name)
   
+  cat("  Using", cores, "core(s) for parallel processing\n")
+
   # Step 4: Extract crosscut data
   cat("\nStep 4: Extracting crosscut profiles...\n")
-  bullets <- extract_crosscut_data(bullets)
+  bullets <- extract_crosscut_data(bullets, cores = cores)
 
   # Step 6: Extract signals
   cat("\nStep 6: Extracting signals...\n")
-  bullets <- extract_signals(bullets)
+  bullets <- extract_signals(bullets, cores = cores)
 
   # Step 7: Align signals
   cat("\nStep 7: Aligning signals...\n")
-  aligned_results <- align_signals(bullets)
+  aligned_results <- align_signals(bullets, cores = cores)
   bullets <- aligned_results$bullets
   comparisons <- aligned_results$comparisons
 
   # Step 8: Extract features
   cat("\nStep 8: Extracting features...\n")
-  feature_results <- extract_features(comparisons, resolution)
+  feature_results <- extract_features(comparisons, resolution, cores = cores)
   comparisons <- feature_results$comparisons
   features <- feature_results$features
 
