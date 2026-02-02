@@ -28,23 +28,11 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
   # Read the x3p file
   x3p <- x3p_read(x3p_path)
   
-  # Check orientation and ensure LONG axis is in X direction
-  # x3p_crosscut extracts along the X axis, so we want X = circumference (long)
-  # If the scan has Y longer than X, we need to transpose it
-  x_length <- x3p$header.info$sizeX * x3p$header.info$incrementX
-  y_length <- x3p$header.info$sizeY * x3p$header.info$incrementY
-  
-  cat("Scan dimensions: X =", x_length * 1e6, "microns, Y =", y_length * 1e6, "microns\n")
-  
-  if (y_length > x_length) {
-    cat("Rotating scan 90 degrees to put long axis in X direction\n")
-    x3p <- x3p_transpose(x3p)
-    # Update lengths after transpose
-    x_length <- x3p$header.info$sizeX * x3p$header.info$incrementX
-    y_length <- x3p$header.info$sizeY * x3p$header.info$incrementY
-    cat("After rotation: X =", x_length * 1e6, "microns, Y =", y_length * 1e6, "microns\n")
-  } else {
-    cat("Orientation correct: long axis already in X direction\n")
+  # Check orientation and ensure LONG axis is in X direction (matches bulletAnalyzrApp)
+  hinfo <- x3p$header.info
+  if (hinfo$sizeX < hinfo$sizeY) {
+    cat("Rotating scan 90 degrees (incorrect orientation detected)\n")
+    x3p <- x3ptools::x3p_rotate(x3p, angle = 90)
   }
 
   # Convert from meters to micrometers if needed (same as bulletAnalyzrApp)

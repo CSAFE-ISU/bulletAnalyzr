@@ -54,12 +54,10 @@ cond_x3p_m_to_mum <- function(x3p) {
 #' @param bullet A data frame containing bullet data with x3p objects
 #' @returns The bullet data frame with rotated x3p objects if needed
 rotate_bullet_if_needed <- function(bullet) {
-  for (i in seq_len(nrow(bullet))) {
-    hinfo <- bullet$x3p[[i]]$header.info
-    if (hinfo$sizeX < hinfo$sizeY) {
-      cat("  Rotating land", i, "90 degrees (incorrect orientation detected)\n")
-      bullet$x3p[[i]] <- x3ptools::x3p_rotate(bullet$x3p[[i]], angle = 90)
-    }
+  hinfo <- bullet$x3p[[1]]$header.info
+  if (hinfo$sizeX < hinfo$sizeY) {
+    cat("  Rotating bullet 90 degrees (incorrect orientation detected)\n")
+    bullet$x3p <- lapply(bullet$x3p, x3ptools::x3p_rotate, angle = 90)
   }
   return(bullet)
 }
