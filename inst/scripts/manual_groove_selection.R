@@ -89,17 +89,12 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     cat("Using optimized crosscut at y =", crosscut_y, "microns\n")
   }
   
-  # Extract crosscut data as a 1D profile
-  # The range parameter controls the Y-range (thickness of the slice to average)
-  # Use a small range for a thin horizontal slice
-  y_increment <- x3p$header.info$incrementY
-  thin_range <- y_increment * 5  # Average 5 rows for a thin but stable slice
-  
-  ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = thin_range)
-  
+  # Extract crosscut data as a 1D profile (range matches bulletAnalyzrApp)
+  ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = 1e-5)
+
   if (nrow(ccdata) == 0) {
-    cat("Warning: Empty crosscut data, trying with larger range\n")
-    ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = thin_range * 10)
+    cat("Warning: Empty crosscut data, trying with y = NULL\n")
+    ccdata <- x3p_crosscut(x3p, y = NULL, range = 1e-5)
   }
   
   # Ensure x coordinates start from 0 and span the full width
