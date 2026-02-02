@@ -39,8 +39,3 @@ x3p_image(d1$x3p[[3]])
 # Load from x3p to view
 b1 <- read_bullet(main_dir)
 x3p_image(b1$x3p[[1]])
-x3p_get_scale(b1$x3p[[6]])
-
-b2 <- read_bullet(main_dir)
-x3p_image(b2$x3p[[1]])
-x3p_get_scale(b2$x3p[[6]])
