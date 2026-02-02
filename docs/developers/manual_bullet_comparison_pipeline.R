@@ -139,11 +139,11 @@ get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_na
   # Check for missing grooves
   if (any(is.na(grooves$left_groove))) {
     missing <- grooves$filename[is.na(grooves$left_groove)]
-    stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
+    stop(paste("Could not find left groove locations for:", paste(missing, collapse = ", ")))
   }
   if (any(is.na(grooves$right_groove))) {
     missing <- grooves$filename[is.na(grooves$right_groove)]
-    stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
+    stop(paste("Could not find right groove locations for:", paste(missing, collapse = ", ")))
   }
 
   # Match crosscut locations by filename
@@ -178,6 +178,8 @@ extract_crosscut_data <- function(bullets, cores = 1L) {
       if (nrow(res) == 0) {
         res <- bulletxtrctr::x3p_crosscut(x3p = x3p, y = NULL, range = 1e-5)
       }
+      # Shift x-axis so minimum is 0 (matches manual_groove_selection.R)
+      res$x <- res$x - min(res$x, na.rm = TRUE)
       return(res)
     },
     bullets$x3p,
@@ -472,6 +474,26 @@ run_phase_test <- function(features, bulletA, bulletB) {
   return(result)
 }
 
+verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
+  # Check directories exist
+  if (!dir.exists(bullet1_dir)) {
+    stop(paste("Bullet 1 directory not found:", bullet1_dir))
+  }
+  if (!dir.exists(bullet2_dir)) {
+    stop(paste("Bullet 2 directory not found:", bullet2_dir))
+  }
+  
+  # Check groove CSV files exist
+  if (length(list.files(bullet1_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
+    stop(paste("No groove CSV file found in:", bullet1_dir,
+               "\nRun manual_groove_selection.R first to create groove locations."))
+  }
+  if (length(list.files(bullet2_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
+    stop(paste("No groove CSV file found in:", bullet2_dir,
+               "\nRun manual_groove_selection.R first to create groove locations."))
+  }
+}
+
 # ============================================================================
 # MAIN COMPARISON FUNCTION
 # ============================================================================
@@ -500,23 +522,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
   cat("(Using groove locations from groove CSV files)\n")
   cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
-  # Check directories exist
-  if (!dir.exists(bullet1_dir)) {
-    stop(paste("Bullet 1 directory not found:", bullet1_dir))
-  }
-  if (!dir.exists(bullet2_dir)) {
-    stop(paste("Bullet 2 directory not found:", bullet2_dir))
-  }
-
-  # Check groove CSV files exist
-  if (length(list.files(bullet1_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet1_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
-  }
-  if (length(list.files(bullet2_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet2_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
-  }
+  verify_dirs_and_files(bullet1_dir, bullet2_dir)
 
   # Step 1: Read bullets
   cat("Step 1: Reading bullet data...\n")
