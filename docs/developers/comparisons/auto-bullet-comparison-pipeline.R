@@ -1,15 +1,14 @@
 #!/usr/bin/env Rscript
-# Manual Bullet Comparison Pipeline Script
+# Bullet Comparison Pipeline Script
 #
 # This script compares two bullets using the same workflow as bulletAnalyzrApp()
-# but reads crosscut and groove locations from groove CSV files in each bullet
-# directory (created by manual_groove_selection.R).
+# but with automatic crosscut and groove locations (no manual intervention).
 #
 # Usage:
-#   Rscript manual_bullet_comparison_pipeline.R
+#   Rscript auto-bullet-comparison-pipeline.R
 #
 # Or interactively in R:
-#   source("manual_bullet_comparison_pipeline.R")
+#   source("auto-bullet-comparison-pipeline.R")
 #   results <- compare_bullets("examples/Hamby-44/Barrel 1/Bullet 1", "examples/Hamby-44/Barrel 1/Bullet 2")
 
 library(x3ptools)
@@ -17,21 +16,6 @@ library(bulletxtrctr)
 library(randomForest)
 library(dplyr)
 library(tidyr)
-
-
-# ============================================================================
-# PARALLEL HELPERS
-# ============================================================================
-
-par_lapply <- function(X, FUN, cores = 1L, ...) {
-  if (cores > 1L) parallel::mclapply(X, FUN, mc.cores = cores, ...)
-  else lapply(X, FUN, ...)
-}
-
-par_mapply <- function(FUN, ..., cores = 1L, MoreArgs = NULL, SIMPLIFY = FALSE) {
-  if (cores > 1L) parallel::mcmapply(FUN, ..., mc.cores = cores, MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
-  else mapply(FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
-}
 
 
 # ============================================================================
@@ -54,10 +38,12 @@ cond_x3p_m_to_mum <- function(x3p) {
 #' @param bullet A data frame containing bullet data with x3p objects
 #' @returns The bullet data frame with rotated x3p objects if needed
 rotate_bullet_if_needed <- function(bullet) {
-  hinfo <- bullet$x3p[[1]]$header.info
-  if (hinfo$sizeX < hinfo$sizeY) {
-    cat("  Rotating bullet 90 degrees (incorrect orientation detected)\n")
-    bullet$x3p <- lapply(bullet$x3p, x3ptools::x3p_rotate, angle = 90)
+  for (i in seq_len(nrow(bullet))) {
+    hinfo <- bullet$x3p[[i]]$header.info
+    if (hinfo$sizeX < hinfo$sizeY) {
+      cat("  Rotating land", i, "90 degrees (incorrect orientation detected)\n")
+      bullet$x3p[[i]] <- x3ptools::x3p_rotate(bullet$x3p[[i]], angle = 90)
+    }
   }
   return(bullet)
 }
@@ -79,83 +65,45 @@ preprocess_bullet_standalone <- function(bullet, bullet_name) {
   bullet$bullet <- bullet_name
   bullet$land <- seq_len(nrow(bullet))
 
-  # Store filename for matching with groove CSV
-  bullet$filename <- basename(bullet$source)
-
   return(bullet)
 }
 
-#' Read Groove Locations from CSV
-#' @param bullet_dir Path to bullet directory containing a groove CSV file
-#' @returns Data frame with groove locations or NULL if not found
-read_grooves_csv <- function(bullet_dir) {
-  groove_files <- list.files(bullet_dir, pattern = "groove.*\\.csv$",
-                             ignore.case = TRUE, full.names = TRUE)
-
-  if (length(groove_files) == 0) {
-    return(NULL)
-  }
-
-  if (length(groove_files) > 1) {
-    warning(paste("Multiple groove CSV files found in", bullet_dir,
-                  "- using:", basename(groove_files[1])))
-  }
-
-  grooves_data <- read.csv(groove_files[1], stringsAsFactors = FALSE)
-  return(grooves_data)
-}
-
-#' Get Crosscut Locations from groove CSV
+#' Get Default Crosscut Locations
 #' @param bullets A data frame containing bullet data with x3p objects
-#' @param bullet1_dir Path to bullet 1 directory
-#' @param bullet2_dir Path to bullet 2 directory
-#' @param bullet1_name Name of bullet 1
-#' @param bullet2_name Name of bullet 2
+#' @param ylimits Y-axis limits for optimization
 #' @returns Data frame with crosscut column added
-get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name) {
-  cat("Reading crosscut locations from groove CSV files...\n")
+get_default_crosscuts <- function(bullets, ylimits = c(150, NA)) {
+  cat("Finding optimal crosscut locations...\n")
 
-  # Read groove data from both directories
-  grooves1 <- read_grooves_csv(bullet1_dir)
-  grooves2 <- read_grooves_csv(bullet2_dir)
+  bullets$crosscut <- sapply(bullets$x3p, bulletxtrctr::x3p_crosscut_optimize, ylimits = ylimits)
 
-  if (is.null(grooves1)) {
-    stop(paste("No groove CSV file found in:", bullet1_dir))
-  }
-  if (is.null(grooves2)) {
-    stop(paste("No groove CSV file found in:", bullet2_dir))
-  }
-  
-  grooves <- rbind(grooves1, grooves2)
-  
-  # Check for missing crosscuts
-  if (any(is.na(grooves$crosscut_y))) {
-    missing <- grooves$filename[is.na(grooves$crosscut_y)]
-    stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
-  }
-  
-  # Check for missing grooves
-  if (any(is.na(grooves$left_groove))) {
-    missing <- grooves$filename[is.na(grooves$left_groove)]
-    stop(paste("Could not find left groove locations for:", paste(missing, collapse = ", ")))
-  }
-  if (any(is.na(grooves$right_groove))) {
-    missing <- grooves$filename[is.na(grooves$right_groove)]
-    stop(paste("Could not find right groove locations for:", paste(missing, collapse = ", ")))
+  # Handle NA values by lowering minccf threshold
+ if (any(is.na(bullets$crosscut))) {
+    missing_idx <- which(is.na(bullets$crosscut))
+
+    for (i in missing_idx) {
+      current_minccf <- 0.85
+
+      while (current_minccf >= 0.6) {
+        cc <- bulletxtrctr::x3p_crosscut_optimize(
+          x3p = bullets$x3p[[i]],
+          ylimits = ylimits,
+          minccf = current_minccf
+        )
+
+        if (is.na(cc) && current_minccf == 0.6) {
+          stop(paste("Could not find stable crosscut for bullet", bullets$bullet[i], "land", bullets$land[i]))
+        } else if (is.na(cc)) {
+          current_minccf <- current_minccf - 0.05
+        } else {
+          bullets$crosscut[i] <- cc
+          cat("  Found crosscut for land", bullets$land[i], "with minccf =", current_minccf, "\n")
+          break
+        }
+      }
+    }
   }
 
-  # Match crosscut locations by filename
-  bullets <- bullets %>%
-    dplyr::left_join(grooves, by = dplyr::join_by(filename)) %>%
-    dplyr::rename(crosscut = `crosscut_y`)
-  
-  # Create groove column in same format as cc_locate_grooves() output
-  bullets$grooves <- NA
-  for (i in 1:nrow(bullets)) {
-    bullets$grooves[[i]] <- list(groove = c(bullets$left_groove[i], bullets$right_groove[i]))
-  }
-  bullets <- bullets %>% dplyr::select(-tidyselect::any_of(c("left_groove", "right_groove")))
-  
   for (i in seq_len(nrow(bullets))) {
     cat("  Bullet", bullets$bullet[i], "Land", bullets$land[i], ": crosscut =", bullets$crosscut[i], "\n")
   }
@@ -165,78 +113,36 @@ get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_na
 
 #' Extract Crosscut Data
 #' @param bullets Data frame with x3p objects and crosscut locations
-#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns Data frame with ccdata column added
-extract_crosscut_data <- function(bullets, cores = 1L) {
+extract_crosscut_data <- function(bullets) {
   cat("Extracting crosscut data...\n")
 
-  bullets$ccdata <- par_mapply(
+  bullets$ccdata <- mapply(
     function(x3p, y) {
       res <- bulletxtrctr::x3p_crosscut(x3p = x3p, y = y, range = 1e-5)
       if (nrow(res) == 0) {
         res <- bulletxtrctr::x3p_crosscut(x3p = x3p, y = NULL, range = 1e-5)
       }
-      # Shift x-axis so minimum is 0 (matches manual_groove_selection.R)
-      res$x <- res$x - min(res$x, na.rm = TRUE)
       return(res)
     },
     bullets$x3p,
     bullets$crosscut,
-    cores = cores, SIMPLIFY = FALSE
+    SIMPLIFY = FALSE
   )
 
   return(bullets)
 }
 
-#' Get Groove Locations from groove CSV
+#' Locate Grooves Automatically
 #' @param bullets Data frame with ccdata
-#' @param bullet1_dir Path to bullet 1 directory
-#' @param bullet2_dir Path to bullet 2 directory
-#' @param bullet1_name Name of bullet 1
-#' @param bullet2_name Name of bullet 2
 #' @returns Data frame with grooves column added
-get_grooves_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name) {
-  cat("Reading groove locations from groove CSV files...\n")
+locate_grooves <- function(bullets) {
+  cat("Locating groove positions...\n")
 
-  # Read groove data from both directories
-  grooves1 <- read_grooves_csv(bullet1_dir)
-  grooves2 <- read_grooves_csv(bullet2_dir)
-
-  # Initialize grooves column as list
-  bullets$grooves <- vector("list", nrow(bullets))
-
-  # Match groove locations by filename
-  for (i in seq_len(nrow(bullets))) {
-    filename <- bullets$filename[i]
-    bullet_name <- bullets$bullet[i]
-
-    left_groove <- NA_real_
-    right_groove <- NA_real_
-
-    if (bullet_name == bullet1_name) {
-      match_idx <- which(grooves1$filename == filename)
-      if (length(match_idx) > 0) {
-        left_groove <- grooves1$left_groove[match_idx[1]]
-        right_groove <- grooves1$right_groove[match_idx[1]]
-      }
-    } else if (bullet_name == bullet2_name) {
-      match_idx <- which(grooves2$filename == filename)
-      if (length(match_idx) > 0) {
-        left_groove <- grooves2$left_groove[match_idx[1]]
-        right_groove <- grooves2$right_groove[match_idx[1]]
-      }
-    }
-
-    # Create groove object in same format as cc_locate_grooves output
-    bullets$grooves[[i]] <- list(groove = c(left_groove, right_groove))
-  }
-
-  # Check for missing grooves
-  missing_grooves <- sapply(bullets$grooves, function(g) any(is.na(g$groove)))
-  if (any(missing_grooves)) {
-    missing <- bullets$filename[missing_grooves]
-    stop(paste("Could not find groove locations for:", paste(missing, collapse = ", ")))
-  }
+  bullets$grooves <- lapply(
+    bullets$ccdata,
+    function(x) bulletxtrctr::cc_locate_grooves(x, method = "middle", adjust = 30, return_plot = FALSE)
+  )
 
   for (i in seq_len(nrow(bullets))) {
     cat("  Bullet", bullets$bullet[i], "Land", bullets$land[i],
@@ -248,18 +154,17 @@ get_grooves_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name
 
 #' Extract Signals from Crosscut Data
 #' @param bullets Data frame with ccdata and grooves
-#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns Data frame with sigs column added
-extract_signals <- function(bullets, cores = 1L) {
+extract_signals <- function(bullets) {
   cat("Extracting signals...\n")
 
-  bullets$sigs <- par_mapply(
+  bullets$sigs <- mapply(
     function(ccdata, grooves) {
       bulletxtrctr::cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03)
     },
     bullets$ccdata,
     bullets$grooves,
-    cores = cores, SIMPLIFY = FALSE
+    SIMPLIFY = FALSE
   )
 
   return(bullets)
@@ -267,9 +172,8 @@ extract_signals <- function(bullets, cores = 1L) {
 
 #' Align Signals Between All Land Pairs
 #' @param bullets Data frame with signals
-#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns List with bullets and comparisons data frames
-align_signals <- function(bullets, cores = 1L) {
+align_signals <- function(bullets) {
   cat("Aligning signals between all land pairs...\n")
 
   bullets$bulletland <- paste0(bullets$bullet, "-", bullets$land)
@@ -280,20 +184,16 @@ align_signals <- function(bullets, cores = 1L) {
     stringsAsFactors = FALSE
   )
 
-  # Pre-build named lookup for O(1) access instead of O(n) scan per iteration
-  sig_lookup <- setNames(
-    lapply(seq_len(nrow(bullets)), function(i) bullets$sigs[[i]]$sig),
-    bullets$bulletland
-  )
-
-  comparisons$aligned <- par_mapply(
-    function(x, y, lookup) {
-      bulletxtrctr::sig_align(lookup[[x]], lookup[[y]])
+  comparisons$aligned <- mapply(
+    function(x, y) {
+      bulletxtrctr::sig_align(
+        bullets$sigs[bullets$bulletland == x][[1]]$sig,
+        bullets$sigs[bullets$bulletland == y][[1]]$sig
+      )
     },
     comparisons$land1,
     comparisons$land2,
-    MoreArgs = list(lookup = sig_lookup),
-    cores = cores, SIMPLIFY = FALSE
+    SIMPLIFY = FALSE
   )
 
   cat("  Created", nrow(comparisons), "land-to-land comparisons\n")
@@ -304,18 +204,17 @@ align_signals <- function(bullets, cores = 1L) {
 #' Extract All Features
 #' @param comparisons Data frame with aligned signals
 #' @param resolution Scan resolution
-#' @param cores Number of cores for parallel processing (default 1L)
 #' @returns List with comparisons and features data frames
-extract_features <- function(comparisons, resolution, cores = 1L) {
+extract_features <- function(comparisons, resolution) {
   cat("Extracting features...\n")
 
   # Calculate CCF
   cat("  Calculating cross-correlation...\n")
-  comparisons$ccf0 <- unlist(par_lapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands), cores = cores))
+  comparisons$ccf0 <- sapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands))
 
   # Evaluate striation marks
   cat("  Evaluating striation marks...\n")
-  comparisons$striae <- par_lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75, cores = cores)
+  comparisons$striae <- lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75)
 
   # Extract bullet/land identifiers
   comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1), "-"), "[[", 1)
@@ -325,12 +224,12 @@ extract_features <- function(comparisons, resolution, cores = 1L) {
 
   # Extract all features
   cat("  Extracting all features...\n")
-  comparisons$features <- par_mapply(
+  comparisons$features <- mapply(
     bulletxtrctr::extract_features_all,
     comparisons$aligned,
     comparisons$striae,
     MoreArgs = list(resolution = resolution),
-    cores = cores, SIMPLIFY = FALSE
+    SIMPLIFY = FALSE
   )
 
   # Unnest and scale features
@@ -472,7 +371,27 @@ run_phase_test <- function(features, bulletA, bulletB) {
   return(result)
 }
 
-verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
+# ============================================================================
+# MAIN AUTOMATICE COMPARISON FUNCTION
+# ============================================================================
+
+#' Compare Two Bullets
+#'
+#' @param bullet1_dir Path to directory containing bullet 1 x3p files
+#' @param bullet2_dir Path to directory containing bullet 2 x3p files
+#' @param bullet1_name Optional name for bullet 1 (default: "Bullet1")
+#' @param bullet2_name Optional name for bullet 2 (default: "Bullet2")
+#' @param outfile Optional path to save results as an RDS file (default: NULL)
+#' @returns A list containing all comparison results
+compare_bullets_auto <- function(bullet1_dir, bullet2_dir,
+                            bullet1_name = "Bullet1",
+                            bullet2_name = "Bullet2",
+                            outfile = NULL) {
+
+  cat("\n", paste(rep("=", 60), collapse = ""), "\n")
+  cat("BULLET COMPARISON PIPELINE\n")
+  cat(paste(rep("=", 60), collapse = ""), "\n\n")
+
   # Check directories exist
   if (!dir.exists(bullet1_dir)) {
     stop(paste("Bullet 1 directory not found:", bullet1_dir))
@@ -480,47 +399,6 @@ verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
   if (!dir.exists(bullet2_dir)) {
     stop(paste("Bullet 2 directory not found:", bullet2_dir))
   }
-  
-  # Check groove CSV files exist
-  if (length(list.files(bullet1_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet1_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
-  }
-  if (length(list.files(bullet2_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet2_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
-  }
-}
-
-# ============================================================================
-# MAIN COMPARISON FUNCTION
-# ============================================================================
-
-#' Compare Two Bullets Using Manual Groove Locations
-#'
-#' @param bullet1_dir Path to directory containing bullet 1 x3p files and a groove CSV
-#' @param bullet2_dir Path to directory containing bullet 2 x3p files and a groove CSV
-#' @param outfile Optional path to save results as an RDS file (default: NULL)
-#' @param cores Number of cores for parallel processing (default: all but one)
-#' @returns A list containing all comparison results
-compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
-                            cores = max(1L, parallel::detectCores() - 1L, na.rm = TRUE)) {
-  
-  if (file.exists(outfile)) {
-    cat("Outfile already exists. Skipping comparison. \n")
-    return()
-  }
-  
-  bullet1_name <- parse_filepath(bullet1_dir)
-  bullet2_name <- parse_filepath(bullet2_dir)
-
-  cat("\n", paste(rep("=", 60), collapse = ""), "\n")
-  cat("MANUAL BULLET COMPARISON PIPELINE\n")
-  cat(paste("Comparing", bullet1_name, "and", bullet2_name, "\n"))
-  cat("(Using groove locations from groove CSV files)\n")
-  cat(paste(rep("=", 60), collapse = ""), "\n\n")
-
-  verify_dirs_and_files(bullet1_dir, bullet2_dir)
 
   # Step 1: Read bullets
   cat("Step 1: Reading bullet data...\n")
@@ -541,29 +419,31 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
   resolution <- x3ptools::x3p_get_scale(bullets$x3p[[1]])
   cat("  Resolution:", resolution, "microns\n")
 
-  # Step 3: Get crosscut and groove locations from groove CSV
-  cat("\nStep 3: Reading crosscut and groove locations from groove CSV...\n")
-  bullets <- get_crosscuts_from_csv(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name)
-  
-  cat("  Using", cores, "core(s) for parallel processing\n")
+  # Step 3: Get crosscut locations
+  cat("\nStep 3: Finding crosscut locations...\n")
+  bullets <- get_default_crosscuts(bullets)
 
   # Step 4: Extract crosscut data
   cat("\nStep 4: Extracting crosscut profiles...\n")
-  bullets <- extract_crosscut_data(bullets, cores = cores)
+  bullets <- extract_crosscut_data(bullets)
+
+  # Step 5: Locate grooves
+  cat("\nStep 5: Locating grooves...\n")
+  bullets <- locate_grooves(bullets)
 
   # Step 6: Extract signals
   cat("\nStep 6: Extracting signals...\n")
-  bullets <- extract_signals(bullets, cores = cores)
+  bullets <- extract_signals(bullets)
 
   # Step 7: Align signals
   cat("\nStep 7: Aligning signals...\n")
-  aligned_results <- align_signals(bullets, cores = cores)
+  aligned_results <- align_signals(bullets)
   bullets <- aligned_results$bullets
   comparisons <- aligned_results$comparisons
 
   # Step 8: Extract features
   cat("\nStep 8: Extracting features...\n")
-  feature_results <- extract_features(comparisons, resolution, cores = cores)
+  feature_results <- extract_features(comparisons, resolution)
   comparisons <- feature_results$comparisons
   features <- feature_results$features
 
@@ -582,7 +462,6 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
   # Print results
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
   cat("RESULTS\n")
-  cat(paste("Comparing", bullet1_name, "and", bullet2_name, "\n"))
   cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
   # Bullet-to-bullet score
@@ -600,18 +479,21 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
     cat("  Different-source estimate (estimate2):", round(phase_test_results$estimate2, 4), "\n")
     cat("  Test statistic:", round(phase_test_results$statistic, 4), "\n")
     cat("  P-value:", format(phase_test_results$p.value, scientific = TRUE, digits = 4), "\n")
-    cat("  The probability of a false positive is:", format(100*phase_test_results$p.value, scientific = FALSE, digits = 4), "\n")
+
+    if (phase_test_results$p.value < 0.05) {
+      cat("\n  Conclusion: Evidence suggests bullets are from the SAME SOURCE (p < 0.05)\n")
+    } else {
+      cat("\n  Conclusion: Insufficient evidence that bullets are from the same source (p >= 0.05)\n")
+    }
   }
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
-
 
   # Prepare minimal results to reduce file size
   # Extract only essential land info (no x3p, ccdata, sigs, etc.)
   lands <- data.frame(
     bullet = bullets$bullet,
     land = bullets$land,
-    filename = bullets$filename,
     crosscut = bullets$crosscut,
     left_groove = sapply(bullets$grooves, function(g) g$groove[1]),
     right_groove = sapply(bullets$grooves, function(g) g$groove[2]),
@@ -651,13 +533,11 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
 # ============================================================================
 
 if (!interactive()) {
-  cat("Usage: Provide bullet directories as arguments or call compare_bullets() interactively.\n")
+  results <- compare_bullets(bullet1_dir, bullet2_dir)
 } else {
-  cat("\n=== Manual Bullet Comparison Pipeline Loaded ===\n")
-  cat("\nThis script uses groove locations from groove CSV files in each bullet directory.\n")
-  cat("Run manual_groove_selection.R first to create the groove CSV files.\n")
+  cat("\n=== Bullet Comparison Pipeline Loaded ===\n")
   cat("\nTo run a comparison, call:\n")
-  cat('  results <- compare_bullets("path/to/bullet1", "path/to/bullet2")\n')
+  cat('  results <- compare_bullets("examples/Hamby-44/Barrel 1/Bullet 1", "examples/Hamby-44/Barrel 1/Bullet 2")\n')
   cat('\nTo save results, call:\n')
-  cat('  results <- compare_bullets("path/to/bullet1", "path/to/bullet2", outfile = "results.rds")\n')
+  cat('  results <- compare_bullets("examples/Hamby-44/Barrel 1/Bullet 1", "examples/Hamby-44/Barrel 1/Bullet 2", outfile = "results.rds")\n')
 }
