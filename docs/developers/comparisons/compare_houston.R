@@ -51,13 +51,24 @@ get_unknown_barrels <- function(groups) {
   # List unknown barrels - KA, KB,..., KJ - from all groups 
 }
 
-# List bullet directories
-houston_dir <- "/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final"
-groups <- list.dirs(houston_dir, recursive = FALSE)
-kbullets <- get_known_bullets(groups)
-ubullets <- get_unknown_bullets(groups)
-bullets <- c(kbullets, ubullets)
+list_bullets <- function(main_dir) {
+  # List bullet directories
+  groups <- list.dirs(main_dir, recursive = FALSE)
+  kbullets <- get_known_bullets(groups)
+  ubullets <- get_unknown_bullets(groups)
+  bullets <- c(kbullets, ubullets)
+  return(bullets)
+}
 
+if (dir.exists("/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final")) {
+  houston_dir <- "/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final"
+} else if (dir.exists("/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final")) {
+  houston_dir <- "/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final"
+} else {
+  stop("Are you connected to LSS?")
+}
+
+bullets <- list_bullets(main_dir = houston_dir)
 pairs <- make_pairs_df(bullets)
 
 for (i in 1:nrow(pairs)) {
