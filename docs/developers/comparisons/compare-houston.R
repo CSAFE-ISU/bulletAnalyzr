@@ -54,13 +54,16 @@ get_unknown_barrels <- function(groups) {
 list_bullets <- function(main_dir) {
   # List bullet directories
   groups <- list.dirs(main_dir, recursive = FALSE)
+  groups <- groups[basename(groups) != "comparisons"]
   kbullets <- get_known_bullets(groups)
   ubullets <- get_unknown_bullets(groups)
   bullets <- c(kbullets, ubullets)
   return(bullets)
 }
 
-if (dir.exists("/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final")) {
+if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final")) {
+  houston_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final"
+} else if (dir.exists("/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final")) {
   houston_dir <- "/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final"
 } else if (dir.exists("/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final")) {
   houston_dir <- "/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final"
@@ -75,7 +78,7 @@ for (i in 1:nrow(pairs)) {
   compare_bullets(
     bullet1_dir = pairs$bullet1[i],
     bullet2_dir = pairs$bullet2[i],
-    outfile = make_outfile("docs/developers/comparisons", pairs$bullet1_name[i], pairs$bullet2_name[i]),
+    outfile = make_outfile(file.path(houston_dir, "comparisons"), pairs$bullet1_name[i], pairs$bullet2_name[i]),
     cores = 4
   )
 }
