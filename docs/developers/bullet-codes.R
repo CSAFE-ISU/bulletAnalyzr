@@ -63,13 +63,15 @@ parse_filename <- function(filename, show_format = FALSE) {
 #' bullet). All bullet codes must be from the same study.
 #'
 #' @param codes Character vector. Bullet codes in format "study.part1.part2...".
+#' @param suffix Character string. Optional suffix to append to each column name.
 #' @return A data frame with a column for each part of the bullet code.
 #'
 #' @examples
 #' parse_bullet_codes("hmb224c.1.1.1")
 #' parse_bullet_codes(c("hmb224c.1.1.1", "hmb224c.1.1.2", "hmb224c.2.1.1"))
 #' parse_bullet_codes(c("bar.1.1", "bar.1.2", "bar.2.1"))
-parse_bullet_codes <- function(codes) {
+#' parse_bullet_codes("hmb224c.1.1.1", suffix = "_A")
+parse_bullet_codes <- function(codes, suffix = NULL) {
   if (length(codes) == 0) {
     return(data.frame())
   }
@@ -85,6 +87,11 @@ parse_bullet_codes <- function(codes) {
 
   # Extract column names from format string
   col_names <- .parse_format_columns(format_str)
+
+  # Add suffix if provided
+  if (!is.null(suffix)) {
+    col_names <- paste0(col_names, suffix)
+  }
 
   # Parse each bullet code
   rows <- lapply(codes, function(code) {
