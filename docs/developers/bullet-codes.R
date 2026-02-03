@@ -56,6 +56,51 @@ parse_filename <- function(filename, show_format = FALSE) {
   return(NA)
 }
 
+#' Parse bullet codes into a data frame
+#'
+#' Takes a vector of bullet codes and creates a data frame with columns for each
+#' component. Column names are derived from the study format (e.g., study, barrel,
+#' bullet). All bullet codes must be from the same study.
+#'
+#' @param codes Character vector. Bullet codes in format "study.part1.part2...".
+#' @return A data frame with a column for each part of the bullet code.
+#'
+#' @examples
+#' parse_bullet_codes("hmb224c.1.1.1")
+#' parse_bullet_codes(c("hmb224c.1.1.1", "hmb224c.1.1.2", "hmb224c.2.1.1"))
+#' parse_bullet_codes(c("bar.1.1", "bar.1.2", "bar.2.1"))
+parse_bullet_codes <- function(codes) {
+  if (length(codes) == 0) {
+    return(data.frame())
+  }
+
+  # Get study code from first bullet code
+  first_study <- strsplit(codes[1], "\\.")[[1]][1]
+
+  # Look up format for this study
+  format_str <- .get_format_by_code(first_study)
+  if (is.na(format_str)) {
+    stop("Unknown study code: ", first_study)
+  }
+
+  # Extract column names from format string
+  col_names <- .parse_format_columns(format_str)
+
+  # Parse each bullet code
+  rows <- lapply(codes, function(code) {
+    parts <- strsplit(code, "\\.")[[1]]
+    if (length(parts) != length(col_names)) {
+      warning("Bullet code '", code, "' has ", length(parts),
+              " parts but expected ", length(col_names))
+      parts <- c(parts, rep(NA, length(col_names) - length(parts)))
+      parts <- parts[1:length(col_names)]
+    }
+    setNames(as.list(parts), col_names)
+  })
+
+  do.call(rbind.data.frame, c(rows, stringsAsFactors = FALSE))
+}
+
 
 # Study Configuration -----------------------------------------------------
 
@@ -157,6 +202,44 @@ get_format <- function(study_name) {
   }
   bullet <- gsub("'", "", sub("Bullet ", "", parts[2]))
   paste(study_code, barrel, bullet, sep = ".")
+}
+
+#' Get format string by study code
+#'
+#' Looks up the format string for a study given its short code (e.g., "hmb224c").
+#'
+#' @param study_code Character string. The study code prefix (first part of bullet code).
+#' @return A character string with the format, or NA if not found.
+#' @keywords internal
+.get_format_by_code <- function(study_code) {
+  studies <- .get_study_config()
+  for (s in studies) {
+    # Extract the study code from the format string (part before first .)
+    format_code <- strsplit(s$format, "\\.")[[1]][1]
+    if (format_code == study_code) {
+      return(s$format)
+    }
+  }
+  NA
+}
+
+#' Parse format string into column names
+#'
+#' Extracts column names from a format string. The first part becomes "study",
+#' and parts in angle brackets become their contained names.
+#'
+#' @param format_str Character string. Format like "hmb224c.<testset>.<barrel>.<bullet>".
+#' @return Character vector of column names.
+#' @keywords internal
+.parse_format_columns <- function(format_str) {
+  parts <- strsplit(format_str, "\\.")[[1]]
+  col_names <- character(length(parts))
+  col_names[1] <- "study"
+  for (i in 2:length(parts)) {
+    # Extract name from angle brackets
+    col_names[i] <- gsub("[<>]", "", parts[i])
+  }
+  col_names
 }
 
 
