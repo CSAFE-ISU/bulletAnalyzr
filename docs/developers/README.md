@@ -9,7 +9,7 @@ Utility and pipeline scripts for bullet scan analysis.
 | `bullet-scan-rotation-script.R` | Rotates all x3p scans in a directory by a specified angle (default 90°). |
 | `data-wrangling.R` | Loads and validates data structures from bullet comparison pipeline snapshots to understand workflow stages. |
 | `dat-to-x3p.R` | Reads space-delimited `.dat` files from a directory and converts each into an x3p object. |
-| `parse-filenames.R` | Extracts standardized bullet codes from scan filenames across datasets (Hamby, Houston, CTS, DFSC, Phoenix, etc.). |
+| `bullet-codes.R` | Extracts standardized bullet codes from scan filenames across datasets (Hamby, Houston, CTS, DFSC, Phoenix, etc.). |
 | `view-pipeline.R` | Interactive visualization of each bullet analysis step (read, preprocess, crosscut, grooves, signal). Supports manual groove selection and reading groove/crosscut values from a CSV. Does not save groove locations if they are adjusted. If you want to save new groove locations, use `inst/scripts/manual_groove_selection.R`. |
 
 

@@ -1,5 +1,5 @@
 source("docs/developers/comparisons/manual-bullet-comparison-pipeline.R")
-source("docs/developers/parse-filenames.R")
+source("docs/developers/bullet-codes.R")
 
 make_pairs_df <- function(bullets){
   pairs <- combn(bullets, 2)

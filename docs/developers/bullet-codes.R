@@ -1,3 +1,130 @@
+# Main Functions ----------------------------------------------------------
+
+#' Parse bullet scan filepath
+#'
+#' Detects which study a filepath belongs to and parses the directory structure
+#' to determine the bullet code. The filepath should point to a bullet directory
+#' (not a file), e.g., ".../Houston Set Final/Group 1/KA/Bullet 1".
+#'
+#' @param filepath Character string. The path to a bullet directory.
+#' @param show_format Logical. If TRUE, displays a message showing the format for the study.
+#' @return A character string with the bullet code, or NA if study cannot be detected.
+#'
+#' @examples
+#' parse_filepath(".../Barsto Broached/Barrel 1/Bullet 1")
+#' parse_filepath(".../Barsto Broached/Barrel 1/Bullet 1", show_format = TRUE)
+#' parse_filepath(".../Houston Set Final/Group 1/KA/Bullet 1", show_format = TRUE)
+parse_filepath <- function(filepath, show_format = FALSE) {
+  filepath <- gsub("\\\\", "/", filepath)
+  filepath <- sub("/$", "", filepath)
+
+  studies <- .get_study_config()
+
+  for (s in studies) {
+    if (grepl(s$path_pattern, filepath, fixed = TRUE)) {
+      if (show_format) message("Format: ", s$format)
+      return(s$path_parser(filepath))
+    }
+  }
+
+  warning("Could not detect study from filepath: ", filepath)
+  return(NA)
+}
+
+#' Parse bullet scan filename
+#'
+#' Detects which study a filename belongs to and calls the appropriate parse function.
+#'
+#' @param filename Character string. The basename of the file (not the full path).
+#' @param show_format Logical. If TRUE, displays a message showing the format for the study.
+#' @return A character string with the bullet code, or NA if study cannot be detected.
+#'
+#' @examples
+#' parse_filename("Barsto Broached - Barrel 1 - Bullet 2 - Land 1 - ...")
+#' parse_filename("HS224 Clone - Test Set 1 - Barrel 1 - Bullet 1 - Land 1 - ...", show_format = TRUE)
+parse_filename <- function(filename, show_format = FALSE) {
+  studies <- .get_study_config()
+
+  for (s in studies) {
+    if (grepl(s$filename_pattern, filename)) {
+      if (show_format) message("Format: ", s$format)
+      return(s$filename_parser(filename))
+    }
+  }
+
+  warning("Could not detect study from filename: ", filename)
+  return(NA)
+}
+
+
+# Study Configuration -----------------------------------------------------
+
+.study_cache <- new.env(parent = emptyenv())
+
+#' Get unified study configuration
+#'
+#' Returns a list of study configurations with patterns and parsers for both
+#' filepath and filename parsing. Results are cached for performance.
+#' Order matters - more specific patterns must come before general ones.
+#'
+#' @return A list of study configuration lists, each containing path_pattern,
+#'   filename_pattern, path_parser, filename_parser, and format.
+#' @keywords internal
+.get_study_config <- function() {
+  if (!exists("studies", envir = .study_cache)) {
+    .study_cache$studies <- list(
+      list(path_pattern = "Barsto Broached",              filename_pattern = "^Barsto Broached",       path_parser = parse_barsto_path,    filename_parser = parse_barsto_filename,    format = "bar.<barrel>.<bullet>"),
+      list(path_pattern = "Boxes 1-6 2024",               filename_pattern = "^Boxes 1-6 2024",        path_parser = parse_boxes1624_path, filename_parser = parse_boxes1624_filename, format = "box1624.<box>.<bullet>"),
+      list(path_pattern = "Boxes 1-6",                    filename_pattern = "^Boxes 1-6",             path_parser = parse_boxes16_path,   filename_parser = parse_boxes16_filename,   format = "box16.<box>.<bullet>"),
+      list(path_pattern = "Carney Study",                 filename_pattern = "^Carney Study",          path_parser = parse_carney_path,    filename_parser = parse_carney_filename,    format = "car.<bullet>"),
+      list(path_pattern = "Clones 224 2",                 filename_pattern = "^Clones 224 2",          path_parser = parse_clones2242_path,filename_parser = parse_clones2242_filename,format = "cln2242.<set>.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby 224 Clone",              filename_pattern = "^HS224 Clone.*Test Set", path_parser = parse_hmb224c_path,   filename_parser = parse_hmb224c_filename,   format = "hmb224c.<testset>.<barrel>.<bullet>"),
+      list(path_pattern = "Clones 224",                   filename_pattern = "^HS224 Clone",           path_parser = parse_clones224_path, filename_parser = parse_clones224_filename, format = "cln224.<set>.<barrel>.<bullet>"),
+      list(path_pattern = "CSAFE Persistence",            filename_pattern = "CSAFE Persistence.*SW",  path_parser = parse_cspsw_path,     filename_parser = parse_cspsw_filename,     format = "cspsw.<barrel>.<bullet>"),
+      list(path_pattern = "CTS Forensic Testing Program", filename_pattern = "^CTS",                   path_parser = parse_cts_path,       filename_parser = parse_cts_filename,       format = "cts.<year>.<item>.<bullet>"),
+      list(path_pattern = "DFSC",                         filename_pattern = "^DFSC",                  path_parser = parse_dfsc_path,      filename_parser = parse_dfsc_filename,      format = "dfsc.<brand>.<bullet>"),
+      list(path_pattern = "Glock GMB BBL",                filename_pattern = "^Glock GMB BBL",         path_parser = parse_glck_path,      filename_parser = parse_glck_filename,      format = "glck.<material>.<bullet>"),
+      list(path_pattern = "Hamby Set 224",                filename_pattern = "^HS224 |^HS224-",        path_parser = parse_hmb224_path,    filename_parser = parse_hmb224_filename,    format = "hmb224.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby 259 Clone Set",          filename_pattern = "^HS259",                 path_parser = parse_hmb259_path,    filename_parser = parse_hmb259_filename,    format = "hmb259.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby Set 10",                 filename_pattern = "^HS10",                  path_parser = parse_hmb10_path,     filename_parser = parse_hmb10_filename,     format = "hmb10.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby Set 36",                 filename_pattern = "^HS36",                  path_parser = parse_hmb36_path,     filename_parser = parse_hmb36_filename,     format = "hmb36.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby Set 44 Final",           filename_pattern = "^HS44",                  path_parser = parse_hmb44_path,     filename_parser = parse_hmb44_filename,     format = "hmb44.<barrel>.<bullet>"),
+      list(path_pattern = "Hamby Set 5",                  filename_pattern = "^Hamby Set 5",           path_parser = parse_hmb5_path,      filename_parser = parse_hmb5_filename,      format = "hmb5.<testset>.<type>.<bullet>"),
+      list(path_pattern = "Hamby Set X",                  filename_pattern = "^Hamby Set X",           path_parser = parse_hmbx_path,      filename_parser = parse_hmbx_filename,      format = "hmbx.<testset>.<type>.<bullet>"),
+      list(path_pattern = "Houston Set 3 Redo",           filename_pattern = "^Houston Set 3 Redo",    path_parser = parse_hst3r_path,     filename_parser = parse_hst3r_filename,     format = "hst3r.<test>.<barrel>.<bullet>"),
+      list(path_pattern = "Houston Set 3",                filename_pattern = "^Houston Set 3",         path_parser = parse_hst3_path,      filename_parser = parse_hst3_filename,      format = "hst3.<test>.<barrel>.<bullet>"),
+      list(path_pattern = "Houston Set Final",            filename_pattern = "^HTX",                   path_parser = parse_hstfin_path,    filename_parser = parse_hstfin_filename,    format = "hstfin.<group>.<barrel>.<bullet>"),
+      list(path_pattern = "Houston 1",                    filename_pattern = "^Houston 1",             path_parser = parse_hst1_path,      filename_parser = parse_hst1_filename,      format = "hst1.<barrel>.<bullet>"),
+      list(path_pattern = "Houston NIJ",                  filename_pattern = "^Houston NIJ",           path_parser = parse_hstnij_path,    filename_parser = parse_hstnij_filename,    format = "hstnij.<barrel>.<bullet>"),
+      list(path_pattern = "Houston 2023",                 filename_pattern = "^Houston -",             path_parser = parse_hst23_path,     filename_parser = parse_hst23_filename,     format = "hst23.<barrel>.<bullet>"),
+      list(path_pattern = "Phoenix Test",                 filename_pattern = "^Phoenix",               path_parser = parse_phx_path,       filename_parser = parse_phx_filename,       format = "phx.<gun>.<bullet>"),
+      list(path_pattern = "SR Scans",                     filename_pattern = "^SR -",                  path_parser = parse_srs_path,       filename_parser = parse_srs_filename,       format = "srs.<box>.<bullet>"),
+      list(path_pattern = "St Louis",                     filename_pattern = "^St\\.? Louis",          path_parser = parse_stl_path,       filename_parser = parse_stl_filename,       format = "stl.<firearm>.<bullet>"),
+      list(path_pattern = "Virginia",                     filename_pattern = "^VS -",                  path_parser = parse_vrg_path,       filename_parser = parse_vrg_filename,       format = "vrg.<ammo>.<bullet>")
+    )
+  }
+  .study_cache$studies
+}
+
+#' Get bullet code format for a study
+#'
+#' @param study_name Character string. The name of the study.
+#' @return A character string with the bullet code format, or NA if not found.
+#'
+#' @examples
+#' get_format("Barsto Broached")
+#' get_format("Houston Set Final")
+get_format <- function(study_name) {
+  studies <- .get_study_config()
+  for (s in studies) {
+    if (s$path_pattern == study_name) return(s$format)
+  }
+  NA
+}
+
+
+# Internal Helpers --------------------------------------------------------
+
 #' Extract relative path components after a study directory
 #'
 #' @param filepath Character string. Full filepath.
@@ -32,275 +159,8 @@
   paste(study_code, barrel, bullet, sep = ".")
 }
 
-#' Parse bullet scan filepath
-#'
-#' Detects which study a filepath belongs to and parses the directory structure
-#' to determine the bullet code. The filepath should point to a bullet directory
-#' (not a file), e.g., ".../Houston Set Final/Group 1/KA/Bullet 1".
-#'
-#' @param filepath Character string. The path to a bullet directory.
-#' @param show_format Logical. If TRUE, displays a message showing the format for the study.
-#' @return A character string with the bullet code, or NA if study cannot be detected.
-#'
-#' @examples
-#' parse_filepath(".../Barsto Broached/Barrel 1/Bullet 1")
-#' parse_filepath(".../Houston Set Final/Group 1/KA/Bullet 1", show_format = TRUE)
-parse_filepath <- function(filepath, show_format = FALSE) {
-  filepath <- gsub("\\\\", "/", filepath)
-  filepath <- sub("/$", "", filepath)
 
-  # Order matters - check more specific patterns before general ones
-
-  if (grepl("Barsto Broached", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: bar.<barrel>.<bullet>")
-    return(parse_barsto_path(filepath))
-  }
-  if (grepl("Boxes 1-6 2024", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: box1624.<box>.<bullet>")
-    return(parse_boxes1624_path(filepath))
-  }
-  if (grepl("Boxes 1-6", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: box16.<box>.<bullet>")
-    return(parse_boxes16_path(filepath))
-  }
-  if (grepl("Carney Study", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: car.<bullet>")
-    return(parse_carney_path(filepath))
-  }
-  if (grepl("Clones 224 2", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: cln2242.<set>.<barrel>.<bullet>")
-    return(parse_clones2242_path(filepath))
-  }
-  if (grepl("Clones 224", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: cln224.<set>.<barrel>.<bullet>")
-    return(parse_clones224_path(filepath))
-  }
-  if (grepl("CSAFE Persistence", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: cspsw.<barrel>.<bullet>")
-    return(parse_cspsw_path(filepath))
-  }
-  if (grepl("CTS Forensic Testing Program", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: cts.<year>.<item>.<bullet>")
-    return(parse_cts_path(filepath))
-  }
-  if (grepl("DFSC", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: dfsc.<brand>.<bullet>")
-    return(parse_dfsc_path(filepath))
-  }
-  if (grepl("Glock GMB BBL", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: glck.<material>.<bullet>")
-    return(parse_glck_path(filepath))
-  }
-  if (grepl("Hamby 224 Clone", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb224c.<testset>.<barrel>.<bullet>")
-    return(parse_hmb224c_path(filepath))
-  }
-  if (grepl("Hamby 259 Clone Set", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb259.<barrel>.<bullet>")
-    return(parse_hmb259_path(filepath))
-  }
-  if (grepl("Hamby Set 44 Final", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb44.<barrel>.<bullet>")
-    return(parse_hmb44_path(filepath))
-  }
-  if (grepl("Hamby Set 10", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb10.<barrel>.<bullet>")
-    return(parse_hmb10_path(filepath))
-  }
-  if (grepl("Hamby Set 224", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb224.<barrel>.<bullet>")
-    return(parse_hmb224_path(filepath))
-  }
-  if (grepl("Hamby Set 36", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb36.<barrel>.<bullet>")
-    return(parse_hmb36_path(filepath))
-  }
-  if (grepl("Hamby Set 5", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmb5.<testset>.<type>.<bullet>")
-    return(parse_hmb5_path(filepath))
-  }
-  if (grepl("Hamby Set X", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hmbx.<testset>.<type>.<bullet>")
-    return(parse_hmbx_path(filepath))
-  }
-  if (grepl("Houston Set 3 Redo", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hst3r.<test>.<barrel>.<bullet>")
-    return(parse_hst3r_path(filepath))
-  }
-  if (grepl("Houston Set 3", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hst3.<test>.<barrel>.<bullet>")
-    return(parse_hst3_path(filepath))
-  }
-  if (grepl("Houston Set Final", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hstfin.<group>.<barrel>.<bullet>")
-    return(parse_hstfin_path(filepath))
-  }
-  if (grepl("Houston 1", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hst1.<barrel>.<bullet>")
-    return(parse_hst1_path(filepath))
-  }
-  if (grepl("Houston NIJ", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hstnij.<barrel>.<bullet>")
-    return(parse_hstnij_path(filepath))
-  }
-  if (grepl("Houston 2023", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: hst23.<barrel>.<bullet>")
-    return(parse_hst23_path(filepath))
-  }
-  if (grepl("Phoenix Test", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: phx.<gun>.<bullet>")
-    return(parse_phx_path(filepath))
-  }
-  if (grepl("SR Scans", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: srs.<box>.<bullet>")
-    return(parse_srs_path(filepath))
-  }
-  if (grepl("St Louis", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: stl.<firearm>.<bullet>")
-    return(parse_stl_path(filepath))
-  }
-  if (grepl("Virginia", filepath, fixed = TRUE)) {
-    if (show_format) message("Format: vrg.<ammo>.<bullet>")
-    return(parse_vrg_path(filepath))
-  }
-
-  # Unknown study
-  warning(paste("Could not detect study from filepath:", filepath))
-  return(NA)
-}
-
-#' Parse bullet scan filename
-#'
-#' Detects which study a filename belongs to and calls the appropriate parse function.
-#'
-#' @param filename Character string. The basename of the file (not the full path).
-#' @param show_format Logical. If TRUE, displays a message showing the format for the study.
-#' @return A character string with the bullet code, or NA if study cannot be detected.
-#'
-#' @examples
-#' parse_filename("Barsto Broached - Barrel 1 - Bullet 2 - Land 1 - ...")
-#' parse_filename("HS224 Clone - Test Set 1 - Barrel 1 - Bullet 1 - Land 1 - ...", show_format = TRUE)
-parse_filename <- function(filename, show_format = FALSE) {
-  # Order matters - check more specific patterns before general ones
-
-  if (grepl("^Barsto Broached", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_barsto_filename(filename))
-  }
-  if (grepl("^Boxes 1-6 2024", filename)) {
-    if (show_format) message("Format: <study>.<box>.<bullet>")
-    return(parse_boxes1624_filename(filename))
-  }
-  if (grepl("^Boxes 1-6", filename)) {
-    if (show_format) message("Format: <study>.<box>.<bullet>")
-    return(parse_boxes16_filename(filename))
-  }
-  if (grepl("^Carney Study", filename)) {
-    if (show_format) message("Format: <study>.<bullet>")
-    return(parse_carney_filename(filename))
-  }
-  if (grepl("^Clones 224 2", filename)) {
-    if (show_format) message("Format: <study>.<set>.<barrel>.<bullet>")
-    return(parse_clones2242_filename(filename))
-  }
-  # HS224 Clone with "Test Set" is Hamby 224 Clone, with just "Set" is Clones 224
-  if (grepl("^HS224 Clone.*Test Set", filename)) {
-    if (show_format) message("Format: <study>.<testset>.<barrel>.<bullet>")
-    return(parse_hmb224c_filename(filename))
-  }
-  if (grepl("^HS224 Clone", filename)) {
-    if (show_format) message("Format: <study>.<set>.<barrel>.<bullet>")
-    return(parse_clones224_filename(filename))
-  }
-  if (grepl("CSAFE Persistence.*SW", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_cspsw_filename(filename))
-  }
-  if (grepl("^CTS", filename)) {
-    if (show_format) message("Format: <study>.<year>.<item>.<bullet>")
-    return(parse_cts_filename(filename))
-  }
-  if (grepl("^DFSC", filename)) {
-    if (show_format) message("Format: <study>.<brand>.<bullet>")
-    return(parse_dfsc_filename(filename))
-  }
-  if (grepl("^Glock GMB BBL", filename)) {
-    if (show_format) message("Format: <study>.<material>.<bullet>")
-    return(parse_glck_filename(filename))
-  }
-  if (grepl("^HS224 ", filename) || grepl("^HS224-", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hmb224_filename(filename))
-  }
-  if (grepl("^HS259", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hmb259_filename(filename))
-  }
-  if (grepl("^HS10", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hmb10_filename(filename))
-  }
-  if (grepl("^HS36", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hmb36_filename(filename))
-  }
-  if (grepl("^HS44", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hmb44_filename(filename))
-  }
-  if (grepl("^Hamby Set 5", filename)) {
-    if (show_format) message("Format: <study>.<testset>.<type>.<bullet>")
-    return(parse_hmb5_filename(filename))
-  }
-  if (grepl("^Hamby Set X", filename)) {
-    if (show_format) message("Format: <study>.<testset>.<type>.<bullet>")
-    return(parse_hmbx_filename(filename))
-  }
-  if (grepl("^Houston Set 3 Redo", filename)) {
-    if (show_format) message("Format: <study>.<test>.<barrel>.<bullet>")
-    return(parse_hst3r_filename(filename))
-  }
-  if (grepl("^Houston Set 3", filename)) {
-    if (show_format) message("Format: <study>.<test>.<barrel>.<bullet>")
-    return(parse_hst3_filename(filename))
-  }
-  if (grepl("^Houston 1", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hst1_filename(filename))
-  }
-  if (grepl("^Houston NIJ", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hstnij_filename(filename))
-  }
-  if (grepl("^Houston -", filename)) {
-    if (show_format) message("Format: <study>.<barrel>.<bullet>")
-    return(parse_hst23_filename(filename))
-  }
-  if (grepl("^HTX", filename)) {
-    if (show_format) message("Format: <study>.<group>.<barrel>.<bullet>")
-    return(parse_hstfin_filename(filename))
-  }
-  if (grepl("^Phoenix", filename)) {
-    if (show_format) message("Format: <study>.<gun>.<bullet>")
-    return(parse_phx_filename(filename))
-  }
-  if (grepl("^SR -", filename)) {
-    if (show_format) message("Format: <study>.<box>.<bullet>")
-    return(parse_srs_filename(filename))
-  }
-  if (grepl("^St\\. Louis", filename) || grepl("^St Louis", filename)) {
-    if (show_format) message("Format: <study>.<firearm>.<bullet>")
-    return(parse_stl_filename(filename))
-  }
-  if (grepl("^VS -", filename)) {
-    if (show_format) message("Format: <study>.<ammo>.<bullet>")
-    return(parse_vrg_filename(filename))
-  }
-
-  # Unknown study
-  warning(paste("Could not detect study from filename:", filename))
-  return(NA)
-}
+# Filename Parsers --------------------------------------------------------
 
 #' Parse Barsto Broached filename
 #'
@@ -746,9 +606,8 @@ parse_vrg_filename <- function(filename) {
   return(paste(study, ammo, bullet, sep = "."))
 }
 
-# ============================================================================
-# Filepath parsers (for parse_filepath)
-# ============================================================================
+
+# Filepath Parsers --------------------------------------------------------
 
 #' @rdname parse_filepath
 parse_barsto_path <- function(filepath) {

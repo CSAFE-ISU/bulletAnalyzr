@@ -5,8 +5,8 @@ Boxes 1-6 2024,box1624.<box>.<bullet>
 Carney Study,car.<bullet>
 Clones 224,cln224.<set>.<barrel>.<bullet>
 Clones 224 2,cln2242.<set>.<barrel>.<bullet>
-CSAFE Persistence SW,cspsw.<barrel>.<bullet>
-CTS Forensic Testing,cts.<year>.<item>.<bullet>
+CSAFE Persistence,cspsw.<barrel>.<bullet>
+CTS Forensic Testing Program,cts.<year>.<item>.<bullet>
 DFSC,dfsc.<brand>.<bullet>
 Glock GMB BBL,glck.<material>.<bullet>
 Hamby 224 Clone,hmb224c.<testset>.<barrel>.<bullet>
