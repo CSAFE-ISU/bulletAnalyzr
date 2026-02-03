@@ -23,6 +23,7 @@ Utility and pipeline scripts for bullet scan analysis.
 
 | Script | Description |
 |--------|-------------|
+| `analyze-houston-comparisons.R` | Analyzes Houston bullet study comparison scores and generates plots replicating Vanderplas et al. 2020 Figure 6. |
 | `auto-bullet-comparison-pipeline.R` | Automated end-to-end pipeline comparing two bullets (read, rotate, preprocess, crosscut, grooves, signal, align, features, match score). |
 | `compare-example-hamby44.R` | Example showing how to run the manual comparison pipeline on Hamby Set 44 scans. |
 | `compare-houston.R` | Compares all bullet pairs from the Houston Set Final dataset. |
