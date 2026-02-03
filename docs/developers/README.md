@@ -6,6 +6,7 @@ Utility and pipeline scripts for bullet scan analysis.
 
 | Script | Description |
 |--------|-------------|
+| `align-two-lands.R` | Aligns two bullet land scans and calculates comparison features (CCF, striation marks, etc.). Supports optional groove CSV files. |
 | `bullet-scan-rotation-script.R` | Rotates all x3p scans in a directory by a specified angle (default 90°). |
 | `data-wrangling.R` | Loads and validates data structures from bullet comparison pipeline snapshots to understand workflow stages. |
 | `dat-to-x3p.R` | Reads space-delimited `.dat` files from a directory and converts each into an x3p object. |

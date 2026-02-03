@@ -53,6 +53,14 @@ get_optimal_crosscut <- function(x3p) {
 #'   \code{crosscut_y}, \code{left_groove}, and \code{right_groove}. When
 #'   provided, the matching row (by \code{basename(filepath)}) supplies the
 #'   crosscut and groove values instead of auto-computing them.
+#' @param save_land_plot Logical; if TRUE, saves the land image to a PNG file
+#'   in the same directory as the input file (default FALSE).
+#' @param save_cc_profile_plot Logical; if TRUE, saves the crosscut profile plot to a PNG file
+#'   in the same directory as the input file (default FALSE).
+#' @param save_grooves_plot Logical; if TRUE, saves the grooves plot to a PNG file
+#'   in the same directory as the input file (default FALSE).
+#' @param save_signal_plot Logical; if TRUE, saves the signal plot to a PNG file
+#'   in the same directory as the input file (default FALSE).
 #' @returns NULL (called for side effects: plots and interactive input)
 #' @examples
 #' x3ppath <- "examples/Hamby Set 44 Final/Barrel 1/Bullet 1/Barrel_1-Bullet_1-Land_1.x3p"
@@ -63,26 +71,26 @@ get_optimal_crosscut <- function(x3p) {
 #' view_pipeline(x3ppath, view_land = FALSE, view_signal = TRUE)
 #' # Use a grooves CSV to supply crosscut and groove values:
 #' view_pipeline(
-#'   x3ppath, 
-#'   grooves_csv = file.path(dirname(x3ppath), "grooves.csv"), 
+#'   x3ppath,
+#'   grooves_csv = file.path(dirname(x3ppath), "grooves.csv"),
 #'   view_grooves = TRUE
 #' )
 #' view_pipeline(
-#'   x3ppath, 
-#'   grooves_csv = file.path(dirname(x3ppath), "grooves.csv"), 
+#'   x3ppath,
+#'   grooves_csv = file.path(dirname(x3ppath), "grooves.csv"),
 #'   view_grooves = TRUE,
 #'   view_signal = TRUE
 #' )
 #'
-view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, view_grooves = FALSE, view_signal = FALSE, grooves_csv = NULL) {
-  # Determine the last pipeline step needed based on view flags
+view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, view_grooves = FALSE, view_signal = FALSE, grooves_csv = NULL, save_land_plot = FALSE, save_cc_profile_plot = FALSE, save_grooves_plot = FALSE, save_signal_plot = FALSE) {
+  # Determine the last pipeline step needed based on view/save flags
   # Step mapping: 1=read/land, 2=preprocess, 3=crosscut, 4=grooves, 5=signal
   last_step <- max(c(
     0,
-    if (view_land) 1 else NULL,
-    if (view_cc_profile) 3 else NULL,
-    if (view_grooves) 4 else NULL,
-    if (view_signal) 5 else NULL
+    if (view_land || save_land_plot) 1 else NULL,
+    if (view_cc_profile || save_cc_profile_plot) 3 else NULL,
+    if (view_grooves || save_grooves_plot) 4 else NULL,
+    if (view_signal || save_signal_plot) 5 else NULL
   ))
 
   if (last_step == 0) return()
@@ -93,8 +101,15 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
   cat(sprintf("[1/%d] Reading x3p file...\n", last_step))
   x3p <- x3ptools::read_x3p(filepath)
 
-  if (view_land) {
+  if (view_land || save_land_plot) {
     x3ptools::x3p_image(x3p)
+    if (save_land_plot) {
+      land_filename <- stringr::str_replace(basename(filepath), ".x3p", "_land.png")
+      land_filename <- gsub("%", "pct", land_filename)
+      land_plot_path <- file.path(dirname(filepath), land_filename)
+      rgl::snapshot3d(land_plot_path)
+      cat("Saved land plot to:", land_plot_path, "\n")
+    }
   }
 
   if (last_step <= 1) {
@@ -136,7 +151,7 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
   # Ensure x coordinates start from 0 and span the full width
   ccdata$x <- ccdata$x - min(ccdata$x, na.rm = TRUE)
 
-  if (view_cc_profile || view_grooves) {
+  if (view_cc_profile || view_grooves || save_cc_profile_plot || save_grooves_plot) {
     p <- ggplot2::ggplot(ccdata, ggplot2::aes(x = x, y = value)) +
       ggplot2::geom_line() +
       ggplot2::labs(
@@ -155,6 +170,16 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
     print(p)
   }
 
+  if (save_cc_profile_plot) {
+    cc_profile_filename <- stringr::str_replace(basename(filepath), ".x3p", "_cc_profile.png")
+    cc_profile_filename <- gsub("%", "pct", cc_profile_filename)
+    cc_profile_plot_path <- file.path(dirname(filepath), cc_profile_filename)
+    grDevices::png(cc_profile_plot_path, width = 800, height = 600)
+    print(p)
+    grDevices::dev.off()
+    cat("Saved crosscut profile plot to:", cc_profile_plot_path, "\n")
+  }
+
   if (last_step <= 3) {
     cat("== Done:", basename(filepath), "==\n\n")
     return()
@@ -169,9 +194,9 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
     grooves_auto <- bulletxtrctr::cc_locate_grooves(ccdata, method = "middle", adjust = 30, return_plot = FALSE)
   }
 
-  if (view_grooves) {
+  if (view_grooves || save_grooves_plot) {
     # Plot the crosscut profile with grooves
-    p <- p +
+    p_grooves <- p +
       ggplot2::geom_vline(xintercept = grooves_auto$groove[1], color = "red", linetype = "dashed", linewidth = 1) +
       ggplot2::geom_vline(xintercept = grooves_auto$groove[2], color = "red", linetype = "dashed", linewidth = 1) +
       ggplot2::labs(
@@ -181,13 +206,22 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
         y = "Height (microns)"
       )
 
-    print(p)
+    if (view_grooves) {
+      print(p_grooves)
+    }
 
-    if (!is.null(csv_row)) {
-      # CSV supplied — use groove values directly, no interactive override
-      grooves <- grooves_auto
-    } else {
-      # Interactive input for groove locations
+    if (save_grooves_plot) {
+      grooves_filename <- stringr::str_replace(basename(filepath), ".x3p", "_grooves.png")
+      grooves_filename <- gsub("%", "pct", grooves_filename)
+      grooves_plot_path <- file.path(dirname(filepath), grooves_filename)
+      grDevices::png(grooves_plot_path, width = 800, height = 600)
+      print(p_grooves)
+      grDevices::dev.off()
+      cat("Saved grooves plot to:", grooves_plot_path, "\n")
+    }
+
+    if (view_grooves && is.null(csv_row)) {
+      # Interactive input for groove locations (only when viewing and no CSV)
       cat("\n--- Manual Groove Selection ---\n")
       cat("Automatic left groove:", grooves_auto$groove[1], "\n")
       cat("Automatic right groove:", grooves_auto$groove[2], "\n")
@@ -222,7 +256,7 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
             }
 
             # Show updated plot with proposed manual grooves in blue
-            p_manual <- p +
+            p_manual <- p_grooves +
               ggplot2::geom_vline(xintercept = left_groove, color = "blue", linetype = "solid", linewidth = 1.2) +
               ggplot2::geom_vline(xintercept = right_groove, color = "blue", linetype = "solid", linewidth = 1.2) +
               ggplot2::labs(subtitle = "Red dashed = auto, Blue solid = proposed manual")
@@ -250,6 +284,9 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
         }
       }
       grooves <- list(groove = c(left_groove, right_groove))
+    } else {
+      # CSV supplied or not viewing — use groove values directly
+      grooves <- grooves_auto
     }
   } else {
     grooves <- grooves_auto
@@ -264,8 +301,8 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
   cat(sprintf("[5/%d] Extracting signal...\n", last_step))
   signal <- bulletxtrctr::cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03)
 
-  if (view_signal) {
-    p <- ggplot2::ggplot(signal, ggplot2::aes(x = x)) +
+  if (view_signal || save_signal_plot) {
+    p_signal <- ggplot2::ggplot(signal, ggplot2::aes(x = x)) +
       ggplot2::geom_line(ggplot2::aes(y = raw_sig), colour = "grey70") +
       ggplot2::geom_line(ggplot2::aes(y = sig), colour = "grey30") +
       ggplot2::labs(
@@ -275,7 +312,20 @@ view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, v
         y = "Height (microns)"
       ) +
       ggplot2::theme_bw()
-    print(p)
+
+    if (view_signal || save_signal_plot) {
+      print(p_signal)
+    }
+
+    if (save_signal_plot) {
+      signal_filename <- stringr::str_replace(basename(filepath), ".x3p", "_signal.png")
+      signal_filename <- gsub("%", "pct", signal_filename)
+      signal_plot_path <- file.path(dirname(filepath), signal_filename)
+      grDevices::png(signal_plot_path, width = 800, height = 600)
+      print(p_signal)
+      grDevices::dev.off()
+      cat("Saved signal plot to:", signal_plot_path, "\n")
+    }
   }
 
   cat("== Done:", basename(filepath), "==\n\n")
