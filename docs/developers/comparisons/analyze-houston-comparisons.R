@@ -1,0 +1,195 @@
+library(dplyr)
+library(ggplot2)
+source("docs/developers/bullet-codes.R")
+
+
+# Helper Functions --------------------------------------------------------
+
+get_bullet_scores_df <- function(houston_dir) {
+  # Load files into single data frame
+  files <- list.files(file.path(houston_dir, "comparisons"), pattern = "\\.rds", full.names = TRUE)
+  df <- lapply(files, function(f) {
+    df <- readRDS(f)
+    return(df$bullet_scores)
+  })
+  df <- do.call(rbind, df)
+  
+  # Extract group, barrel, and bullet from bullet names
+  df <- cbind(df, parse_bullet_codes(df$bulletA, suffix = "1"))
+  df <- cbind(df, parse_bullet_codes(df$bulletB, suffix = "2"))
+  
+  return(df)
+}
+
+if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final")) {
+  houston_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final"
+} else if (dir.exists("/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final")) {
+  houston_dir <- "/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final"
+} else if (dir.exists("/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final")) {
+  houston_dir <- "/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final"
+} else {
+  stop("Are you connected to LSS?")
+}
+
+#' Replicate the Plot in Figure 6 in Vanderplas et al. 2020
+#'
+#' `plot_fig6()` attempts to replicate the plot of Houston bullet study data in
+#' figure 6 of Vanderplas et al. 2020.
+#'
+#' @param bullet_scores A data frame of bullet-to-bullet scores
+#' @param title A title for the plot
+#' @param subtitle A subtitle for the plot
+#' @param wrap_width An integer. The subtitle will be wrapped at this character.
+#' @param decision_threshold A number. Matrix cells with bullet scores greater
+#'   than the decision threshold will have a thick dark orange border. Cells
+#'   with scores less than or equal to the decision threshold will not have any
+#'   border.
+#' @param outfile (Optional) A file path, ending with .png as the file
+#'   extension, for saving the plot
+#' @param width (Optional) A number that sets the width of the plot when it is
+#'   saved. If no number is provided, ggplot will use set the width
+#' @param height (Optional) A number that sets the height of the plot when it is
+#'   saved. If no number is provided, ggplot will use set the width
+#'
+#' @returns A plot
+#' @export
+#'
+#' @examples
+#' plot_fig6(
+#'   bullet_scores = houston_bullet,
+#'   title = "Houston Bullet Study",
+#'   subtitle = "The crosscuts and grooves were located manually",
+#'   wrap_width = 70
+#' )
+#'
+#' @md
+plot_fig6 <- function(bullet_scores, title, subtitle, wrap_width = 70, decision_threshold = 0.5, outfile = NULL, width = NULL, height = NULL) {
+  # Prevent no visible binding for global variable note
+  bulletA <- bulletB <- barrelA <- barrelB <- barrelA_num <- barrelB_num <- NULL
+  bulletA_num <- bulletB_num <- bullet_score <- score_greater_than_threshold <- NULL
+  
+  # Add prediction based on decision threshold
+  bullet_scores$score_greater_than_threshold <- compare_scores_to_threshold(scores = bullet_scores$bullet_score, t = decision_threshold)
+  
+  # Sort known barrels and unknown bullets to match the order in Vanderplas et al. Figure 4
+  bullet_scores <- bullet_scores %>%
+    dplyr::mutate(bullet2_num = factor(bullet2, levels = c("U15", "U28", "U37", "U77", "U10", "U42", "U36", "U40")))
+  
+  p <- bullet_scores %>%
+    ggplot2::ggplot(ggplot2::aes(x = bullet1, y = bullet2_num)) +
+    ggplot2::geom_tile(ggplot2::aes(fill = bullet_score)) +
+    ggplot2::geom_tile(ggplot2::aes(color = score_greater_than_threshold), fill = "transparent", linewidth = 0.5) +
+    ggplot2::scale_fill_gradient2(low = "grey80", high = "darkorange", limits = c(0, 1), midpoint = .5) +
+    ggplot2::scale_color_manual(values = c("TRUE" = "black", "FALSE" = "transparent")) +
+    ggplot2::labs(
+      x = "Test fires",
+      y = "Questioned bullets",
+      title = title,
+      subtitle = wrap_text(subtitle,
+                           width = wrap_width
+      ),
+      fill = "Bullet score (max phase)",
+      color = paste("Bullet score greater than", decision_threshold)
+    ) +
+    ggplot2::facet_grid(cols = ggplot2::vars(barrel1)) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "bottom")
+  
+  if (!is.null(outfile)) {
+    save_plot(p = p, outfile = outfile, width = width, height = height)
+  }
+  
+  return(p)
+}
+
+#' Compare Scores to a Decision Threshold
+#'
+#' Compare scores to a decision threshold.
+#'
+#' @param scores A vector of scores
+#' @param t A numerical decision threshold
+#' @param output_classes (Optional) a vector of two output classes. The default
+#'   is TRUE and FALSE. The first class contains scores that are greater than
+#'   the decision threshold. The second class contains scores less than or equal
+#'   to the threshold.
+#'
+#' @returns A vector
+#' @export
+#'
+#' @examples
+#' compare_scores_to_threshold(hamby44_bullet$bullet_score, 0.5)
+#' compare_scores_to_threshold(
+#'   hamby44_bullet$bullet_score,
+#'   0.5,
+#'   c("same source", "different source")
+#' )
+#'
+#' @md
+compare_scores_to_threshold <- function(scores, t, output_classes = c(TRUE, FALSE)) {
+  output <- ifelse(scores > t, output_classes[1], output_classes[2])
+  return(output)
+}
+
+#' Wrap Text
+#'
+#' Wrap a character string in a plot created with ggplot2.
+#'
+#' @param x A character string
+#' @param ... Additional arguments passed to strwrap
+#'
+#' @returns A string
+#' @noRd
+wrap_text <- function(x, ...) {
+  paste(strwrap(x, ...), collapse = "\n")
+}
+
+#' Save a Plot
+#'
+#' Save a ggplot2 plot with ggsave.
+#'
+#' @param p A ggplot2 plot
+#' @param outfile A file path, ending with .png as the file extension,
+#'   for saving the plot
+#' @param width (Optional) A number that sets the width of the plot when it is
+#'   saved. If no number is provided, ggplot will use set the width
+#' @param height (Optional) A number that sets the height of the plot when it is
+#'   saved. If no number is provided, ggplot will use set the width
+#'
+#' @return No retun value, called for side-effects
+#'
+#' @noRd
+save_plot <- function(p, outfile, width, height) {
+  dir.create(dirname(outfile), showWarnings = FALSE)
+  if (is.null(width) && is.null(height)) {
+    ggplot2::ggsave(plot = p, filename = outfile)
+  } else if (!is.null(width) && !is.null(height)) {
+    ggplot2::ggsave(plot = p, filename = outfile, width = width, height = height)
+  } else if (!is.null(width)) {
+    ggplot2::ggsave(plot = p, filename = outfile, width = width)
+  } else {
+    ggplot2::ggsave(plot = p, filename = outfile, height = height)
+  }
+  message("Plot saved")
+  return()
+}
+
+
+
+# Analyze Bullet Scores ---------------------------------------------------
+
+df <- get_bullet_scores_df(houston_dir)
+
+# Filter for group 1
+df <- df %>% filter(group1 == 1, group2 == 1)
+
+# Filter for known versus unknown to compare to Susan and Heike's results
+df <- df %>% filter(barrel1 != "U", barrel2 == "U")
+
+plot_fig6(
+  bullet_scores = df,
+  title = "Houston Set 1",
+  subtitle = "Known Versus Unknown Bullets",
+  outfile = file.path(houston_dir, "plots", "houston1_kvu.png"),
+  width = 10,
+  height = 5
+)
