@@ -50,6 +50,7 @@ if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Fi
 #' figure 6 of Vanderplas et al. 2020.
 #'
 #' @param bullet_scores A data frame of bullet-to-bullet scores
+#' @param group The Houston group number: 1, 2, or 3.
 #' @param title A title for the plot
 #' @param subtitle A subtitle for the plot
 #' @param wrap_width An integer. The subtitle will be wrapped at this character.
@@ -70,13 +71,14 @@ if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Fi
 #' @examples
 #' plot_fig6(
 #'   bullet_scores = houston_bullet,
+#'   group = 1,
 #'   title = "Houston Bullet Study",
 #'   subtitle = "The crosscuts and grooves were located manually",
 #'   wrap_width = 70
 #' )
 #'
 #' @md
-plot_fig6 <- function(bullet_scores, title, subtitle, wrap_width = 70, decision_threshold = 0.5, outfile = NULL, width = NULL, height = NULL) {
+plot_fig6 <- function(bullet_scores, group, title, subtitle, wrap_width = 70, decision_threshold = 0.5, outfile = NULL, width = NULL, height = NULL) {
   # Prevent no visible binding for global variable note
   bulletA <- bulletB <- barrelA <- barrelB <- barrelA_num <- barrelB_num <- NULL
   bulletA_num <- bulletB_num <- bullet_score <- score_greater_than_threshold <- NULL
@@ -84,9 +86,16 @@ plot_fig6 <- function(bullet_scores, title, subtitle, wrap_width = 70, decision_
   # Add prediction based on decision threshold
   bullet_scores$score_greater_than_threshold <- compare_scores_to_threshold(scores = bullet_scores$bullet_score, t = decision_threshold)
   
-  # Sort known barrels and unknown bullets to match the order in Vanderplas et al. Figure 4
+  # Get unknown bullets for group. 
+  unknown_bullets <- case_when(
+    group == 1 ~ c("U15", "U28", "U37", "U77", "U10", "U42", "U36", "U40"),
+    group == 2 ~ c("U66", "U63", "U34", "U73", "U98", "U61", "U41", "U23"),
+    group == 3 ~ c("U45", "U14", "U65", "U56", "U49", "U36", "U33", "U27")
+  )
+  
+  # Sort known barrels and unknown bullets to match the order in Vanderplas et al. Figure 6a
   bullet_scores <- bullet_scores %>%
-    dplyr::mutate(bullet2_num = factor(bullet2, levels = c("U15", "U28", "U37", "U77", "U10", "U42", "U36", "U40")))
+    dplyr::mutate(bullet2_num = factor(bullet2, levels = unknown_bullets))
   
   p <- bullet_scores %>%
     ggplot2::ggplot(ggplot2::aes(x = bullet1, y = bullet2_num)) +
@@ -187,22 +196,62 @@ save_plot <- function(p, outfile, width, height) {
 }
 
 
-
 # Analyze Bullet Scores ---------------------------------------------------
 
 df <- get_bullet_scores_df(houston_dir)
+write.csv(df, file.path(houston_dir, "comparisons", "bullet-to-bullet-scores.csv"))
+
+# Group 1 ----
 
 # Filter for group 1
-df <- df %>% filter(group1 == 1, group2 == 1)
+df1 <- df %>% filter(group1 == 1, group2 == 1)
 
 # Filter for known versus unknown to compare to Susan and Heike's results
-df <- df %>% filter(barrel1 != "U", barrel2 == "U")
+df1 <- df1 %>% filter(barrel1 != "U", barrel2 == "U")
 
 plot_fig6(
-  bullet_scores = df,
+  bullet_scores = df1,
+  group = 1,
   title = "Houston Set 1",
   subtitle = "Known Versus Unknown Bullets",
   outfile = file.path(houston_dir, "plots", "houston1_kvu.png"),
   width = 10,
   height = 5
 )
+
+# Group 2 ----
+
+# Filter for group 2
+df2 <- df %>% filter(
+  barrel1 %in% c("KC", "KD", "KE", "KF", "KG"), 
+  bullet2 %in% c("U66", "U63", "U34", "U73", "U98", "U61", "U41", "U23")
+)
+
+plot_fig6(
+  bullet_scores = df2,
+  group = 2,
+  title = "Houston Set 2",
+  subtitle = "Known Versus Unknown Bullets",
+  outfile = file.path(houston_dir, "plots", "houston2_kvu.png"),
+  width = 10,
+  height = 5
+)
+
+# Group 3 ----
+
+# Filter for group 3
+df3 <- df %>% filter(
+  barrel1 %in% c("KF", "KG", "KH", "KI", "KJ"),
+  bullet2 %in% c("U45", "U14", "U65", "U56", "U49", "U36", "U33", "U27")
+)
+
+plot_fig6(
+  bullet_scores = df3,
+  group = 3,
+  title = "Houston Set 3",
+  subtitle = "Known Versus Unknown Bullets",
+  outfile = file.path(houston_dir, "plots", "houston3_kvu.png"),
+  width = 10,
+  height = 5
+)
+
