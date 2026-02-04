@@ -19,9 +19,7 @@ library(dplyr)
 library(tidyr)
 
 
-# ============================================================================
-# PARALLEL HELPERS
-# ============================================================================
+# Parallel Helpers --------------------------------------------------------
 
 par_lapply <- function(X, FUN, cores = 1L, ...) {
   if (cores > 1L) parallel::mclapply(X, FUN, mc.cores = cores, ...)
@@ -34,9 +32,7 @@ par_mapply <- function(FUN, ..., cores = 1L, MoreArgs = NULL, SIMPLIFY = FALSE) 
 }
 
 
-# ============================================================================
-# HELPER FUNCTIONS
-# ============================================================================
+# Helper Functions --------------------------------------------------------
 
 #' Conditionally Convert x3p from Meters to Micrometers
 #' @param x3p An x3p object
@@ -492,9 +488,7 @@ verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
   }
 }
 
-# ============================================================================
-# MAIN COMPARISON FUNCTION
-# ============================================================================
+# Main Comparison Function ------------------------------------------------
 
 #' Compare Two Bullets Using Manual Groove Locations
 #'
@@ -646,9 +640,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
   invisible(results)
 }
 
-# ============================================================================
-# RUN COMPARISON (when script is executed directly)
-# ============================================================================
+# Run Comparison (when script is executed directly) -----------------------
 
 if (!interactive()) {
   cat("Usage: Provide bullet directories as arguments or call compare_bullets() interactively.\n")

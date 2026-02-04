@@ -1,15 +1,13 @@
-#!/usr/bin/env Rscript
-# Bullet Comparison Pipeline Script
+#!/usr/bin/env Rscript Bullet Comparison Pipeline Script
 #
-# This script compares two bullets using the same workflow as bulletAnalyzrApp()
-# but with automatic crosscut and groove locations (no manual intervention).
+#This script compares two bullets using the same workflow as bulletAnalyzrApp()
+#but with automatic crosscut and groove locations (no manual intervention).
 #
-# Usage:
-#   Rscript auto-bullet-comparison-pipeline.R
+#Usage: Rscript auto-bullet-comparison-pipeline.R
 #
-# Or interactively in R:
-#   source("auto-bullet-comparison-pipeline.R")
-#   results <- compare_bullets("examples/Hamby-44/Barrel 1/Bullet 1", "examples/Hamby-44/Barrel 1/Bullet 2")
+#Or interactively in R: source("auto-bullet-comparison-pipeline.R") results <-
+#compare_bullets("examples/Hamby-44/Barrel 1/Bullet 1",
+#"examples/Hamby-44/Barrel 1/Bullet 2")
 
 library(x3ptools)
 library(bulletxtrctr)
@@ -18,9 +16,7 @@ library(dplyr)
 library(tidyr)
 
 
-# ============================================================================
-# HELPER FUNCTIONS
-# ============================================================================
+# Helper Functions --------------------------------------------------------
 
 #' Conditionally Convert x3p from Meters to Micrometers
 #' @param x3p An x3p object
@@ -371,9 +367,7 @@ run_phase_test <- function(features, bulletA, bulletB) {
   return(result)
 }
 
-# ============================================================================
-# MAIN AUTOMATICE COMPARISON FUNCTION
-# ============================================================================
+# Main Automatic Comparison Function --------------------------------------
 
 #' Compare Two Bullets
 #'
@@ -528,9 +522,7 @@ compare_bullets_auto <- function(bullet1_dir, bullet2_dir,
   invisible(results)
 }
 
-# ============================================================================
-# RUN COMPARISON (when script is executed directly)
-# ============================================================================
+# Run Comparison (when script is executed directly) -----------------------
 
 if (!interactive()) {
   results <- compare_bullets(bullet1_dir, bullet2_dir)

@@ -18,9 +18,7 @@ library(tidyr)
 source("docs/developers/view-pipeline.R")
 
 
-# ============================================================================
-# HELPER FUNCTIONS
-# ============================================================================
+# Helper Functions --------------------------------------------------------
 
 #' Conditionally Convert x3p from Meters to Micrometers
 #' @param x3p An x3p object
@@ -100,9 +98,7 @@ get_land_data <- function(filepath, grooves_csv = NULL) {
 }
 
 
-# ============================================================================
-# MAIN FUNCTION
-# ============================================================================
+# Main Function -----------------------------------------------------------
 
 #' Align Two Lands and Calculate Features
 #'
@@ -229,9 +225,7 @@ plot_aligned_signals <- function(result) {
 }
 
 
-# ============================================================================
-# BULLET-LEVEL FUNCTIONS (ALL 6 LANDS)
-# ============================================================================
+# Bullet-Level Functions (All 6 Lands) ------------------------------------
 
 #' Align All Land Pairs for a Bullet
 #'

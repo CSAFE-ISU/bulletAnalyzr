@@ -1,5 +1,21 @@
+# Compare Houston Set Final
+#
+# Batch comparison script for the Houston Set Final bullet dataset. Generates
+# all pairwise bullet combinations (known and unknown), then runs the manual
+# comparison pipeline on each pair using parallel processing (4 cores).
+# Results are saved as individual RDS files in the dataset's comparisons/
+# directory.
+#
+# Requires the Houston Set Final dataset on an external drive or LSS.
+#
+# Usage:
+#   source("docs/developers/comparisons/compare-houston.R")
+
 source("docs/developers/comparisons/manual-bullet-comparison-pipeline.R")
 source("docs/developers/bullet-codes.R")
+
+
+# Helper Functions --------------------------------------------------------
 
 make_pairs_df <- function(bullets){
   pairs <- combn(bullets, 2)
@@ -60,6 +76,9 @@ list_bullets <- function(main_dir) {
   bullets <- c(kbullets, ubullets)
   return(bullets)
 }
+
+
+# Compare Bullets ---------------------------------------------------------
 
 if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final")) {
   houston_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final"
