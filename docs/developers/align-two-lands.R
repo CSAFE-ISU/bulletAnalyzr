@@ -348,9 +348,11 @@ LAND_COLORS <- c(
 #' @param land1_idx Land 1 index
 #' @param land2_idx Land 2 index
 #' @param colors Color palette for lands (length 6)
+#' @param highlight If TRUE, make the title bold and red (default FALSE)
 #' @returns A ggplot object
 #' @keywords internal
-make_alignment_plot <- function(aligned, ccf, land1_idx, land2_idx, colors = LAND_COLORS) {
+make_alignment_plot <- function(aligned, ccf, land1_idx, land2_idx,
+                                colors = LAND_COLORS, highlight = FALSE) {
   df <- data.frame(
     x = seq_along(aligned$lands$sig1),
     sig1 = aligned$lands$sig1,
@@ -360,13 +362,16 @@ make_alignment_plot <- function(aligned, ccf, land1_idx, land2_idx, colors = LAN
   color1 <- colors[land1_idx]
   color2 <- colors[land2_idx]
 
+  title_color <- if (highlight) "red" else "black"
+  title_face <- if (highlight) "bold" else "plain"
+
   ggplot2::ggplot(df, ggplot2::aes(x = x)) +
     ggplot2::geom_line(ggplot2::aes(y = sig1), color = color1, alpha = 0.7, linewidth = 0.3) +
     ggplot2::geom_line(ggplot2::aes(y = sig2), color = color2, alpha = 0.7, linewidth = 0.3) +
     ggplot2::labs(title = paste0("L", land1_idx, " vs L", land2_idx, " (", round(ccf, 3), ")")) +
     ggplot2::theme_void() +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(size = 8, hjust = 0.5),
+      plot.title = ggplot2::element_text(size = 8, hjust = 0.5, color = title_color, face = title_face),
       plot.margin = ggplot2::margin(2, 2, 2, 2)
     )
 }
@@ -434,6 +439,9 @@ plot_alignment_matrix <- function(results, title = NULL, subtitle = NULL,
   n <- results$n_lands
   comparisons <- results$comparisons
 
+  # Find the pair with the highest CCF
+  best_pair <- names(which.max(sapply(comparisons, function(x) x$ccf)))
+
   # Create a list to hold all plots in row-major order
   plot_list <- list()
 
@@ -449,7 +457,8 @@ plot_alignment_matrix <- function(results, title = NULL, subtitle = NULL,
         pair_name <- paste0(i, "_", j)
         comp <- comparisons[[pair_name]]
         plot_list[[idx]] <- make_alignment_plot(
-          comp$aligned, comp$ccf, comp$land1_idx, comp$land2_idx, colors = colors
+          comp$aligned, comp$ccf, comp$land1_idx, comp$land2_idx,
+          colors = colors, highlight = (pair_name == best_pair)
         )
       }
     }
