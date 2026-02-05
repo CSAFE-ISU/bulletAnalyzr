@@ -18,32 +18,29 @@ library(randomForest)
 library(dplyr)
 library(tidyr)
 
+source("docs/developers/comparisons/comparison-utils.R")
+
 
 # Parallel Helpers --------------------------------------------------------
 
 par_lapply <- function(X, FUN, cores = 1L, ...) {
-  if (cores > 1L) parallel::mclapply(X, FUN, mc.cores = cores, ...)
-  else lapply(X, FUN, ...)
+  if (cores > 1L) {
+    parallel::mclapply(X, FUN, mc.cores = cores, ...)
+  } else {
+    lapply(X, FUN, ...)
+  }
 }
 
 par_mapply <- function(FUN, ..., cores = 1L, MoreArgs = NULL, SIMPLIFY = FALSE) {
-  if (cores > 1L) parallel::mcmapply(FUN, ..., mc.cores = cores, MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
-  else mapply(FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
+  if (cores > 1L) {
+    parallel::mcmapply(FUN, ..., mc.cores = cores, MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
+  } else {
+    mapply(FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = SIMPLIFY)
+  }
 }
 
 
 # Helper Functions --------------------------------------------------------
-
-#' Conditionally Convert x3p from Meters to Micrometers
-#' @param x3p An x3p object
-#' @returns An x3p object with scale in micrometers
-cond_x3p_m_to_mum <- function(x3p) {
-  scale <- x3ptools::x3p_get_scale(x3p)
-  if (scale < 0.1) {
-    x3p <- x3ptools::x3p_m_to_mum(x3p)
-  }
-  return(x3p)
-}
 
 #' Rotate Bullet if Needed
 #' Rotates bullet 90 degrees if sizeX is less than sizeY (incorrectly oriented)
@@ -85,16 +82,20 @@ preprocess_bullet_standalone <- function(bullet, bullet_name) {
 #' @param bullet_dir Path to bullet directory containing a groove CSV file
 #' @returns Data frame with groove locations or NULL if not found
 read_grooves_csv <- function(bullet_dir) {
-  groove_files <- list.files(bullet_dir, pattern = "groove.*\\.csv$",
-                             ignore.case = TRUE, full.names = TRUE)
+  groove_files <- list.files(bullet_dir,
+    pattern = "groove.*\\.csv$",
+    ignore.case = TRUE, full.names = TRUE
+  )
 
   if (length(groove_files) == 0) {
     return(NULL)
   }
 
   if (length(groove_files) > 1) {
-    warning(paste("Multiple groove CSV files found in", bullet_dir,
-                  "- using:", basename(groove_files[1])))
+    warning(paste(
+      "Multiple groove CSV files found in", bullet_dir,
+      "- using:", basename(groove_files[1])
+    ))
   }
 
   grooves_data <- read.csv(groove_files[1], stringsAsFactors = FALSE)
@@ -121,15 +122,15 @@ get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_na
   if (is.null(grooves2)) {
     stop(paste("No groove CSV file found in:", bullet2_dir))
   }
-  
+
   grooves <- rbind(grooves1, grooves2)
-  
+
   # Check for missing crosscuts
   if (any(is.na(grooves$crosscut_y))) {
     missing <- grooves$filename[is.na(grooves$crosscut_y)]
     stop(paste("Could not find crosscut locations for:", paste(missing, collapse = ", ")))
   }
-  
+
   # Check for missing grooves
   if (any(is.na(grooves$left_groove))) {
     missing <- grooves$filename[is.na(grooves$left_groove)]
@@ -144,14 +145,14 @@ get_crosscuts_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_na
   bullets <- bullets %>%
     dplyr::left_join(grooves, by = dplyr::join_by(filename)) %>%
     dplyr::rename(crosscut = `crosscut_y`)
-  
+
   # Create groove column in same format as cc_locate_grooves() output
   bullets$grooves <- NA
   for (i in 1:nrow(bullets)) {
     bullets$grooves[[i]] <- list(groove = c(bullets$left_groove[i], bullets$right_groove[i]))
   }
   bullets <- bullets %>% dplyr::select(-tidyselect::any_of(c("left_groove", "right_groove")))
-  
+
   for (i in seq_len(nrow(bullets))) {
     cat("  Bullet", bullets$bullet[i], "Land", bullets$land[i], ": crosscut =", bullets$crosscut[i], "\n")
   }
@@ -235,8 +236,10 @@ get_grooves_from_csv <- function(bullets, bullet1_dir, bullet2_dir, bullet1_name
   }
 
   for (i in seq_len(nrow(bullets))) {
-    cat("  Bullet", bullets$bullet[i], "Land", bullets$land[i],
-        ": grooves =", bullets$grooves[[i]]$groove[1], ",", bullets$grooves[[i]]$groove[2], "\n")
+    cat(
+      "  Bullet", bullets$bullet[i], "Land", bullets$land[i],
+      ": grooves =", bullets$grooves[[i]]$groove[1], ",", bullets$grooves[[i]]$groove[2], "\n"
+    )
   }
 
   return(bullets)
@@ -396,7 +399,7 @@ run_phase_test <- function(features, bulletA, bulletB) {
   comparison_data <- features %>%
     dplyr::filter(
       (features$bulletA == bulletA & features$bulletB == bulletB) |
-      (features$bulletA == bulletB & features$bulletB == bulletA)
+        (features$bulletA == bulletB & features$bulletB == bulletA)
     )
 
   if (nrow(comparison_data) == 0) {
@@ -409,61 +412,64 @@ run_phase_test <- function(features, bulletA, bulletB) {
     dplyr::filter(bulletA == !!bulletA & bulletB == !!bulletB)
 
   # Run phase test using CCF scores (same as bulletAnalyzrApp)
-  result <- tryCatch({
-    df <- data.frame(
-      land1 = comparison_data$landA,
-      land2 = comparison_data$landB,
-      score = comparison_data$ccf
-    )
+  result <- tryCatch(
+    {
+      df <- data.frame(
+        land1 = comparison_data$landA,
+        land2 = comparison_data$landB,
+        score = comparison_data$ccf
+      )
 
-    df <- df %>%
-      dplyr::mutate(phase = bulletxtrctr::get_phases(land1, land2))
+      df <- df %>%
+        dplyr::mutate(phase = bulletxtrctr::get_phases(land1, land2))
 
-    n <- max(df$phase)
-    avgs <- df %>%
-      dplyr::group_by(phase) %>%
-      dplyr::summarize(means = mean(score, na.rm = TRUE)) %>%
-      dplyr::arrange(means)
+      n <- max(df$phase)
+      avgs <- df %>%
+        dplyr::group_by(phase) %>%
+        dplyr::summarize(means = mean(score, na.rm = TRUE)) %>%
+        dplyr::arrange(means)
 
-    est1 <- avgs$means[n]
-    est2 <- avgs$means[floor(n / 2)]
+      est1 <- avgs$means[n]
+      est2 <- avgs$means[floor(n / 2)]
 
-    # Calculate pooled variance
-    df_labeled <- df %>%
-      dplyr::left_join(avgs %>% dplyr::mutate(ordered = dplyr::row_number()), by = "phase") %>%
-      dplyr::mutate(inphase = ordered == n)
+      # Calculate pooled variance
+      df_labeled <- df %>%
+        dplyr::left_join(avgs %>% dplyr::mutate(ordered = dplyr::row_number()), by = "phase") %>%
+        dplyr::mutate(inphase = ordered == n)
 
-    sigmas <- df_labeled %>%
-      dplyr::group_by(inphase) %>%
-      dplyr::summarize(
-        sd = stats::sd(score, na.rm = TRUE),
-        nu = sum(!is.na(score)) - 1
-      ) %>%
-      dplyr::ungroup() %>%
-      dplyr::summarize(pooled = sum(nu * sd) / sum(nu))
+      sigmas <- df_labeled %>%
+        dplyr::group_by(inphase) %>%
+        dplyr::summarize(
+          sd = stats::sd(score, na.rm = TRUE),
+          nu = sum(!is.na(score)) - 1
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::summarize(pooled = sum(nu * sd) / sum(nu))
 
-    sigma_0 <- sigmas$pooled[1]
+      sigma_0 <- sigmas$pooled[1]
 
-    test_statistic <- est1 - est2
-    p_value <- bulletxtrctr::F_T(test_statistic, sigma = sigma_0, n = n, lower.tail = FALSE)
+      test_statistic <- est1 - est2
+      p_value <- bulletxtrctr::F_T(test_statistic, sigma = sigma_0, n = n, lower.tail = FALSE)
 
-    # Return same structure as bulletAnalyzrApp
-    res <- list(
-      estimate = est1 - est2,
-      estimate1 = est1,
-      estimate2 = est2,
-      statistic = test_statistic,
-      p.value = p_value,
-      parameter = sigma_0,
-      n = n,
-      data = df[, c("land1", "land2", "score")]
-    )
-    class(res) <- c("phase.test", "list")
-    res
-  }, error = function(e) {
-    warning(paste("Phase test failed:", e$message))
-    return(NULL)
-  })
+      # Return same structure as bulletAnalyzrApp
+      res <- list(
+        estimate = est1 - est2,
+        estimate1 = est1,
+        estimate2 = est2,
+        statistic = test_statistic,
+        p.value = p_value,
+        parameter = sigma_0,
+        n = n,
+        data = df[, c("land1", "land2", "score")]
+      )
+      class(res) <- c("phase.test", "list")
+      res
+    },
+    error = function(e) {
+      warning(paste("Phase test failed:", e$message))
+      return(NULL)
+    }
+  )
 
   return(result)
 }
@@ -476,15 +482,19 @@ verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
   if (!dir.exists(bullet2_dir)) {
     stop(paste("Bullet 2 directory not found:", bullet2_dir))
   }
-  
+
   # Check groove CSV files exist
   if (length(list.files(bullet1_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet1_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
+    stop(paste(
+      "No groove CSV file found in:", bullet1_dir,
+      "\nRun manual_groove_selection.R first to create groove locations."
+    ))
   }
   if (length(list.files(bullet2_dir, pattern = "groove.*\\.csv$", ignore.case = TRUE)) == 0) {
-    stop(paste("No groove CSV file found in:", bullet2_dir,
-               "\nRun manual_groove_selection.R first to create groove locations."))
+    stop(paste(
+      "No groove CSV file found in:", bullet2_dir,
+      "\nRun manual_groove_selection.R first to create groove locations."
+    ))
   }
 }
 
@@ -499,12 +509,11 @@ verify_dirs_and_files <- function(bullet1_dir, bullet2_dir) {
 #' @returns A list containing all comparison results
 compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
                             cores = max(1L, parallel::detectCores() - 1L, na.rm = TRUE)) {
-  
-  if (file.exists(outfile)) {
+  if (!is.null(outfile) && file.exists(outfile)) {
     cat("Outfile already exists. Skipping comparison. \n")
     return()
   }
-  
+
   bullet1_name <- parse_filepath(bullet1_dir)
   bullet2_name <- parse_filepath(bullet2_dir)
 
@@ -538,7 +547,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
   # Step 3: Get crosscut and groove locations from groove CSV
   cat("\nStep 3: Reading crosscut and groove locations from groove CSV...\n")
   bullets <- get_crosscuts_from_csv(bullets, bullet1_dir, bullet2_dir, bullet1_name, bullet2_name)
-  
+
   cat("  Using", cores, "core(s) for parallel processing\n")
 
   # Step 4: Extract crosscut data
@@ -594,7 +603,7 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
     cat("  Different-source estimate (estimate2):", round(phase_test_results$estimate2, 4), "\n")
     cat("  Test statistic:", round(phase_test_results$statistic, 4), "\n")
     cat("  P-value:", format(phase_test_results$p.value, scientific = TRUE, digits = 4), "\n")
-    cat("  The probability of a false positive is:", format(100*phase_test_results$p.value, scientific = FALSE, digits = 4), "\n")
+    cat("  The probability of a false positive is:", format(100 * phase_test_results$p.value, scientific = FALSE, digits = 4), "\n")
   }
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
@@ -650,6 +659,6 @@ if (!interactive()) {
   cat("Run manual_groove_selection.R first to create the groove CSV files.\n")
   cat("\nTo run a comparison, call:\n")
   cat('  results <- compare_bullets("path/to/bullet1", "path/to/bullet2")\n')
-  cat('\nTo save results, call:\n')
+  cat("\nTo save results, call:\n")
   cat('  results <- compare_bullets("path/to/bullet1", "path/to/bullet2", outfile = "results.rds")\n')
 }

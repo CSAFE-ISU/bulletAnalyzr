@@ -15,21 +15,11 @@ library(dplyr)
 library(tidyr)
 
 # Source helper functions
+source("docs/developers/comparisons/comparison-utils.R")
 source("docs/developers/view-pipeline.R")
 
 
 # Helper Functions --------------------------------------------------------
-
-#' Conditionally Convert x3p from Meters to Micrometers
-#' @param x3p An x3p object
-#' @returns An x3p object with scale in micrometers
-cond_x3p_m_to_mum <- function(x3p) {
-  scale <- x3ptools::x3p_get_scale(x3p)
-  if (scale < 0.1) {
-    x3p <- x3ptools::x3p_m_to_mum(x3p)
-  }
-  return(x3p)
-}
 
 #' Get Crosscut and Grooves for a Single Land
 #'
@@ -114,12 +104,11 @@ get_land_data <- function(filepath, grooves_csv = NULL) {
 #'   "path/to/Barrel_1-Bullet_1-Land_1.x3p",
 #'   "path/to/Barrel_2-Bullet_1-Land_1.x3p"
 #' )
-#' result$features  # View features
-#' result$aligned   # View aligned signals
+#' result$features # View features
+#' result$aligned # View aligned signals
 align_two_lands <- function(land1_path, land2_path,
                             grooves_csv1 = NULL, grooves_csv2 = NULL,
                             resolution = 1.5625) {
-
   cat("\n== Aligning Two Lands ==\n\n")
 
   # Process both lands
@@ -179,9 +168,11 @@ align_two_lands <- function(land1_path, land2_path,
     ggplot2::geom_line(ggplot2::aes(y = sig2), color = "red", alpha = 0.7) +
     ggplot2::labs(
       title = "Aligned Signals",
-      subtitle = paste0("Land 1 (blue): ", basename(land1_path),
-                        "\nLand 2 (red): ", basename(land2_path),
-                        "\nCCF: ", round(ccf, 4)),
+      subtitle = paste0(
+        "Land 1 (blue): ", basename(land1_path),
+        "\nLand 2 (red): ", basename(land2_path),
+        "\nCCF: ", round(ccf, 4)
+      ),
       x = "Position",
       y = "Height (microns)"
     ) +
@@ -216,8 +207,10 @@ plot_aligned_signals <- function(result) {
     ggplot2::geom_line(ggplot2::aes(y = sig2), color = "red", alpha = 0.7) +
     ggplot2::labs(
       title = "Aligned Signals",
-      subtitle = paste("Land 1 (blue):", basename(result$land1$filepath),
-                       "\nLand 2 (red):", basename(result$land2$filepath)),
+      subtitle = paste(
+        "Land 1 (blue):", basename(result$land1$filepath),
+        "\nLand 2 (red):", basename(result$land2$filepath)
+      ),
       x = "Position",
       y = "Height (microns)"
     ) +
@@ -242,7 +235,6 @@ plot_aligned_signals <- function(result) {
 #' results <- align_all_land_pairs("path/to/Barrel_1/Bullet_1", grooves_csv = "path/to/grooves.csv")
 #' plot_alignment_matrix(results)
 align_all_land_pairs <- function(bullet_dir, grooves_csv = NULL, resolution = 1.5625, verbose = TRUE) {
-
   # Find all x3p files in the bullet directory
   land_files <- list.files(bullet_dir, pattern = "\\.x3p$", full.names = TRUE)
 
@@ -252,7 +244,7 @@ align_all_land_pairs <- function(bullet_dir, grooves_csv = NULL, resolution = 1.
 
   # Sort files to ensure consistent ordering
 
-land_files <- sort(land_files)
+  land_files <- sort(land_files)
 
   if (verbose) {
     cat("\n== Aligning All Land Pairs ==\n")
@@ -325,13 +317,13 @@ land_files <- sort(land_files)
 
 # Default color palette for 6 lands
 LAND_COLORS <- c(
-  "#E41A1C",  # Land 1 - red
+  "#E41A1C", # Land 1 - red
 
-"#377EB8",  # Land 2 - blue
-  "#4DAF4A",  # Land 3 - green
-  "#984EA3",  # Land 4 - purple
-  "#FF7F00",  # Land 5 - orange
-  "#A65628"   # Land 6 - brown
+  "#377EB8", # Land 2 - blue
+  "#4DAF4A", # Land 3 - green
+  "#984EA3", # Land 4 - purple
+  "#FF7F00", # Land 5 - orange
+  "#A65628" # Land 6 - brown
 )
 
 
@@ -424,8 +416,7 @@ make_land_legend <- function(n, colors) {
 #' plot_alignment_matrix(results)
 #' plot_alignment_matrix(results, title = "Barrel 1 Bullet 1 - Land Comparisons")
 plot_alignment_matrix <- function(results, title = NULL, subtitle = NULL,
-                                   colors = LAND_COLORS, show_legend = TRUE) {
-
+                                  colors = LAND_COLORS, show_legend = TRUE) {
   if (!requireNamespace("patchwork", quietly = TRUE)) {
     stop("Package 'patchwork' is required for this function. Install with: install.packages('patchwork')")
   }
@@ -481,7 +472,7 @@ plot_alignment_matrix <- function(results, title = NULL, subtitle = NULL,
   combined <- combined + patchwork::plot_annotation(
     title = title,
     subtitle = subtitle
- )
+  )
 
   print(combined)
   return(combined)

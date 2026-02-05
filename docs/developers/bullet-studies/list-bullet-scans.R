@@ -1,10 +1,11 @@
-#!/usr/bin/env Rscript List Bullet Scans on LSS Script
+#!/usr/bin/env Rscript
+# List Bullet Scans on LSS Script
 #
-#This script lists bullets scans saved as x3p files in LSS > csafe-firearms >
-#bullet-scans. The script ignores the Archived and Other folders.
+# This script lists bullets scans saved as x3p files in LSS > csafe-firearms >
+# bullet-scans. The script ignores the Archived and Other folders.
 #
-#Usage: 
-#   1) Mount LSS as a folder on your computer. 
+# Usage:
+#   1) Mount LSS as a folder on your computer.
 #   2) Change main_dir as necessary.
 #   3) Run the script interactively in R or type `Rscript
 #      docs/developers/list_bullet_scans.R` in the terminal
@@ -14,7 +15,7 @@ library(dplyr)
 list_scans_by_study <- function(directory) {
   study <- basename(directory)
   print(paste("Listing files in ", study, "..."))
-  
+
   df <- data.frame(
     study = study,
     filename = list.files(directory, recursive = TRUE, full.names = FALSE, pattern = "\\.x3p")
@@ -22,7 +23,6 @@ list_scans_by_study <- function(directory) {
   outfile <- file.path("docs", "developers", "bullet-studies", paste(study, "scans.csv"))
   write.csv(df, outfile, row.names = FALSE)
   print(paste("Saving files in ", study, "..."))
-  
 }
 
 list_scans_by_bullet <- function(study, bullet_dir) {
@@ -35,11 +35,13 @@ list_scans_by_bullet <- function(study, bullet_dir) {
 
 get_one_rec_per_bullet <- function(filepath) {
   df <- read.csv(filepath)
-  df <- df %>% 
-    dplyr::mutate(bullet_dir = dirname(filename),
-                  filename = basename(filename)) %>%
+  df <- df %>%
+    dplyr::mutate(
+      bullet_dir = dirname(filename),
+      filename = basename(filename)
+    ) %>%
     dplyr::group_by(bullet_dir) %>%
-    dplyr::slice_head(n=1) %>%
+    dplyr::slice_head(n = 1) %>%
     dplyr::select(study, bullet_dir, filename)
   write.csv(df, filepath, row.names = FALSE)
   message("File saved")
@@ -49,8 +51,8 @@ main_dir <- "/Volumes/research/csafe-firearms/bullet-scans"
 
 dirs <- list.dirs(main_dir, recursive = FALSE)
 
-# Drop Archived, Other, CSAFE Persistence studies, and LAPD 
-# dirs <- dirs[!(basename(dirs) %in% c("Archived", "Other", "CSAFE Persistence", 
+# Drop Archived, Other, CSAFE Persistence studies, and LAPD
+# dirs <- dirs[!(basename(dirs) %in% c("Archived", "Other", "CSAFE Persistence",
 #                                      "CSAFE Persistence Rescans 2019", "CSAFE Persistence Rescans 2020", "LAPD"))]
 # for (i in 1:length(dirs)) {
 #   list_scans(directory = dirs[i])
@@ -76,11 +78,13 @@ barrel <- unlist(lapply(sw, function(d) list.dirs(d, recursive = FALSE)))
 bullet <- unlist(lapply(barrel, function(d) list.dirs(d, recursive = FALSE)))
 files <- lapply(bullet, function(b) list_scans_by_bullet("CSAFE Persistence/SW", b))
 df <- do.call(rbind, files)
-df <- df %>% 
-  dplyr::mutate(bullet_dir = dirname(filename),
-                filename = basename(filename)) %>%
+df <- df %>%
+  dplyr::mutate(
+    bullet_dir = dirname(filename),
+    filename = basename(filename)
+  ) %>%
   dplyr::group_by(bullet_dir) %>%
-  dplyr::slice_head(n=1) %>%
+  dplyr::slice_head(n = 1) %>%
   dplyr::select(study, bullet_dir, filename)
 outfile <- file.path("docs", "developers", "bullet-studies", "CSAFE Persistence SW scans.csv")
 write.csv(df, outfile, row.names = FALSE)
@@ -102,6 +106,8 @@ df <- read.csv(file)
 df <- df %>% dplyr::filter(!endsWith(bullet_dir, "GEA"))
 # df <- df %>% tidyr::separate_wider_delim(bullet_dir, delim = "/", names = c("barrel", "bullet", "land"), cols_remove = FALSE)
 df <- df %>% tidyr::separate_wider_delim(bullet_dir, delim = "/", names = c("test", "barrel", "bullet"), cols_remove = FALSE)
-df <- df %>% dplyr::group_by(test, barrel) %>% dplyr::slice_head(n=2)
+df <- df %>%
+  dplyr::group_by(test, barrel) %>%
+  dplyr::slice_head(n = 2)
 # df <- df %>% dplyr::filter(barrel %in% unique(df$barrel)[1:3])
 write.csv(df, file, row.names = FALSE)
