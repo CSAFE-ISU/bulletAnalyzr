@@ -28,23 +28,11 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
   # Read the x3p file
   x3p <- x3p_read(x3p_path)
   
-  # Check orientation and ensure LONG axis is in X direction
-  # x3p_crosscut extracts along the X axis, so we want X = circumference (long)
-  # If the scan has Y longer than X, we need to transpose it
-  x_length <- x3p$header.info$sizeX * x3p$header.info$incrementX
-  y_length <- x3p$header.info$sizeY * x3p$header.info$incrementY
-  
-  cat("Scan dimensions: X =", x_length * 1e6, "microns, Y =", y_length * 1e6, "microns\n")
-  
-  if (y_length > x_length) {
-    cat("Rotating scan 90 degrees to put long axis in X direction\n")
-    x3p <- x3p_transpose(x3p)
-    # Update lengths after transpose
-    x_length <- x3p$header.info$sizeX * x3p$header.info$incrementX
-    y_length <- x3p$header.info$sizeY * x3p$header.info$incrementY
-    cat("After rotation: X =", x_length * 1e6, "microns, Y =", y_length * 1e6, "microns\n")
-  } else {
-    cat("Orientation correct: long axis already in X direction\n")
+  # Check orientation and ensure LONG axis is in X direction (matches bulletAnalyzrApp)
+  hinfo <- x3p$header.info
+  if (hinfo$sizeX < hinfo$sizeY) {
+    cat("Rotating scan 90 degrees (incorrect orientation detected)\n")
+    x3p <- x3ptools::x3p_rotate(x3p, angle = 90)
   }
 
   # Convert from meters to micrometers if needed (same as bulletAnalyzrApp)
@@ -89,17 +77,12 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     cat("Using optimized crosscut at y =", crosscut_y, "microns\n")
   }
   
-  # Extract crosscut data as a 1D profile
-  # The range parameter controls the Y-range (thickness of the slice to average)
-  # Use a small range for a thin horizontal slice
-  y_increment <- x3p$header.info$incrementY
-  thin_range <- y_increment * 5  # Average 5 rows for a thin but stable slice
-  
-  ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = thin_range)
-  
+  # Extract crosscut data as a 1D profile (range matches bulletAnalyzrApp)
+  ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = 1e-5)
+
   if (nrow(ccdata) == 0) {
-    cat("Warning: Empty crosscut data, trying with larger range\n")
-    ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = thin_range * 10)
+    cat("Warning: Empty crosscut data, trying with y = NULL\n")
+    ccdata <- x3p_crosscut(x3p, y = NULL, range = 1e-5)
   }
   
   # Ensure x coordinates start from 0 and span the full width
