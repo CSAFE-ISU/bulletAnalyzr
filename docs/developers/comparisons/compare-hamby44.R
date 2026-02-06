@@ -1,15 +1,15 @@
-# Compare Phoenix Test
+# Compare Hamby Set 44 Final
 #
-# Batch comparison script for the Phoenix Test bullet dataset. Generates
+# Batch comparison script for the Hamby Set 44 Final bullet dataset. Generates
 # all pairwise bullet combinations (known and unknown), then runs the manual
 # comparison pipeline on each pair using parallel processing (4 cores).
 # Results are saved as individual RDS files in the dataset's comparisons/
 # directory.
 #
-# Requires the Phoenix Test dataset on an external drive or LSS.
+# Requires the Hamby Set 44 Final dataset on an external drive or LSS.
 #
 # Usage:
-#   source("docs/developers/comparisons/compare-phoenix.R")
+#   source("docs/developers/comparisons/compare-hamby44.R")
 
 source("inst/scripts/manual_groove_selection.R")
 source("docs/developers/comparisons/comparison-utils.R")
@@ -45,11 +45,12 @@ list_bullets <- function(main_dir) {
   dirs <- list.dirs(main_dir, recursive = FALSE)
 
   # Get known bullets
-  kbarrels <- dirs[startsWith(basename(dirs), "Gun")]
+  kbarrels <- dirs[startsWith(basename(dirs), "Barrel")]
   kbullets <- unlist(lapply(kbarrels, function(d) list.dirs(d, recursive = FALSE)))
 
   # Get unknown bullets
-  ubullets <- dirs[startsWith(basename(dirs), "Unknown")]
+  ubarrels <- dirs[basename(dirs) == "Unknowns"]
+  ubullets <- list.dirs(ubarrels, recursive = FALSE)
 
   bullets <- c(kbullets, ubullets)
 
@@ -59,15 +60,29 @@ list_bullets <- function(main_dir) {
 
 # Setup -------------------------------------------------------------------
 
-study_dir <- get_study_path(study = "Phoenix Test")
+study <- "Hamby Set 44 Final"
+
+local_dir <- file.path("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets", study)
+lss1 <- file.path("/Volumes/research/csafe-firearms/bullet-scans", study)
+lss2 <- file.path("/Volumes/lss/research/csafe-firearms/bullet-scans", study)
+
+if (dir.exists(local_dir)) {
+  study_dir <- local_dir
+} else if (dir.exists(lss1)) {
+  study_dir <- lss1
+} else if (dir.exists(lss2)) {
+  study_dir <- lss2
+} else {
+  stop("Are you connected to LSS or the external drive?")
+}
 
 bullets <- list_bullets(main_dir = study_dir)
 
 
 # Manually Detect Grooves -------------------------------------------------
 
-for (bullet in bullets[32:34]) {
-  result <- process_directory(
+for (bullet in bullets[3:35]) {
+  process_directory(
     bullet,
     file.path(bullet, "grooves.csv")
   )
@@ -81,7 +96,7 @@ for (i in 1:nrow(pairs)) {
   compare_bullets(
     bullet1_dir = pairs$bullet1[i],
     bullet2_dir = pairs$bullet2[i],
-    outfile = make_outfile(file.path(study_dir, "Comparisons"), pairs$bullet1_name[i], pairs$bullet2_name[i]),
+    outfile = make_outfile(file.path(study_dir, "comparisons"), pairs$bullet1_name[i], pairs$bullet2_name[i]),
     cores = 4
   )
 }

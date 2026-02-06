@@ -1,12 +1,12 @@
 #!/usr/bin/env Rscript
 # Manual Groove Selection Tool
-# 
+#
 # This script allows manual selection of groove locations from x3p bullet scan files
 # and saves the results to a CSV file for later analysis.
 #
 # Usage:
 #   Rscript manual_groove_selection.R <path_to_x3p_file> [output_csv]
-#   
+#
 # Or interactively in R:
 #   source("manual_groove_selection.R")
 #   process_file("path/to/file.x3p", "groove_data.csv")
@@ -16,18 +16,17 @@ library(bulletxtrctr)
 library(ggplot2)
 
 #' Process a single x3p file for manual groove selection
-#' 
+#'
 #' @param x3p_path Path to the x3p file
 #' @param output_csv Path to output CSV file (default: "groove_locations.csv")
 #' @param crosscut_y Optional crosscut location. If NULL, automatically determined
 #' @return Data frame with the groove locations
 process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut_y = NULL) {
-  
   cat("\n=== Processing:", basename(x3p_path), "===\n")
-  
+
   # Read the x3p file
   x3p <- x3p_read(x3p_path)
-  
+
   # Check orientation and ensure LONG axis is in X direction (matches bulletAnalyzrApp)
   hinfo <- x3p$header.info
   if (hinfo$sizeX < hinfo$sizeY) {
@@ -76,7 +75,7 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
 
     cat("Using optimized crosscut at y =", crosscut_y, "microns\n")
   }
-  
+
   # Extract crosscut data as a 1D profile (range matches bulletAnalyzrApp)
   ccdata <- x3p_crosscut(x3p, y = crosscut_y, range = 1e-5)
 
@@ -84,14 +83,14 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     cat("Warning: Empty crosscut data, trying with y = NULL\n")
     ccdata <- x3p_crosscut(x3p, y = NULL, range = 1e-5)
   }
-  
+
   # Ensure x coordinates start from 0 and span the full width
   ccdata$x <- ccdata$x - min(ccdata$x, na.rm = TRUE)
-  
+
   # Get automatic groove locations as starting point
   grooves_auto <- cc_locate_grooves(ccdata, method = "middle", adjust = 30, return_plot = FALSE)
   cat("Automatic groove locations:", grooves_auto$groove[1], ",", grooves_auto$groove[2], "\n")
-  
+
   # Plot the crosscut profile
   p <- ggplot(ccdata, aes(x = x, y = value)) +
     geom_line() +
@@ -106,10 +105,10 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     scale_x_continuous(breaks = scales::pretty_breaks(n = 20)) +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
     theme_bw() +
-    theme(text = element_text(size = 14), axis.text.x=element_text(angle = 30, hjust = 1))
-  
+    theme(text = element_text(size = 14), axis.text.x = element_text(angle = 30, hjust = 1))
+
   print(p)
-  
+
   # Interactive input for groove locations
   cat("\n--- Manual Groove Selection ---\n")
   cat("Automatic left groove:", grooves_auto$groove[1], "\n")
@@ -118,14 +117,20 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
   cat("  1. Press ENTER to accept automatic grooves\n")
   cat("  2. Enter custom values as: left,right (e.g., 500,2500)\n")
   cat("  3. Enter 's' to skip this file\n")
-  
+  cat("  4. Enter 'q' to quit and exit the script\n")
+
   user_input <- readline(prompt = "Your choice: ")
-  
+
+  if (tolower(user_input) == "q") {
+    cat("Exiting script.\n")
+    return("QUIT")
+  }
+
   if (tolower(user_input) == "s") {
     cat("Skipping file.\n")
     return(NULL)
   }
-  
+
   if (user_input == "") {
     # Use automatic values
     left_groove <- grooves_auto$groove[1]
@@ -167,8 +172,14 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
         cat("\nOptions:\n")
         cat("  1. Press ENTER to confirm these groove locations\n")
         cat("  2. Enter new values as: left,right (e.g., 500,2500)\n")
+        cat("  3. Enter 'q' to quit and exit the script\n")
 
         confirm_input <- readline(prompt = "Your choice: ")
+
+        if (tolower(confirm_input) == "q") {
+          cat("Exiting script.\n")
+          return("QUIT")
+        }
 
         if (confirm_input == "") {
           # User confirmed the locations
@@ -181,7 +192,7 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
       }
     }
   }
-  
+
   # Prepare data for output
   result <- data.frame(
     filename = basename(x3p_path),
@@ -193,7 +204,7 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     timestamp = Sys.time(),
     stringsAsFactors = FALSE
   )
-  
+
   # Append to CSV file (or update if file was already processed)
   if (file.exists(output_csv)) {
     existing_data <- read.csv(output_csv, stringsAsFactors = FALSE)
@@ -205,43 +216,49 @@ process_file <- function(x3p_path, output_csv = "groove_locations.csv", crosscut
     # First file - create new CSV
     combined_data <- result
   }
-  
+
   write.csv(combined_data, output_csv, row.names = FALSE)
   cat("\nSaved to", output_csv, "\n")
   cat("Left groove:", left_groove, "\n")
   cat("Right groove:", right_groove, "\n")
-  
+
   return(result)
 }
 
 #' Process multiple x3p files in a directory
-#' 
+#'
 #' @param directory Path to directory containing x3p files
 #' @param output_csv Path to output CSV file
 #' @param pattern File pattern to match (default: "\\.x3p$")
 #' @return Data frame with all groove locations
 process_directory <- function(directory, output_csv = "groove_locations.csv", pattern = "\\.x3p$") {
-  
   x3p_files <- list.files(directory, pattern = pattern, full.names = TRUE, recursive = FALSE)
-  
+
   if (length(x3p_files) == 0) {
     cat("No x3p files found in", directory, "\n")
     return(NULL)
   }
-  
+
   cat("\nFound", length(x3p_files), "x3p files\n")
   cat("Output will be saved to:", output_csv, "\n\n")
-  
+
   results <- list()
-  
+
   for (i in seq_along(x3p_files)) {
     cat("\n[", i, "/", length(x3p_files), "]\n")
     result <- process_file(x3p_files[i], output_csv)
+
+    # Check if user wants to quit
+    if (identical(result, "QUIT")) {
+      cat("\nExiting. Processed", i - 1, "of", length(x3p_files), "files.\n")
+      stop("QUIT")
+    }
+
     if (!is.null(result)) {
       results[[i]] <- result
     }
   }
-  
+
   # Combine all results
   if (length(results) > 0) {
     all_results <- do.call(rbind, results)
@@ -254,7 +271,7 @@ process_directory <- function(directory, output_csv = "groove_locations.csv", pa
 # Command line interface
 if (!interactive()) {
   args <- commandArgs(trailingOnly = TRUE)
-  
+
   if (length(args) == 0) {
     cat("Usage: Rscript manual_groove_selection.R <x3p_file_or_directory> [output_csv]\n")
     cat("\nExamples:\n")
@@ -263,10 +280,10 @@ if (!interactive()) {
     cat("  Rscript manual_groove_selection.R examples/Hamby-44/Barrel_1/Bullet_1/ grooves.csv\n")
     quit(status = 1)
   }
-  
+
   input_path <- args[1]
   output_csv <- if (length(args) >= 2) args[2] else "groove_locations.csv"
-  
+
   if (dir.exists(input_path)) {
     # Process directory
     process_directory(input_path, output_csv)

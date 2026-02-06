@@ -608,7 +608,6 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
 
-
   # Prepare minimal results to reduce file size
   # Extract only essential land info (no x3p, ccdata, sigs, etc.)
   lands <- data.frame(
