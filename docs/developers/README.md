@@ -29,7 +29,8 @@ Because these scripts are not intended for end users, they are not located withi
 | `analyze-houston-comparisons.R` | Analyzes Houston bullet study comparison scores and generates plots replicating Vanderplas et al. 2020 Figure 6. |
 | `auto-bullet-comparison-pipeline.R` | Automated end-to-end pipeline comparing two bullets with automatic crosscut and groove detection. |
 | `compare-example-hamby44.R` | Example showing how to run the manual comparison pipeline on Hamby Set 44 scans. |
+| `compare-hamby44.R` | Batch comparison script for the Hamby Set 44 Final dataset. Generates all pairwise bullet comparisons (known and unknown) using the manual pipeline with parallel processing. |
 | `compare-houston.R` | Batch comparison script for the Houston Set Final dataset. Generates all pairwise bullet comparisons. |
 | `compare-phoenix.R` | Batch comparison script for the Phoenix Test dataset. Generates all pairwise bullet comparisons. |
-| `comparison-utils.R` | Shared helper functions for comparison pipelines (e.g., `cond_x3p_m_to_mum`, `make_pairs_df`, `make_outfile`, `extract_signals`, `align_signals`, `extract_features`, `calculate_rf_scores`, `calculate_bullet_scores`, `run_phase_test`). |
+| `comparison-utils.R` | Shared helper functions for comparison pipelines (e.g., `get_study_path`, `cond_x3p_m_to_mum`, `make_pairs_df`, `make_outfile`, `extract_signals`, `align_signals`, `extract_features`, `calculate_rf_scores`, `calculate_bullet_scores`, `run_phase_test`). |
 | `manual-bullet-comparison-pipeline.R` | Pipeline comparing two bullets using manually-specified groove locations from CSV files, with parallel processing support. |
