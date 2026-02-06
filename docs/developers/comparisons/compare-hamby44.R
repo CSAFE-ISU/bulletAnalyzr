@@ -15,6 +15,7 @@ source("inst/scripts/manual_groove_selection.R")
 source("docs/developers/comparisons/comparison-utils.R")
 source("docs/developers/comparisons/manual-bullet-comparison-pipeline.R")
 source("docs/developers/bullet-codes.R")
+source("docs/developers/view-pipeline.R")
 
 
 # Helper Functions --------------------------------------------------------
@@ -61,32 +62,19 @@ list_bullets <- function(main_dir) {
 # Setup -------------------------------------------------------------------
 
 study <- "Hamby Set 44 Final"
-
-local_dir <- file.path("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets", study)
-lss1 <- file.path("/Volumes/research/csafe-firearms/bullet-scans", study)
-lss2 <- file.path("/Volumes/lss/research/csafe-firearms/bullet-scans", study)
-
-if (dir.exists(local_dir)) {
-  study_dir <- local_dir
-} else if (dir.exists(lss1)) {
-  study_dir <- lss1
-} else if (dir.exists(lss2)) {
-  study_dir <- lss2
-} else {
-  stop("Are you connected to LSS or the external drive?")
-}
+study_dir <- get_study_path(study = study)
 
 bullets <- list_bullets(main_dir = study_dir)
 
-
 # Manually Detect Grooves -------------------------------------------------
 
-for (bullet in bullets[3:35]) {
+for (bullet in bullets) {
   process_directory(
     bullet,
     file.path(bullet, "grooves.csv")
   )
 }
+
 
 # Compare Bullets ---------------------------------------------------------
 
