@@ -44,15 +44,15 @@ get_optimal_crosscut <- function(x3p) {
 #' selection.
 #'
 #' @param filepath Path to an x3p file
+#' @param grooves_csv Optional path to a CSV file with columns \code{filename},
+#'   \code{crosscut_y}, \code{left_groove}, and \code{right_groove}. When
+#'   provided, the matching row (by \code{basename(filepath)}) supplies the
+#'   crosscut and groove values instead of auto-computing them.
 #' @param view_land Logical; display the x3p land image (default TRUE)
 #' @param view_cc_profile Logical; display the crosscut profile plot (default TRUE)
 #' @param view_grooves Logical; display groove locations and prompt for manual
 #'   selection (default TRUE)
 #' @param view_signal Logical; display the extracted signal plot (default TRUE)
-#' @param grooves_csv Optional path to a CSV file with columns \code{filename},
-#'   \code{crosscut_y}, \code{left_groove}, and \code{right_groove}. When
-#'   provided, the matching row (by \code{basename(filepath)}) supplies the
-#'   crosscut and groove values instead of auto-computing them.
 #' @param save_land_plot Logical; if TRUE, saves the land image to a PNG file
 #'   in the same directory as the input file (default FALSE).
 #' @param save_cc_profile_plot Logical; if TRUE, saves the crosscut profile plot to a PNG file
@@ -82,7 +82,7 @@ get_optimal_crosscut <- function(x3p) {
 #'   view_signal = TRUE
 #' )
 #'
-view_pipeline <- function(filepath, view_land = TRUE, view_cc_profile = FALSE, view_grooves = FALSE, view_signal = FALSE, grooves_csv = NULL, save_land_plot = FALSE, save_cc_profile_plot = FALSE, save_grooves_plot = FALSE, save_signal_plot = FALSE) {
+view_pipeline <- function(filepath, grooves_csv = NULL, view_land = TRUE, view_cc_profile = FALSE, view_grooves = FALSE, view_signal = FALSE, save_land_plot = FALSE, save_cc_profile_plot = FALSE, save_grooves_plot = FALSE, save_signal_plot = FALSE) {
   # Determine the last pipeline step needed based on view/save flags
   # Step mapping: 1=read/land, 2=preprocess, 3=crosscut, 4=grooves, 5=signal
   last_step <- max(c(

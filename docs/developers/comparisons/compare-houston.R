@@ -52,10 +52,6 @@ get_unknown_bullets <- function(groups) {
   return(ubullets)
 }
 
-get_unknown_barrels <- function(groups) {
-  # List unknown barrels - KA, KB,..., KJ - from all groups
-}
-
 list_bullets <- function(main_dir) {
   # List bullet directories
   groups <- list.dirs(main_dir, recursive = FALSE)
@@ -90,3 +86,10 @@ for (i in 1:nrow(pairs)) {
     cores = 4
   )
 }
+
+
+# Make Bullet-to-bullet Scores Dataframe ----------------------------------
+
+df <- get_bullet_scores_df(houston_dir)
+write.csv(df, file.path(houston_dir, "Comparisons", "bullet-to-bullet-scores.csv"))
+

@@ -19,27 +19,6 @@ source("docs/developers/bullet-codes.R")
 
 # Helper Functions --------------------------------------------------------
 
-get_unknown_bullets <- function(groups) {
-  # List unknown barrels from all groups
-  ubarrel1 <- list.dirs(groups[1], recursive = FALSE)
-  ubarrel1 <- ubarrel1[!startsWith(basename(ubarrel1), "K")]
-  ubarrel2 <- list.dirs(groups[2], recursive = FALSE)
-  ubarrel2 <- ubarrel2[!startsWith(basename(ubarrel2), "K")]
-  ubarrel3 <- list.dirs(groups[3], recursive = FALSE)
-  ubarrel3 <- ubarrel3[!startsWith(basename(ubarrel3), "K")]
-  ubarrels <- c(ubarrel1, ubarrel2, ubarrel3)
-
-  ubullets <- list.dirs(ubarrels, recursive = FALSE)
-
-  # Remove duplicate bullet - U36 is in group 1 and group 3
-  ubullets <- ubullets[!duplicated(basename(ubullets))]
-
-  # Sort by bullet number across all groups
-  ubullets <- ubullets[order(basename(ubullets))]
-
-  return(ubullets)
-}
-
 list_bullets <- function(main_dir) {
   # List bullet directories
   dirs <- list.dirs(main_dir, recursive = FALSE)
@@ -66,12 +45,12 @@ bullets <- list_bullets(main_dir = study_dir)
 
 # Manually Detect Grooves -------------------------------------------------
 
-for (bullet in bullets[32:34]) {
-  result <- process_directory(
-    bullet,
-    file.path(bullet, "grooves.csv")
-  )
-}
+# for (bullet in bullets[32:34]) {
+#   result <- process_directory(
+#     bullet,
+#     file.path(bullet, "grooves.csv")
+#   )
+# }
 
 # Compare Bullets ---------------------------------------------------------
 

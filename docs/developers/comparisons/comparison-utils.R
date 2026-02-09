@@ -338,3 +338,22 @@ make_pairs_df <- function(bullets) {
 make_outfile <- function(outdir, bullet1_name, bullet2_name) {
   return(file.path(outdir, paste0(bullet1_name, "_", bullet2_name, ".rds")))
 }
+
+
+# Results -----------------------------------------------------------------
+
+get_bullet_scores_df <- function(study_dir) {
+  # Load files into single data frame
+  files <- list.files(file.path(study_dir, "Comparisons"), pattern = "\\.rds", full.names = TRUE)
+  df <- lapply(files, function(f) {
+    df <- readRDS(f)
+    return(df$bullet_scores)
+  })
+  df <- do.call(rbind, df)
+  
+  # Extract group, barrel, and bullet from bullet names
+  df <- cbind(df, parse_bullet_codes(df$bulletA, suffix = "1"))
+  df <- cbind(df, parse_bullet_codes(df$bulletB, suffix = "2"))
+  
+  return(df)
+}
