@@ -6,6 +6,31 @@
 # Usage:
 #   source("docs/developers/comparisons/comparison-utils.R")
 
+
+# Storage Paths -----------------------------------------------------------
+
+get_study_path <- function(
+    study, 
+    extdrive = "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets",
+    lss1 = "/Volumes/research/csafe-firearms/bullet-scans",
+    lss2 = "/Volumes/lss/research/csafe-firearms/bullet-scans"
+) {
+  local_dir <- file.path(extdrive, study)
+  lss1 <- file.path(lss1, study)
+  lss2 <- file.path(lss2, study)
+  
+  if (dir.exists(local_dir)) {
+    study_dir <- local_dir
+  } else if (dir.exists(lss1)) {
+    study_dir <- lss1
+  } else if (dir.exists(lss2)) {
+    study_dir <- lss2
+  } else {
+    stop("Are you connected to LSS or the external drive?")
+  }
+  return(study_dir)
+}
+
 # Unit Conversion ---------------------------------------------------------
 
 #' Conditionally Convert x3p from Meters to Micrometers
@@ -43,17 +68,17 @@ rotate_bullet_if_needed <- function(bullet) {
 #' @returns Preprocessed bullet data frame
 preprocess_bullet_standalone <- function(bullet, bullet_name) {
   cat("Preprocessing bullet:", bullet_name, "\n")
-
+  
   # Rotate if needed
   bullet <- rotate_bullet_if_needed(bullet)
-
+  
   # Convert to microns if needed
   bullet$x3p <- lapply(bullet$x3p, cond_x3p_m_to_mum)
-
+  
   # Add metadata
   bullet$bullet <- bullet_name
   bullet$land <- seq_len(nrow(bullet))
-
+  
   return(bullet)
 }
 
@@ -65,7 +90,7 @@ preprocess_bullet_standalone <- function(bullet, bullet_name) {
 #' @returns Data frame with sigs column added
 extract_signals <- function(bullets) {
   cat("Extracting signals...\n")
-
+  
   bullets$sigs <- mapply(
     function(ccdata, grooves) {
       bulletxtrctr::cc_get_signature(ccdata, grooves, span1 = 0.75, span2 = 0.03)
@@ -74,7 +99,7 @@ extract_signals <- function(bullets) {
     bullets$grooves,
     SIMPLIFY = FALSE
   )
-
+  
   return(bullets)
 }
 
@@ -83,15 +108,15 @@ extract_signals <- function(bullets) {
 #' @returns List with bullets and comparisons data frames
 align_signals <- function(bullets) {
   cat("Aligning signals between all land pairs...\n")
-
+  
   bullets$bulletland <- paste0(bullets$bullet, "-", bullets$land)
   lands <- unique(bullets$bulletland)
-
+  
   comparisons <- data.frame(
     expand.grid(land1 = lands, land2 = lands),
     stringsAsFactors = FALSE
   )
-
+  
   comparisons$aligned <- mapply(
     function(x, y) {
       bulletxtrctr::sig_align(
@@ -103,9 +128,9 @@ align_signals <- function(bullets) {
     comparisons$land2,
     SIMPLIFY = FALSE
   )
-
+  
   cat("  Created", nrow(comparisons), "land-to-land comparisons\n")
-
+  
   return(list(bullets = bullets, comparisons = comparisons))
 }
 
@@ -118,21 +143,21 @@ align_signals <- function(bullets) {
 #' @returns List with comparisons and features data frames
 extract_features <- function(comparisons, resolution) {
   cat("Extracting features...\n")
-
+  
   # Calculate CCF
   cat("  Calculating cross-correlation...\n")
   comparisons$ccf0 <- sapply(comparisons$aligned, function(x) bulletxtrctr::extract_feature_ccf(x$lands))
-
+  
   # Evaluate striation marks
   cat("  Evaluating striation marks...\n")
   comparisons$striae <- lapply(comparisons$aligned, bulletxtrctr::sig_cms_max, span = 75)
-
+  
   # Extract bullet/land identifiers
   comparisons$bulletA <- sapply(strsplit(as.character(comparisons$land1), "-"), "[[", 1)
   comparisons$bulletB <- sapply(strsplit(as.character(comparisons$land2), "-"), "[[", 1)
   comparisons$landA <- sapply(strsplit(as.character(comparisons$land1), "-"), "[[", 2)
   comparisons$landB <- sapply(strsplit(as.character(comparisons$land2), "-"), "[[", 2)
-
+  
   # Extract all features
   cat("  Extracting all features...\n")
   comparisons$features <- mapply(
@@ -142,13 +167,13 @@ extract_features <- function(comparisons, resolution) {
     MoreArgs = list(resolution = resolution),
     SIMPLIFY = FALSE
   )
-
+  
   # Unnest and scale features
   features <- tidyr::unnest(
     comparisons[, c("land1", "land2", "ccf0", "bulletA", "bulletB", "landA", "landB", "features")],
     cols = features
   )
-
+  
   features <- features %>%
     dplyr::mutate(
       cms = cms_per_mm,
@@ -156,7 +181,7 @@ extract_features <- function(comparisons, resolution) {
       mismatches = mismatches_per_mm,
       non_cms = non_cms_per_mm
     )
-
+  
   return(list(comparisons = comparisons, features = features))
 }
 
@@ -168,9 +193,9 @@ extract_features <- function(comparisons, resolution) {
 #' @returns Data frame with rfscore column added
 calculate_rf_scores <- function(features) {
   cat("Calculating random forest scores...\n")
-
+  
   features$rfscore <- predict(bulletxtrctr::rtrees, newdata = features, type = "prob")[, 2]
-
+  
   return(features)
 }
 
@@ -179,11 +204,11 @@ calculate_rf_scores <- function(features) {
 #' @returns Data frame with bullet scores
 calculate_bullet_scores <- function(features) {
   cat("Calculating bullet-level scores...\n")
-
+  
   bullet_scores <- features %>%
     dplyr::group_by(bulletA, bulletB) %>%
     tidyr::nest()
-
+  
   bullet_scores$bullet_score <- sapply(
     bullet_scores$data,
     function(d) {
@@ -197,7 +222,7 @@ calculate_bullet_scores <- function(features) {
       return(max(avgs$scores))
     }
   )
-
+  
   return(bullet_scores)
 }
 
@@ -211,23 +236,23 @@ calculate_bullet_scores <- function(features) {
 #' @returns Phase test results
 run_phase_test <- function(features, bulletA, bulletB) {
   cat("Running phase test...\n")
-
+  
   # Filter to just the comparison between the two different bullets
   comparison_data <- features %>%
     dplyr::filter(
       (features$bulletA == bulletA & features$bulletB == bulletB) |
         (features$bulletA == bulletB & features$bulletB == bulletA)
     )
-
+  
   if (nrow(comparison_data) == 0) {
     warning("No comparison data found between the two bullets")
     return(NULL)
   }
-
+  
   # Get the A vs B comparison (not B vs A to avoid duplication)
   comparison_data <- comparison_data %>%
     dplyr::filter(bulletA == !!bulletA & bulletB == !!bulletB)
-
+  
   # Run phase test using CCF scores (same as bulletAnalyzrApp)
   result <- tryCatch(
     {
@@ -236,24 +261,24 @@ run_phase_test <- function(features, bulletA, bulletB) {
         land2 = comparison_data$landB,
         score = comparison_data$ccf
       )
-
+      
       df <- df %>%
         dplyr::mutate(phase = bulletxtrctr::get_phases(land1, land2))
-
+      
       n <- max(df$phase)
       avgs <- df %>%
         dplyr::group_by(phase) %>%
         dplyr::summarize(means = mean(score, na.rm = TRUE)) %>%
         dplyr::arrange(means)
-
+      
       est1 <- avgs$means[n]
       est2 <- avgs$means[floor(n / 2)]
-
+      
       # Calculate pooled variance
       df_labeled <- df %>%
         dplyr::left_join(avgs %>% dplyr::mutate(ordered = dplyr::row_number()), by = "phase") %>%
         dplyr::mutate(inphase = ordered == n)
-
+      
       sigmas <- df_labeled %>%
         dplyr::group_by(inphase) %>%
         dplyr::summarize(
@@ -262,12 +287,12 @@ run_phase_test <- function(features, bulletA, bulletB) {
         ) %>%
         dplyr::ungroup() %>%
         dplyr::summarize(pooled = sum(nu * sd) / sum(nu))
-
+      
       sigma_0 <- sigmas$pooled[1]
-
+      
       test_statistic <- est1 - est2
       p_value <- bulletxtrctr::F_T(test_statistic, sigma = sigma_0, n = n, lower.tail = FALSE)
-
+      
       # Return same structure as bulletAnalyzrApp
       res <- list(
         estimate = est1 - est2,
@@ -287,7 +312,7 @@ run_phase_test <- function(features, bulletA, bulletB) {
       return(NULL)
     }
   )
-
+  
   return(result)
 }
 
@@ -312,4 +337,23 @@ make_pairs_df <- function(bullets) {
 #' @returns File path string
 make_outfile <- function(outdir, bullet1_name, bullet2_name) {
   return(file.path(outdir, paste0(bullet1_name, "_", bullet2_name, ".rds")))
+}
+
+
+# Results -----------------------------------------------------------------
+
+get_bullet_scores_df <- function(study_dir) {
+  # Load files into single data frame
+  files <- list.files(file.path(study_dir, "Comparisons"), pattern = "\\.rds", full.names = TRUE)
+  df <- lapply(files, function(f) {
+    df <- readRDS(f)
+    return(df$bullet_scores)
+  })
+  df <- do.call(rbind, df)
+  
+  # Extract group, barrel, and bullet from bullet names
+  df <- cbind(df, parse_bullet_codes(df$bulletA, suffix = "1"))
+  df <- cbind(df, parse_bullet_codes(df$bulletB, suffix = "2"))
+  
+  return(df)
 }

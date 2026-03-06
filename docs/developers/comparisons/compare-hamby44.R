@@ -1,20 +1,21 @@
-# Compare Phoenix Test
+# Compare Hamby Set 44 Final
 #
-# Batch comparison script for the Phoenix Test bullet dataset. Generates
+# Batch comparison script for the Hamby Set 44 Final bullet dataset. Generates
 # all pairwise bullet combinations (known and unknown), then runs the manual
 # comparison pipeline on each pair using parallel processing (4 cores).
 # Results are saved as individual RDS files in the dataset's comparisons/
 # directory.
 #
-# Requires the Phoenix Test dataset on an external drive or LSS.
+# Requires the Hamby Set 44 Final dataset on an external drive or LSS.
 #
 # Usage:
-#   source("docs/developers/comparisons/compare-phoenix.R")
+#   source("docs/developers/comparisons/compare-hamby44.R")
 
 source("inst/scripts/manual_groove_selection.R")
 source("docs/developers/comparisons/comparison-utils.R")
 source("docs/developers/comparisons/manual-bullet-comparison-pipeline.R")
 source("docs/developers/bullet-codes.R")
+source("docs/developers/view-pipeline.R")
 
 
 # Helper Functions --------------------------------------------------------
@@ -24,11 +25,12 @@ list_bullets <- function(main_dir) {
   dirs <- list.dirs(main_dir, recursive = FALSE)
 
   # Get known bullets
-  kbarrels <- dirs[startsWith(basename(dirs), "Gun")]
+  kbarrels <- dirs[startsWith(basename(dirs), "Barrel")]
   kbullets <- unlist(lapply(kbarrels, function(d) list.dirs(d, recursive = FALSE)))
 
   # Get unknown bullets
-  ubullets <- dirs[startsWith(basename(dirs), "Unknown")]
+  ubarrels <- dirs[basename(dirs) == "Unknowns"]
+  ubullets <- list.dirs(ubarrels, recursive = FALSE)
 
   bullets <- c(kbullets, ubullets)
 
@@ -38,19 +40,20 @@ list_bullets <- function(main_dir) {
 
 # Setup -------------------------------------------------------------------
 
-study_dir <- get_study_path(study = "Phoenix Test")
+study <- "Hamby Set 44 Final"
+study_dir <- get_study_path(study = study)
 
 bullets <- list_bullets(main_dir = study_dir)
 
-
 # Manually Detect Grooves -------------------------------------------------
 
-# for (bullet in bullets[32:34]) {
-#   result <- process_directory(
+# for (bullet in bullets) {
+#   process_directory(
 #     bullet,
 #     file.path(bullet, "grooves.csv")
 #   )
 # }
+
 
 # Compare Bullets ---------------------------------------------------------
 

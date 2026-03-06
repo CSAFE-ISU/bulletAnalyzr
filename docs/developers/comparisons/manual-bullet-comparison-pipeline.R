@@ -608,7 +608,6 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
 
   cat("\n", paste(rep("=", 60), collapse = ""), "\n")
 
-
   # Prepare minimal results to reduce file size
   # Extract only essential land info (no x3p, ccdata, sigs, etc.)
   lands <- data.frame(
@@ -641,6 +640,9 @@ compare_bullets <- function(bullet1_dir, bullet2_dir, outfile = NULL,
 
   # Save to RDS file if outfile is specified
   if (!is.null(outfile)) {
+    if (!dir.exists(dirname(outfile))) {
+      dir.create(dirname(outfile), recursive = TRUE)
+    }
     saveRDS(results, file = outfile)
     cat("Results saved to:", outfile, "\n")
   }

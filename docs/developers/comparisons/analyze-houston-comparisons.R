@@ -14,35 +14,9 @@
 library(dplyr)
 library(ggplot2)
 source("docs/developers/bullet-codes.R")
-
+source("docs/developers/comparisons/comparison-utils.R")
 
 # Helper Functions --------------------------------------------------------
-
-get_bullet_scores_df <- function(houston_dir) {
-  # Load files into single data frame
-  files <- list.files(file.path(houston_dir, "comparisons"), pattern = "\\.rds", full.names = TRUE)
-  df <- lapply(files, function(f) {
-    df <- readRDS(f)
-    return(df$bullet_scores)
-  })
-  df <- do.call(rbind, df)
-  
-  # Extract group, barrel, and bullet from bullet names
-  df <- cbind(df, parse_bullet_codes(df$bulletA, suffix = "1"))
-  df <- cbind(df, parse_bullet_codes(df$bulletB, suffix = "2"))
-  
-  return(df)
-}
-
-if (dir.exists("/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final")) {
-  houston_dir <- "/Volumes/T7_Shield/CSAFE/datasets/bullet_datasets/Houston Set Final"
-} else if (dir.exists("/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final")) {
-  houston_dir <- "/Volumes/research/csafe-firearms/bullet-scans/Houston Set Final"
-} else if (dir.exists("/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final")) {
-  houston_dir <- "/Volumes/lss/research/csafe-firearms/bullet-scans/Houston Set Final"
-} else {
-  stop("Are you connected to LSS?")
-}
 
 #' Replicate the Plot in Figure 6 in Vanderplas et al. 2020
 #'
@@ -198,8 +172,9 @@ save_plot <- function(p, outfile, width, height) {
 
 # Analyze Bullet Scores ---------------------------------------------------
 
-df <- get_bullet_scores_df(houston_dir)
-write.csv(df, file.path(houston_dir, "comparisons", "bullet-to-bullet-scores.csv"))
+study_dir <- get_study_path(study = "Houston Set Final")
+
+df <- read.csv(file.path(study_dir, "Comparisons", "bullet-to-bullet-scores.csv"))
 
 # Group 1 ----
 
@@ -214,7 +189,7 @@ plot_fig6(
   group = 1,
   title = "Houston Set 1",
   subtitle = "Known Versus Unknown Bullets",
-  outfile = file.path(houston_dir, "plots", "houston1_kvu.png"),
+  outfile = file.path(study_dir, "plots", "houston1_kvu.png"),
   width = 10,
   height = 5
 )
@@ -232,7 +207,7 @@ plot_fig6(
   group = 2,
   title = "Houston Set 2",
   subtitle = "Known Versus Unknown Bullets",
-  outfile = file.path(houston_dir, "plots", "houston2_kvu.png"),
+  outfile = file.path(study_dir, "plots", "houston2_kvu.png"),
   width = 10,
   height = 5
 )
@@ -250,7 +225,7 @@ plot_fig6(
   group = 3,
   title = "Houston Set 3",
   subtitle = "Known Versus Unknown Bullets",
-  outfile = file.path(houston_dir, "plots", "houston3_kvu.png"),
+  outfile = file.path(study_dir, "plots", "houston3_kvu.png"),
   width = 10,
   height = 5
 )
