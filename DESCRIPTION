@@ -32,10 +32,10 @@ URL: https://CSAFE-ISU.github.io/bulletAnalyzr/, https://github.com/CSAFE-ISU/bu
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
     bulletxtrctr,
-    R (>= 3.9)
+    R (>= 4.1)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0
 Suggests: 
     jsonlite,
     knitr,

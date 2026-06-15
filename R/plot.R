@@ -24,8 +24,8 @@ groove_plot <- function(ccdata, grooves) {
       breaks=c(0,round(as.numeric(grooves[2]-grooves[1]),0),round(seq(min(ccdata$x),max(ccdata$x),by=500),-2)),
       labels=c("\n0",paste0("\n",round(as.numeric(grooves[2]-grooves[1]),0)),round(seq(min(ccdata$x),max(ccdata$x),by=500),-2))
     ) +
-    ggplot2::xlab("Position along width of Land [µm]") +
-    ggplot2::ylab("Surface Height [µm]") 
+    ggplot2::xlab("Position along width of Land [\u00b5m]") +
+    ggplot2::ylab("Surface Height [\u00b5m]") 
 }
 
 
@@ -47,7 +47,7 @@ plot_all_crosscuts <- function(crosscuts) {
     ggplot2::geom_line() +
     ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
     ggplot2::xlab("Position along width of Land [mm]") +
-    ggplot2::ylab("Surface Height [µm]") + 
+    ggplot2::ylab("Surface Height [\u00b5m]") + 
     ggplot2::ggtitle("Cross-section of the bullet land at a suitable cross-section location") 
   return(CCplot)
 }
@@ -74,7 +74,7 @@ plot_all_signals <- function(bullets) {
     ggplot2::facet_grid(bullet ~ land, labeller = "label_both") +
     ggplot2::ylim(c(-5, 5)) +
     ggplot2::xlab("Position along width of Land [mm]") +
-    ggplot2::ylab("Signal [µm]") +
+    ggplot2::ylab("Signal [\u00b5m]") +
     ggplot2::ggtitle("Raw and LOESS-smoothed Signal for Bullet Profile")
   return(Sigplot)
 }
@@ -177,8 +177,8 @@ plot_signal <- function(sig_plot_data, scale) {
   ggplot2::ggplot(sig_plot_data, ggplot2::aes(x = x*scale, y = value, colour = Signal, linetype = Signal)) + 
     ggplot2::geom_line(na.rm = TRUE, alpha = 0.9, linewidth = 1) +
     ggplot2::scale_color_manual(values = c("darkorange", "purple4")) + 
-    ggplot2::xlab("Position along width of Land [µm]") +
-    ggplot2::ylab("Signal [µm]") +
+    ggplot2::xlab("Position along width of Land [\u00b5m]") +
+    ggplot2::ylab("Signal [\u00b5m]") +
     ggplot2::ggtitle("Aligned signals of LEAs")+
     ggplot2::theme(legend.position = "bottom") 
 }
