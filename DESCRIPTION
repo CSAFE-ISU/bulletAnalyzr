@@ -25,7 +25,9 @@ Imports:
     shinyscreenshot,
     tidyr,
     tidyselect,
-    x3ptools
+    x3ptools,
+    httr2,
+    curl
 URL: https://CSAFE-ISU.github.io/bulletAnalyzr/, https://github.com/CSAFE-ISU/bulletAnalyzr
 BugReports: https://github.com/CSAFE-ISU/bulletAnalyzr/issues
 Depends:
