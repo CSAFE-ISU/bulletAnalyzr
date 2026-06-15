@@ -7,3 +7,4 @@
 ^scratch.R$
 ^LICENSE\.md$
 _\.new\.png$
+^session-info\.txt$

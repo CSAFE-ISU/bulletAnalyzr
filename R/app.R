@@ -27,6 +27,8 @@
 #'
 #' @export
 #' @importFrom stats predict
+#' @importFrom bulletxtrctr read_bullet
+#' @importFrom randomForest randomForest
 #'
 #' @examples
 #' \dontrun{

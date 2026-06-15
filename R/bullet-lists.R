@@ -191,9 +191,9 @@ filter_x3pimg <- function(BullCompBulls, selected1, selected2, bsldata, odridx, 
 make_temptable <- function(BullCompBulls, selected1, selected2, bsldata, odridx, idx, instrument, scale) {
   
   temptable <- data.frame(
-    Feature = c("Left Land File", "Left Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                "Right Land File", "Right Land MD5", "Left Land Instrument (resolution [µm/px])", 
-                "Cross Correlation Function", "Mean Distance btw Signals [µm]",
+    Feature = c("Left Land File", "Left Land MD5", "Left Land Instrument (resolution [\u00b5m/px])", 
+                "Right Land File", "Right Land MD5", "Left Land Instrument (resolution [\u00b5m/px])", 
+                "Cross Correlation Function", "Mean Distance btw Signals [\u00b5m]",
                 "Signal Length [mm]", "# Matching Striae Per Millimeter",
                 "# Mis-Matching Striae Per Millimeter", "CMS Per Millimeter",
                 "Non-CMS Per Millimeter", "Peak Sum"),

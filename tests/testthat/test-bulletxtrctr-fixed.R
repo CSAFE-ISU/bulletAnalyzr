@@ -68,6 +68,10 @@ testthat::test_that("phase test fixed works", {
   )
   
   expected <- readRDS(testthat::test_path("fixtures", "phase_test", "phase_test.rds"))
-  
-  testthat::expect_identical(actual, expected)
+
+  # expect_equal (not expect_identical): the p-value carries an `abs.error`
+  # attribute from stats::integrate() inside bulletxtrctr::F_T(), whose value is
+  # only numerically estimated and varies at the ~1e-18 level across runs and
+  # platforms. A tolerant comparison checks the values that matter.
+  testthat::expect_equal(actual, expected)
 })
