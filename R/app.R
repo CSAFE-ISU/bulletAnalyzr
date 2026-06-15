@@ -42,7 +42,7 @@ bulletAnalyzrApp <- function(
   
   ## Config
   options(rgl.useNULL = TRUE)
-  version <- "0.5.0-beta.1"
+  version <- "0.6.0"
   options(shiny.maxRequestSize = 150*1024^2)
   shiny::addResourcePath(
     prefix = "images", 
